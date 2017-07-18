@@ -1,0 +1,605 @@
+
+<html>
+	<head>
+	    <meta charset="utf-8">
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	    <meta name="viewport" content="width=device-width, initial-scale=1">
+	    <script src="/u/phyan/workspace/python/qor_analyzer/jquery/1.11.1/jquery.min.js"></script>
+		<script src="/u/phyan/workspace/python/qor_analyzer/libs/jqueryui/jquery.ui-1.9.0.min.js"></script>		
+	<!-- 引入 Bootstrap -->
+	<!--
+		<link href="/u/phyan/workspace/python/qor_analyzer/libs/bootstrap/2.3.2/css/bootstrap.min.css" rel="stylesheet">	
+		-->
+		<script type="text/javascript" src="/u/phyan/workspace/python/qor_analyzer/bootstrap/js/bootstrap.js"></script>
+		<script type="text/javascript" src="/u/phyan/workspace/python/qor_analyzer/bootstrap/js/Chart_v1.js"></script>
+		<style type="text/css" src="/u/phyan/workspace/python/qor_analyzer/bootstrap/css/bootstrap.css"></style>
+		<meta name="description" content="">
+	    <meta name="author" content="">
+	    <link rel="icon" href="../../favicon.ico">
+
+	    <title>QoR Analyzer ^_^</title>
+
+	    <!-- Bootstrap core CSS -->
+	    <link href="/u/phyan/workspace/python/qor_analyzer/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+	    <!-- Bootstrap theme -->
+	    <link href="/u/phyan/workspace/python/qor_analyzer/bootstrap/css/bootstrap-theme.min.css" rel="stylesheet">
+	    <!-- Custom styles for this template -->
+	    <link href="/u/phyan/workspace/python/qor_analyzer/bootstrap/css/theme.css" rel="stylesheet">
+
+		<title> QoR!! </title>
+	</head>
+
+
+	<body role="document" style="background-color: #efefef;">
+	<style>
+	.navbar .nav>li>a{padding: 15px 10px 15px 10px}
+
+	.metrics-nav-other>li {font-size:14px; padding: 0px 10px 0px 10px; color:grey;}
+	.metrics-nav-other>li>a {font-size:13px; padding: 4px 8px; color:grey;border-left: 2px solid rgb(239, 239, 239);}
+
+	.metrics-nav>li {font-size:14px; padding: 0px 10px 0px 10px; color:grey;}
+	.metrics-nav>li>a {font-size:13px; padding: 4px 8px; color:grey;border-left: 2px solid rgb(239, 239, 239);}	
+	.metrics-nav>li>a:hover {color:#563d7c;border-left: 2px solid #563d7c;text-decoration: none;}
+
+	.checkbox-nav>li {font-size:13px; padding: 0px 10px 0px 10px; color:grey;}
+	.checkbox-nav-other>li {font-size:14px; padding: 0px 10px 0px 10px; color:grey;}
+
+	div.active-design{display: block;}
+	div.inactive-design{display: none;}
+	div.active-metrics{display: block;}
+	div.inactive-metrics{display: none;}
+	canvas.active-design{display: block;}
+	canvas.inactive-design{display: none;}
+	.col-md-1 .col-md-3 .col-md-12 {min-height: 0px;}
+	</style>
+	<script>
+		function activeDesignMetrics(tmp) {
+			var select_type = $(tmp).attr('class').split(" ")[0];
+			if (select_type == "design") {
+				var design_class = $(tmp).attr('class').split(" ")[1];
+				//console.log(design_class);
+				var design_chart_dict = new Array();
+				{% for design in flow_qor_metrics %}
+					design_chart_dict["{{design}}"] = {{design_chart_dict[design]|safe}};
+				{% endfor %}
+				//console.log(design_chart_dict);
+				//alert(design_class);
+				//restore everything
+				$("div>.inactive-design").addClass('active-design');
+				$("div>.active-design").removeClass('inactive-design');
+
+				$("#design-name").html(design_class);
+				$("#metrics-name").html("Select by metrics");
+				$("div>.active-design").addClass('inactive-design');
+				$("div>.active-design").removeClass('active-design');
+				$(".metrics").addClass('active-metrics');
+				$(".metrics").removeClass('inactive-metrics');
+				$("."+design_class).addClass('active-design');
+				$("."+design_class).removeClass('inactive-design');
+				$("#nav-footer").css("position","relative")
+
+				$('table thead').empty();
+		    	$('table thead').append('<tr><th>#</th><th id="prev_label">prev</th><th id="crnt_label">crnt</th><th id="crnt_label">pct.(%)</th></tr>');
+				$('table tbody').empty();
+				$("#metrics-nav").empty();
+				$("#checkbox-nav").empty();
+				$.each(design_chart_dict[design_class]['metrics_order'], function(i,metrics) {
+					//console.log(metrics);
+			    	$('table tbody').append('<tr id='+metrics.toLowerCase()+'><td><strong>'+metrics+'</strong></td><td class="prev"></td><td class="crnt"></td><td class="pct"></td></tr>');
+			    	$("#metrics-nav").append('<li><a href="#'+design_class+"_"+metrics.toLowerCase()+'">'+metrics+'</a></li>');
+			    	$("#checkbox-nav").append('<li><input type="checkbox" name="'+metrics+'" checked onchange="$(\'.'+design_class+"_"+metrics.toLowerCase()+'\').toggle()">&nbsp;&nbsp;'+metrics+'</input></li>');
+			    	
+				});
+
+			} else if (select_type == "metrics") {
+				var metrics_class = $(tmp).attr('class').split(" ")[1];
+				var metrics_order_full = {{metrics_order|safe}};
+				//console.log(metrics_class);
+				$("#design-name").html("Select by design");
+				$("#metrics-name").html(metrics_class);
+				$("div>.inactive-design").addClass('active-design');
+				$("div>.active-design").removeClass('inactive-design');
+				$("div>.metrics").addClass('inactive-metrics');
+				$("div>.metrics").removeClass('active-metrics');
+				$("."+metrics_class).addClass('active-metrics');
+				$("."+metrics_class).removeClass('inactive-metrics');
+				//$("div>."+design_class).addClass('active-design');
+				//$("div>."+design_class).removeClass('inactive-design');
+				$("#nav-footer").css("position","relative")
+
+				$('table thead').empty();
+		    	$('table thead').append('<tr><th>#</th><th id="prev_label">prev</th><th id="crnt_label">crnt</th><th id="crnt_label">pct.(%)</th></tr>');
+				$('table tbody').empty();
+				$("#metrics-nav").empty();
+				$("#checkbox-nav").empty();
+				$.each(metrics_order_full, function(i,metrics) {
+					//console.log(metrics);
+			    	$('table tbody').append('<tr id='+metrics.toLowerCase()+'><td><strong>'+metrics+'</strong></td><td class="prev"></td><td class="crnt"></td><td class="pct"></td></tr>');			    	
+				});
+			}
+		}
+
+		function activePatternNav(tmp) {
+			var selected_pattern = $(tmp).attr('class').split(" ")[0];
+			console.log(selected_pattern);
+			$(".pattern_nav").addClass('inactive_nav');
+			$(".pattern_nav").removeClass('active_nav');
+			$("."+selected_pattern+"_nav").removeClass('inactive_nav');
+			$("."+selected_pattern+"_nav").addClass('active_nav');
+		}
+	</script>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+
+	<div class="container" style="margin-left:160px;">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#" style="color:#fff;">QoR Analyzer</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="dropdown active">
+	          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">DashBoard<span class="caret"></span></a>
+	          <ul class="dropdown-menu">
+	          	<li class="dropdown-header">Select a core OPT stage</li>
+	            <li><a href="qor_analysis_popt.html">Popt QoR Analysis</a></li>
+	            <li><a href="qor_analysis_copt.html">Copt QoR Analysis</a></li>	            
+	            <li role="separator" class="divider"></li>
+	            <li><a>Fopt (comming soon)</a></li>
+	          </ul>
+	        </li>
+			<li><a href="#">About</a></li>
+		  </ul>
+
+        </div><!--/.nav-collapse -->
+  	</div>
+    </nav>  
+
+	<div class="container bs-docs-container" role="main" style="width:1700px;margin-left:15px;">
+		<div class="row" style="width:1700px;">
+			<div class="col-md-1 nav-target" role="complementary">
+				<!-- metrics nav -->
+				<nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" style="top:180px;width:18%;">
+				<ul class="nav bs-docs-sidenav metrics-nav-other">
+					<li><strong>Inner-link</strong></li>
+				</ul>
+				<ul class="nav bs-docs-sidenav metrics-nav" id="metrics-nav">
+			    </ul>
+			    <ul <ul class="nav bs-docs-sidenav metrics-nav-other">
+				    <li><a class="back-to-top" href="#top"><strong> Back To Top</strong></a></li>
+			    </ul>
+				</br>
+				<!-- metrics toggle -->
+				<ul class="nav bs-docs-sidenav checkbox-nav-other">
+					<li><strong>Check-box</strong></li>
+				</ul>
+				<ul class="nav bs-docs-sidenav checkbox-nav" id="checkbox-nav">
+				</ul>
+			</div> 
+				<!-- col-3 -->
+			<div class="col-md-9" role="main">
+			<!-- Main jumbotron for a primary marketing message or call to action -->
+			<div class="alert alert-success alert-dismissible" role="alert">
+				<button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+		    	<strong>QoR Analyzer: data loaded successfully!! (Will adapt "0" qor value to "0.00001" to avoid logarithmic exception)</strong>
+		  	</div>
+			<div class="alert alert-info alert-dismissible" role="alert">
+				<button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+		    	<strong>New Features are ready now:</strong></br>
+		    	2016/10/21 - Metrics based selection</br>
+		    	2016/10/24 - number prefix before steps for better trace: FSZBUF -> (18)FSZBUF</br>
+		    	2016/10/25 - Metrics canvas innerlink/toggle</br>
+		    	2016/10/26 - Selected point info could be recorded during share</br>
+		    	2016/10/27 - Metrics mode could be shared now</br>
+		    	2016/11/03 - core command prefix also ready: (18)FSZBUF -> (18P)FSZBUF [P: place_opt, C: clock_opt, RF: refine_opt] </br>
+		    	Abbrev mode will coming soon...
+		  	</div>
+		  	<h4 style="margin-bottom:18px;">
+		  	<span class="label label-primary">Mode: {{mode}}</span>
+		  	<span class="label label-primary">Stage: nw{{cmd}}</span>
+		  	</h4>
+		  	{% for argv in argv_list%}
+		  	<h4 style="margin-bottom:18px;">
+		  	<span class="label label-info">{{argv}}</span>
+		  	</h4>
+		  	{% endfor %}
+			<!-- Split button -->
+			<div class="row">
+			<div class="col-md-3">
+			<div class="btn-group" style="margin-bottom: 18px;">
+			  <button id="design-name" type="button" class="btn btn-warning">Select by design</button>
+			  <button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height:34px;">
+			    <span class="caret" style="margin-top: 4px"></span>
+			    <span class="sr-only">Toggle Dropdown</span>
+			  </button>
+			  <ul class="dropdown-menu">
+			  	{% for design in flow_qor_metrics %}
+			    <li class="design {{design}}" onclick="activeDesignMetrics(this);"><a href="#">{{design}}</a></li>
+			    {% endfor %}
+			  </ul>
+			</div>
+			</div>
+			<div class="col-md-1">
+			<div>
+		  	<h4 style="margin-bottom:18px;">
+		  	<span class="label label-primary">OR</span>
+		  	</h4>
+		  	</div>
+		  	</div>
+		  	<div class="col-md-3">
+			<div class="btn-group" style="margin-bottom: 18px;">
+			  <button id="metrics-name" type="button" class="btn btn-warning">Select by metrics</button>
+			  <button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height:34px;">
+			    <span class="caret" style="margin-top: 4px"></span>
+			    <span class="sr-only">Toggle Dropdown</span>
+			  </button>
+			  <ul class="dropdown-menu">
+			  	{% for metrics in metrics_dict %}
+			    <li class="metrics {{metrics}}" onclick="activeDesignMetrics(this);"><a href="#">{{metrics}}</a></li>
+			    {% endfor %}
+			  </ul>
+			</div>
+			</div>
+		  	</div>
+
+			{% set index = 0 %}
+			{% for design in flow_qor_metrics %}
+			<div id="{{design}}" class="{{design}} inactive-design">
+				{% if design_chart_dict[design]["fatal_flow"]|length > 0 %}
+				<div class="alert alert-danger" role="alert">
+			    	<strong>Fatal found in design [{{design}}] under flow {{design_chart_dict[design]["fatal_flow"]}}</strong>
+			  	</div>
+			  	{% endif %}
+			  	{% if design_chart_dict[design]["step_match"] %}
+				<div class="alert alert-info metrics {{metrics}}" role="alert">
+			    	<strong>QoR Design - {{design}}</strong>
+			  	</div>
+			  	{% for metrics in design_chart_dict[design]["metrics_order"] %}
+
+				<div class="row">
+				 
+					<div class="col-md-12 {{design}}_{{metrics|lower}}" id="{{design}}_{{metrics|lower}}" style="min-height: 0px;">
+					<div class="panel metrics {{metrics}}" style="border-color: #39ADB4;">
+					  <!-- Default panel contents -->
+					  <div class="panel-heading" style="background-color: #39ADB4; color: white; font-weight: bold">{{design}}-{{metrics}}</div>
+					  <canvas id="myChart_{{design}}_{{metrics}}_{{index}}" width="350" height="100"></canvas>
+
+					  </div>
+					  </div>
+
+				
+				</div>
+				<script type="text/javascript">
+			//cmd stats
+				{% set index1 = 0 %}
+				var ctx = $("#myChart_{{design}}_{{metrics}}_{{index}}").get(0).getContext("2d");
+				// This will get the first returned node in the jQuery collection.
+			  	var data_{{design}}_{{metrics}}_{{index}} = {
+				    labels: {{flow_qor_metrics[design][0][0]}},
+				    datasets: [
+				    {% for qor_metrics in flow_qor_metrics[design] %}
+				    
+				        {
+				            label: "{{flow_metrics[design][index1]}}",
+				            fill: false,
+				            lineTension: 0.4,
+				            backgroundColor: "{{color_list[index1]}}",
+				            borderColor: "{{color_list[index1]}}",
+				            borderCapStyle: 'butt',
+				            borderDash: [],
+				            borderDashOffset: 0.0,
+				            borderJoinStyle: 'miter',
+				            pointBorderColor: "{{color_list[index1]}}",
+				            pointBackgroundColor: "{{color_list[index1]}}",
+				            pointBorderWidth: 1,
+				            pointHoverRadius: 3,
+				            pointHoverBackgroundColor: "#fff",
+				            pointHoverBorderColor: "{{color_list[index1]}}",
+				            pointHoverBorderWidth: 2,
+				            pointRadius: 3,
+				            pointHitRadius: 10,
+				            data: {{qor_metrics[design_chart_dict[design]['metrics_dict'][metrics][0]]}},
+				            spanGaps: false,
+				        },
+				    {% set index1 = index1 + 1 %}
+				    {% endfor %} 
+			   	 	]
+				};
+
+				var myLineChart_{{design}}_{{metrics}}_{{index}} = new Chart(ctx, {
+			    	type: 'line',
+			   		data: data_{{design}}_{{metrics}}_{{index}}, 
+				    options: {
+				    	hover: {
+				    		mode: "label"
+				    	},
+				        scales: {
+				            xAxes: [{
+				                ticks: {
+				                    autoSkip: {{design_chart_dict[design]["auto_skip"]}},
+				                    display: true,
+				                }
+				            }],
+	    		            yAxes: [{
+			            		type: '{{design_chart_dict[design]['metrics_dict'][metrics][1]}}',
+			            	}],
+				        }
+			    	}
+				});
+
+				$("#myChart_{{design}}_{{metrics}}_{{index}}").click(function (evt) {
+			        //alert(evt.originalEvent);
+			    	var activePoints = myLineChart_{{design}}_{{metrics}}_{{index}}.getElementAtEvent(evt.originalEvent);
+			    	var pointIndex = activePoints[0]._index;
+			    	var datasetIndex = activePoints[0]._datasetIndex;
+			    	//console.log(datasetIndex);
+			    	var step_qor_list = {{step_qor_dict[design]}};
+			    	var color_list = {{color_list}};
+			    	var metrics_order = {{design_chart_dict[design]["metrics_order"]}};
+			    	var metrics_order_index = {{design_chart_dict[design]["metrics_order_index"]}}
+			    	var qorArray = Array();
+			    	$.each(metrics_order_index, function(i,metrics_index) {
+			    		qorArray[i] = step_qor_list[datasetIndex][pointIndex][metrics_index]; //2:wns, 3:tns, etc
+			    	});
+
+			    	if ($("#crnt_label").text() == "crnt") {
+			    		if (qorArray[0] == 0) {
+			    			$("#crnt_label").text(pointIndex);	
+			    		} else {
+							if (qorArray[0].length > 16) {
+			    				$("#crnt_label").text(qorArray[0].substring(0,15));	
+			    			} else {
+			    				$("#crnt_label").text(qorArray[0]);	
+			    			}
+			    		}
+			    		$("#crnt_label").css("color", color_list[datasetIndex]);		    		
+			    	} else {
+			    		$("#prev_label").text($("#crnt_label").text());
+			    		$("#prev_label").css("color",$("#crnt_label").css("color"));
+			    		if (qorArray[0] == 0) {
+			    			$("#crnt_label").text(pointIndex);	
+			    		} else {
+			    			if (qorArray[0].length > 16) {
+			    				$("#crnt_label").text(qorArray[0].substring(0,15));	
+			    			} else {
+			    				$("#crnt_label").text(qorArray[0]);	
+			    			}
+			    		}
+			    		$("#crnt_label").css("color", color_list[datasetIndex]);
+			    	}
+
+			    	$.each(metrics_order, function(i,metrics) {
+			    		//console.log("Item #" + i + ": " + metrics);
+			    		var crnt = $("#"+metrics+">.crnt");
+		    			var prev = $("#"+metrics+">.prev");
+		    			var pct = $("#"+metrics+">.pct");
+		    			
+			    		if (crnt.text() == "") {
+			    			crnt.text(qorArray[i+1]);
+			    		} else {
+			    			prev.text(crnt.text());
+			    			crnt.text(qorArray[i+1]);
+			    			var pct_value = (parseFloat(crnt.text()) / parseFloat(prev.text())) * 100 - 100
+			    			pct.text(pct_value.toFixed(2));
+			    			//console.log("crnt:"+crnt.text()+" prev:"+prev.text());
+			    			
+					    	if (parseFloat(crnt.text()) > parseFloat(prev.text())) {
+					    		crnt.css("color", "red");
+					    		pct.css("color", "red");							    		
+					    	} else if (parseFloat(crnt.text()) < parseFloat(prev.text())) {
+					    		crnt.css("color", "green");
+					    		pct.css("color", "green");
+					    	} else {
+					    		crnt.css("color", "black");
+					    		pct.css("color", "black");
+					    	}
+			    		};
+			    	});
+
+					//console.log(activePoints);
+		    	});  
+
+				{% set index = index + 1 %}
+				</script>
+				{% endfor %}
+
+				{% else %}
+				<div class="alert alert-warning metrics {{metrics}}" role="alert">
+			    	<strong>QoR Design - {{design}} (steps mismatch, show qor-metrics in different charts)</strong>
+			  	</div>
+				{% for metrics in design_chart_dict[design]["metrics_order"] %}
+				{% set index1 = 0 %}
+					{% for qor_metrics in flow_qor_metrics[design] %}
+					<div class="row">
+					 
+						<div class="col-md-12 {{design}}_{{metrics|lower}}" id="{{design}}_{{metrics|lower}}" style="min-height: 0px;">
+						<div class="panel metrics {{metrics}}" style="border-color: #39ADB4;">
+						  <!-- Default panel contents -->
+						  <div class="panel-heading" style="background-color: #39ADB4; color: white; font-weight: bold">{{design}}-{{metrics}}</div>
+						  <canvas id="myChart_{{design}}_{{metrics}}_{{index}}" class="{{index}}" width="350" height="100"></canvas>
+
+					  	</div>
+					  	</div>
+					
+					</div>
+					<script type="text/javascript">
+				//cmd stats
+					
+					var ctx = $("#myChart_{{design}}_{{metrics}}_{{index}}").get(0).getContext("2d");
+					// This will get the first returned node in the jQuery collection.
+				  	var data_{{design}}_{{metrics}}_{{index}} = {
+					    labels: {{qor_metrics[0]}},
+					    datasets: [			    
+					        {
+					            label: "{{flow_metrics[design][index1]}}",
+					            fill: false,
+					            lineTension: 0.4,
+					            backgroundColor: "{{color_list[index1]}}",
+					            borderColor: "{{color_list[index1]}}",
+					            borderCapStyle: 'butt',
+					            borderDash: [],
+					            borderDashOffset: 0.0,
+					            borderJoinStyle: 'miter',
+					            pointBorderColor: "{{color_list[index1]}}",
+					            pointBackgroundColor: "{{color_list[index1]}}",
+					            pointBorderWidth: 1,
+					            pointHoverRadius: 3,
+					            pointHoverBackgroundColor: "#fff",
+					            pointHoverBorderColor: "{{color_list[index1]}}",
+					            pointHoverBorderWidth: 2,
+					            pointRadius: 3,
+					            pointHitRadius: 10,
+					            data: {{qor_metrics[design_chart_dict[design]['metrics_dict'][metrics][0]]}},
+					            spanGaps: false,
+					        },
+				   	 	]
+					};
+
+					var myLineChart_{{design}}_{{metrics}}_{{index}} = new Chart(ctx, {
+				    	type: 'line',
+				   		data: data_{{design}}_{{metrics}}_{{index}}, 
+					    options: {
+					    	hover: {
+					    		mode: "label"
+					    	},
+					        scales: {
+					            xAxes: [{
+					                ticks: {
+					                    autoSkip: {{design_chart_dict[design]["auto_skip"]}},
+					                    display: true,
+					                }
+					            }],
+		    		            yAxes: [{
+				            		type: '{{design_chart_dict[design]['metrics_dict'][metrics][1]}}',
+				            	}],
+					        }
+				    	}
+					});			
+
+					$("#myChart_{{design}}_{{metrics}}_{{index}}").click(function (evt) {
+				        //alert(evt.originalEvent);
+				    	var activePoints = myLineChart_{{design}}_{{metrics}}_{{index}}.getElementAtEvent(evt.originalEvent);
+				    	var pointIndex = activePoints[0]._index;
+				    	//console.log(activePoints);
+				    	var datasetIndex = parseInt($("#myChart_{{design}}_{{metrics}}_{{index}}").attr("class"));
+				    	//console.log(datasetIndex);
+				    	var step_qor_list = {{step_qor_dict[design]}};
+				    	var color_list = {{color_list}};
+				    	var metrics_order = {{design_chart_dict[design]["metrics_order"]}};
+				    	var metrics_order_index = {{design_chart_dict[design]["metrics_order_index"]}};
+				    	var qorArray = Array();
+				    	$.each(metrics_order_index, function(i,metrics_index) {
+				    		qorArray[i] = step_qor_list[datasetIndex][pointIndex][metrics_index]; //2:wns, 3:tns, etc
+				    	});
+				    	
+				    	if ($("#crnt_label").text() == "crnt") {
+				    		if (qorArray[0] == 0) {
+				    			$("#crnt_label").text(pointIndex);	
+				    		} else {
+				    			if (qorArray[0].length > 16) {
+				    				$("#crnt_label").text(qorArray[0].substring(0,15));	
+				    			} else {
+									if (qorArray[0].length > 16) {
+										$("#crnt_label").text(qorArray[0].substring(0,15));	
+									} else {
+										$("#crnt_label").text(qorArray[0]);	
+									}	
+				    			}
+				    		}
+							$("#crnt_label").css("color", color_list[datasetIndex]);
+				    	} else {
+				    		$("#prev_label").text($("#crnt_label").text());
+				    		$("#prev_label").css("color",$("#crnt_label").css("color"));
+				    		if (qorArray[0] == 0) {
+				    			$("#crnt_label").text(pointIndex);	
+				    		} else {
+								if (qorArray[0].length > 16) {
+									$("#crnt_label").text(qorArray[0].substring(0,15));	
+								} else {
+									$("#crnt_label").text(qorArray[0]);	
+								}	
+				    		}
+				    		$("#crnt_label").css("color", color_list[datasetIndex]);
+				    	}
+				    	
+				    	$.each(metrics_order, function(i,metrics) {
+				    		//console.log("Item #" + i + ": " + metrics);
+				    		var crnt = $("#"+metrics+">.crnt");
+			    			var prev = $("#"+metrics+">.prev");
+			    			var pct = $("#"+metrics+">.pct");
+				    		if (crnt.text() == "") {
+				    			crnt.text(qorArray[i+1]);
+				    		} else {
+				    			prev.text(crnt.text());
+				    			crnt.text(qorArray[i+1]);
+				    			var pct_value = (parseFloat(crnt.text()) / parseFloat(prev.text())) * 100 - 100
+				    			pct.text(pct_value.toFixed(2));
+				    			//console.log("crnt:"+crnt.text()+" prev:"+prev.text());
+				    			
+						    	if (parseFloat(crnt.text()) > parseFloat(prev.text())) {
+						    		crnt.css("color", "red");
+						    		pct.css("color", "red");							    		
+						    	} else if (parseFloat(crnt.text()) < parseFloat(prev.text())) {
+						    		crnt.css("color", "green");
+						    		pct.css("color", "green");
+						    	} else {
+						    		crnt.css("color", "black");
+						    		pct.css("color", "black");
+						    	}
+				    		};
+				    	});
+			    	});  
+					</script>
+					{% set index = index + 1 %}
+				    {% set index1 = index1 + 1 %}
+				    {% endfor %} 
+				{% endfor %}			
+
+				{% endif %}
+
+			</div>
+			{% endfor %}
+			</div>
+
+			<!-- col-9 -->
+			<div class="col-md-2" role="complementary">
+				<nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" style="top:252px;width:360px;">
+				<ul class="nav bs-docs-sidenav">
+				<div class="panel panel-danger">
+				  <!-- Default panel contents -->
+					<div class="panel-heading"><strong>QoR Compare</strong></div>
+					  <!-- Table -->
+					  <table class="table table-striped" style="font-size:12px;">
+					    <thead> 
+					    	<tr>
+						    	<th>#</th>
+						    	<th id="prev_label">prev</th>
+						    	<th id="crnt_label">crnt</th>
+						    	<th id="crnt_label">pct.(%)</th>
+					    	</tr>
+					    </thead>
+					    <tbody style="font-size:12px;">
+
+					    </tbody>
+					  </table>
+					</div>
+				</ul>
+				</nav>
+			</div> 
+			<!-- col-3 -->
+		</div>
+	</div>
+	<nav id="nav-footer" class="navbar navbar-inverse navbar-fixed-bottom">
+	    <div class="navbar-inner navbar-content-center" style="text-align:center;">
+	        <p class="text-muted credit" style="margin:5px 0 0 0;color:white">Chrome/Firefox browsers with 1600x1200+ resolution are suggested</p>
+	        <p class="text-muted credit" style="margin:0px;color:white">Contact <a href="mailto:phyan@synopsys.com">Leo Yan</a> if needed</p>
+	    </div>
+	</nav>
+
+	</body>
+</html>

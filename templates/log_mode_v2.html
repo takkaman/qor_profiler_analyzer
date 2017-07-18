@@ -1,0 +1,163 @@
+
+<html>
+	<head>
+	    <meta charset="utf-8">
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	    <meta name="viewport" content="width=device-width, initial-scale=1">
+	    <script src="http://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
+		<script src="http://upcdn.b0.upaiyun.com/libs/jqueryui/jquery.ui-1.9.0.min.js"></script>		
+	<!-- 引入 Bootstrap -->
+		<link href="http://apps.bdimg.com/libs/bootstrap/2.3.2/css/bootstrap.min.css" rel="stylesheet">	
+		<script type="text/javascript" src="/remote/us01home40/phyan/workspace/python/qor_analyzer/bootstrap/js/bootstrap.js"></script>
+		<script type="text/javascript" src="/remote/us01home40/phyan/workspace/python/qor_analyzer/bootstrap/js/Chart.js"></script>
+		<style type="text/css" src="/remote/us01home40/phyan/workspace/python/qor_analyzer/bootstrap/css/bootstrap.css"></style>
+		<meta name="description" content="">
+	    <meta name="author" content="">
+	    <link rel="icon" href="../../favicon.ico">
+
+	    <title>QoR Analyzer ^_^</title>
+
+	    <!-- Bootstrap core CSS -->
+	    <link href="//cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+	    <!-- Bootstrap theme -->
+	    <link href="/remote/us01home40/phyan/workspace/python/qor_analyzer/bootstrap/css/bootstrap-theme.min.css" rel="stylesheet">
+	    <!-- Custom styles for this template -->
+	    <link href="/remote/us01home40/phyan/workspace/python/qor_analyzer/bootstrap/css/theme.css" rel="stylesheet">
+
+		<title> QoR!! </title>
+	</head>
+
+	<body role="document" style="background-color: #efefef;">
+	<style>
+	.navbar .nav>li>a{padding: 15px 10px 15px 10px}
+	</style>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+
+	<div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">QoR Analyzer</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="/index/">DashBoard</a></li>
+			<li><a href="#">About</a></li>
+		  </ul>
+
+        </div><!--/.nav-collapse -->
+  	</div>
+    </nav>  
+
+	<div class="container theme-showcase" role="main">
+		<!-- Main jumbotron for a primary marketing message or call to action -->
+
+		<div class="alert alert-success" role="alert">
+	    	<strong>QoR Analyzer: data loaded successfully!!</strong>
+	  	</div>
+	  	<h4 style="margin-bottom:18px;">
+	  	<span class="label label-primary">Mode: {{mode}}</span>
+	  	{% for argv in argv_list%}
+	  	<span class="label label-info">{{argv}}</span>
+	  	{% endfor %}
+	  	</h4>
+
+		<div id="design_a" style="display:block;">
+		<div class="alert alert-info" role="alert">
+	    	<strong>QoR Metrix</strong>
+	  	</div>
+
+	  	{% set index = 0 %}
+	  	{% for metrics in metrics_order %}
+
+		<div class="row">
+		 
+			<div class="col-md-12">
+			<div class="panel" style="border-color: #39ADB4;">
+			  <!-- Default panel contents -->
+			  <div class="panel-heading" style="background-color: #39ADB4; color: white; font-weight: bold">{{metrics}} (Click the metrix to display/hide it)</div>
+			  <canvas id="myChart{{index}}" style="width:100%; height: 350px;"></canvas>
+
+			  </div>
+			  </div>
+
+		
+		</div>
+		<script type="text/javascript">
+	//cmd stats
+		{% set log_index = 2 %}
+		{% set color_index = 0 %}
+		//var ctx = $("#myChart{{index}}").get(0).getContext("2d");
+		// This will get the first returned node in the jQuery collection.
+	  	var data{{index}} = {
+		    labels: {{qor_metrics_list[0][0]}},
+		    datasets: [
+		    {% for qor_metrics in qor_metrics_list %}
+		    
+		        {
+					fillColor : "rgba(151,187,205,0)", //do not change, transparent fill
+					label: "{{log_name_list[log_index]}}",
+					strokeColor : "{{color_list[color_index]}}",
+					pointColor : "{{color_list[color_index]}}",
+					pointStrokeColor : "{{color_list[color_index]}}",
+					data: {{qor_metrics[metrics_dict[metrics]]}},
+		        },
+		    {% set log_index = log_index + 1 %}
+		    {% set color_index = color_index + 1 %}
+		    {% endfor %} 
+	   	 	]
+		};
+
+		var options{{index}} = {
+            ///Boolean - Whether grid lines are shown across the chart
+            scaleShowGridLines : true,
+            //scaleLabel : "<% =value %>",
+            //String - Colour of the grid lines
+            scaleGridLineColor : "rgba(0,0,0,.05)",
+            //Number - Width of the grid lines
+            scaleGridLineWidth : 1,
+            //Boolean - Whether to show horizontal lines (except X axis)
+            scaleShowHorizontalLines: true,
+            //Boolean - Whether to show vertical lines (except Y axis)
+            scaleShowVerticalLines: true,
+            //Boolean - Whether the line is curved between points
+            bezierCurve : true,
+            //Number - Tension of the bezier curve between points
+            bezierCurveTension : 0.4,
+            //Boolean - Whether to show a dot for each point
+            pointDot : true,
+            //Number - Radius of each point dot in pixels
+            pointDotRadius : 2,
+            //Number - Pixel width of point dot stroke
+            pointDotStrokeWidth : 1,
+            //Number - amount extra to add to the radius to cater for hit detection outside the drawn point
+            pointHitDetectionRadius : 2,
+            //Boolean - Whether to show a stroke for datasets
+            datasetStroke : true,
+            //Number - Pixel width of dataset stroke
+            datasetStrokeWidth : 2,
+            //Boolean - Whether to fill the dataset with a colour
+            datasetFill : true,
+            //Boolean - Whether to horizontally center the label and point dot inside the grid
+            offsetGridLines : false,
+            animation : true,
+            animationSteps : 10,
+            onAnimationComplete : null
+        };
+
+	    var ctx = document.getElementById('myChart{{index}}').getContext('2d');
+        new Chart(ctx).Line(data{{index}}, options{{index}});
+
+		</script>
+		{% set index = index + 1 %}
+		{% endfor %}
+
+		</div>
+
+	</body>
+</html>

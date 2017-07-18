@@ -1,0 +1,190 @@
+<html>
+	<head>
+	    <meta charset="utf-8">
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	    <meta name="viewport" content="width=device-width, initial-scale=1">
+	    <script src="{{ url_for('static', filename='jquery/1.11.1/jquery.min.js') }}"></script>
+		<script src="{{ url_for('static', filename='libs/jqueryui/jquery.ui-1.9.0.min.js') }}"></script>		
+	<!-- 引入 Bootstrap -->
+	<!--
+		<link href="/u/phyan/workspace/python/qor_analyzer/libs/bootstrap/2.3.2/css/bootstrap.min.css" rel="stylesheet">	
+		-->
+		<script type="text/javascript" src="{{ url_for('static', filename='bootstrap/js/bootstrap.js') }}"></script>
+		<script type="text/javascript" src="{{ url_for('static', filename='bootstrap/js/Chart_v1.js') }}"></script>
+		<style type="text/css" src="{{ url_for('static', filename='bootstrap/css/bootstrap.css') }}"></style>
+		<meta name="description" content="">
+	    <meta name="author" content="">
+
+	    <title>QoR Analyzer Web ^_^</title>
+
+	    <!-- Bootstrap core CSS -->
+	    <link href="{{ url_for('static', filename='bootstrap/3.3.5/css/bootstrap.min.css') }}" rel="stylesheet">
+	    <!-- Bootstrap theme -->
+	    <link href="{{ url_for('static', filename='bootstrap/css/bootstrap-theme.min.css') }}" rel="stylesheet">
+	    <!-- Custom styles for this template -->
+	    <link href="{{ url_for('static', filename='bootstrap/css/theme.css') }}" rel="stylesheet">
+	    <script>
+			$(document).ready(function(){
+				$('[data-toggle="tooltip"]').tooltip();   
+			});
+			
+	    	$(function() {				
+				var active_design = "{{active_design}}";
+				if (active_design != "None") {		
+					$("#design-name").html(active_design);
+					$("#"+active_design).addClass('active-design');
+					$("#"+active_design).removeClass('inactive-design');
+					$("#nav-footer").css("position","relative")	
+				}			
+			});
+	    </script>
+	</head>
+
+
+	<body role="document" style="background-color: #efefef;">
+	<style>
+	.navbar .nav>li>a{padding: 15px 10px 15px 10px}
+	div.active-design{display: block;}
+	div.inactive-design{display: none;}
+	</style>
+	<script>
+		function activeDesignMetrics(tmp) {
+			var duo_class = $(tmp).attr('class');
+			//console.log(design_chart_dict);
+			console.log(duo_class);
+			$("#design-name").html(duo_class);
+			$("div>.active-design").addClass('inactive-design');
+			$("div>.active-design").removeClass('active-design');
+			$("div>."+duo_class).addClass('active-design');
+			$("div>."+duo_class).removeClass('inactive-design');
+			$("#nav-footer").css("position","relative")
+
+		}
+
+		function activeModal() {
+			var url = "{{url|safe}}";
+			var active_design = $("div>.active-design").attr('id');
+			$("#url-link").val(url+"&active_design="+active_design);				
+			$("#myModal").modal();
+			$("#url-link").select();
+			$("#url-link").focus();
+		}
+	</script>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+
+	<div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#" style="color:#fff;">QoR Analyzer Web</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+          	<li><a href="{{ url_for('index') }}">Home</a></li>
+            <li class="dropdown active">
+	          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">DashBoard<span class="caret"></span></a>
+	        </li>
+			<li><a href="#">About</a></li>
+		  </ul>
+
+        </div><!--/.nav-collapse -->
+  	</div>
+    </nav>  
+
+	<div class="container bs-docs-container" role="main">
+		<div class="row" style="width:1500px;">
+			<div class="col-md-9" role="main">
+			<!-- Main jumbotron for a primary marketing message or call to action -->
+		  	<h4 style="margin-bottom:18px;">
+		  	<span class="label label-primary">Mode: {{mode}}</span>
+		  	<h4 style="margin-bottom:18px;">
+			<!-- Button trigger modal -->
+			<button type="button" class="btn btn-success btn-xs" onclick="activeModal();">
+			  <span class="glyphicon glyphicon-share"></span><strong>Share</strong>
+			</button>
+
+			<!-- Modal -->
+			<div style="top:252px;" class="modal" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			  <div class="modal-dialog">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+			        <h4 class="modal-title" id="myModalLabel">Share this link to others</h4>
+			      </div>
+			      <div class="modal-body">
+					    <input id="url-link" type="text" value="" style="width:100%;display:block;margin-bottom:10px;font-size:14px;padding:8px;"></input>
+					    <span style="font-size:12px;">Just press "Ctrl + C"</span>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			</h4>
+			<!-- Split button -->
+			<div class="btn-group" style="margin-bottom: 18px;">
+			  <button id="design-name" type="button" class="btn btn-warning">Select a checkpoint</button>
+			  <button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height:34px;">
+			    <span class="caret" style="margin-top: 4px"></span>
+			    <span class="sr-only">Toggle Dropdown</span>
+			  </button>
+			  <ul class="dropdown-menu">
+			  	{% for cp in cp_list %}
+			    <li class="{{cp}}" data-toggle="tooltip" data-placement="right" title="{{cp_list[cp]['option']}}" onclick="activeDesignMetrics(this);"><a href="#">{{cp}}</a></li>
+			    {% endfor %}
+			  </ul>
+			</div>
+
+			{% for cp in cp_list %}
+			<div id="{{cp}}" class="panel panel-info {{cp}} inactive-design">
+				<!-- Default panel contents -->
+				<div class="panel-heading"><strong>{{cp}} -- {{cp_list[cp]['option']}}</strong></div>
+				<!-- Table -->
+
+				<table class="table" style="font-size:14px;">
+					<thead style="font-weight: bold;"> 
+						<tr>
+						<th>#</th>
+						{% for metrics in duo_metrics[cp_list[cp]["mode"]] %}
+						<th>{{metrics}}</th>
+						{% endfor %}
+						</tr>
+					</thead>
+					<tbody>
+						
+						{% set index = 1 %}
+						{% for step in cp_list[cp]['seq'] %}
+							<tr onclick="$('#{{cp}}-pic-{{index}}').toggle()">
+							<td>{{index}}</td>
+							<td>{{step}}</td>
+							{% for info in cp_list[cp]['step'][step]['info'] %}
+								<td>{{info}}</td>
+							{% endfor %}
+							{% if cp_list[cp]['step'][step]['img'] %}
+							</tr>
+							<tr id="{{cp}}-pic-{{index}}" style="display:none;">
+							<td colspan="7"><img src="http://clearcase{{cp_list[cp]['step'][step]['img']}}"></td>
+							</tr>
+							{% endif %}
+							{% set index = index + 1 %}
+						{% endfor %}
+						
+						
+					</tbody>
+				</table>
+			</div>
+			{% endfor %}
+		</div>
+		</div>
+	</div>
+	<nav id="nav-footer" class="navbar navbar-inverse navbar-fixed-bottom">
+	    <div class="navbar-inner navbar-content-center" style="text-align:center;">
+	        <p class="text-muted credit" style="margin:5px 0 0 0;color:white">Chrome/Firefox browsers with 1600x1200+ are suggested</p>
+	        <p class="text-muted credit" style="margin:0px;color:white">Contact <a href="mailto:phyan@synopsys.com">Leo Yan</a> if needed</p>
+	    </div>
+	</nav>
+	</body>
+</html>

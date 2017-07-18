@@ -1,0 +1,362 @@
+
+<html>
+	<head>
+	    <meta charset="utf-8">
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	    <meta name="viewport" content="width=device-width, initial-scale=1">
+	    <script src="{{ url_for('static', filename='jquery/1.11.1/jquery.min.js') }}"></script>
+		<script src="{{ url_for('static', filename='libs/jqueryui/jquery.ui-1.9.0.min.js') }}"></script>		
+	<!-- 引入 Bootstrap -->
+	<!--
+		<link href="/u/phyan/workspace/python/qor_analyzer/libs/bootstrap/2.3.2/css/bootstrap.min.css" rel="stylesheet">	
+		-->
+		<script type="text/javascript" src="{{ url_for('static', filename='bootstrap/js/bootstrap.js') }}"></script>
+		<script type="text/javascript" src="{{ url_for('static', filename='bootstrap/js/Chart_v1.js') }}"></script>
+		<style type="text/css" src="{{ url_for('static', filename='bootstrap/css/bootstrap.css') }}"></style>
+		<meta name="description" content="">
+	    <meta name="author" content="">
+
+	    <title>QoR Analyzer Web ^_^</title>
+
+	    <!-- Bootstrap core CSS -->
+	    <link href="{{ url_for('static', filename='bootstrap/3.3.5/css/bootstrap.min.css') }}" rel="stylesheet">
+	    <!-- Bootstrap theme -->
+	    <link href="{{ url_for('static', filename='bootstrap/css/bootstrap-theme.min.css') }}" rel="stylesheet">
+	    <!-- Custom styles for this template -->
+	    <link href="{{ url_for('static', filename='bootstrap/css/theme.css') }}" rel="stylesheet">
+	</head>
+
+	<!--<body role="document" style="background-color: #efefef;">-->
+	<body role="document" style="background: url('{{ url_for('static', filename='bootstrap/images/qor_analyzer.jpg') }}'); background-size:100% 100%;">
+		<style>
+		.navbar .nav>li>a{padding: 15px 10px 15px 10px}
+		</style>
+		<script type="text/javascript">
+			$(function() {
+				//window.script_num = 0;
+				window.script_num = "{{script_num|safe}}";
+				window.script_list = "{{script_list|safe}}";				
+				if (window.script_num == "None") {
+					window.script_num = 0;
+					$("#script-num").val(window.script_num);
+				}
+				window.compress_mode = "{{compress|safe}}";
+				window.mode = "{{mode|safe}}";
+				window.input_num = "{{input_num|safe}}";
+
+				if (window.mode != "None") {
+					activeMode("Null", 0); // restore mode
+					if (window.input_num != "None") {	
+						window.input_num = parseInt(window.input_num);		
+						var input_list = {{input_list|safe}};
+						$("#param-1").val(window.input_num);						
+						//restore compress
+						//restore input_num
+						addInput(1,input_list); // restore input content
+					}
+					$("input:radio[name='optionsRadios']").get(window.compress_mode).checked = true;
+					$("#compress-mode").val(window.compress_mode);
+					//console.log($("#compress-mode").val());
+
+					if (window.script_num != "None") {		
+						window.script_num = parseInt(window.script_num);
+						$("#script-num").val(window.script_num);		
+						var script_list = {{script_list|safe}};											
+						//restore script_list
+						addPatternScript(1,script_list); // restore input content
+					} 
+
+				} else {
+					window.compress_mode = $("input:radio:checked").val();
+					$("#compress-mode").val(window.compress_mode);
+					//console.log($("#compress-mode").val());					
+				}
+
+				$(":radio").click(function(){
+					window.compress_mode = $("input:radio:checked").val();
+					$("#compress-mode").val(window.compress_mode);	
+					//console.log($("#compress-mode").val());
+				});
+			});
+
+			function addInput(mode, input_list){
+				if (mode == 0) {
+					window.input_num = $("#param-1").val();
+					$("#param-num").val(window.input_num);
+					//console.log($("#param-num").val());
+					$("#form").empty();
+					for (i=1;i<=window.input_num;i++) {
+					    var input = document.createElement('input'); 
+						input.setAttribute('type','text'); 
+						input.setAttribute('class','form-control');
+						input.setAttribute('placeholder','input'+i);
+						input.setAttribute('style','width:600px;margin-bottom:5px;display:block;');
+						input.setAttribute('name', 'input'+i);
+						input.setAttribute('id', 'input'+i);
+						document.getElementById('form').appendChild(input);
+					}
+				} else {
+					$("#param-num").val(window.input_num);
+					$("#form").empty();
+					//console.log(window.input_num);
+					$.each(input_list, function(i, input_val) {
+						j=i+1;
+					    var input = document.createElement('input'); 
+						input.setAttribute('type','text'); 
+						input.setAttribute('class','form-control');
+						input.setAttribute('placeholder','input'+j);
+						input.setAttribute('style','width:600px;margin-bottom:5px;display:block;');
+						input.setAttribute('name', 'input'+j);
+						input.setAttribute('id', 'input'+j);
+						input.setAttribute('value', input_val);
+						document.getElementById('form').appendChild(input);
+					})
+				}
+			}
+
+			function addPatternScript(mode, script_list) {
+				if (mode == 0) {
+					window.script_num += 1;
+					$("#script-num").val(window.script_num);
+					var input = document.createElement('input'); 
+					input.setAttribute('type','text'); 
+					input.setAttribute('class','form-control');
+					input.setAttribute('placeholder','script'+window.script_num);
+					input.setAttribute('style','width:600px;margin-bottom:5px;display:table-row;border-radius:4px;');
+					input.setAttribute('name', 'script'+window.script_num);
+					input.setAttribute('id', 'script'+window.script_num);
+					document.getElementById('script-form').appendChild(input);
+				} else {
+					$("#script-num").val(window.script_num);
+					$("#script-form").empty();
+					console.log(script_list);
+					$.each(script_list, function(i, script_val) {
+						j=i+1;
+					    var input = document.createElement('input'); 
+						input.setAttribute('type','text'); 
+						input.setAttribute('class','form-control');
+						input.setAttribute('placeholder','script'+j);
+						input.setAttribute('style','width:600px;margin-bottom:5px;display:block;border-radius:4px;');
+						input.setAttribute('name', 'script'+j);
+						input.setAttribute('id', 'script'+j);
+						input.setAttribute('value', script_val);
+						document.getElementById('script-form').appendChild(input);
+					})
+				}
+			}
+
+			function activeMode(tmp, mode) {
+				if (mode == 1) {
+					window.mode = $(tmp).text();
+				} 
+				$("#mode").text(window.mode);
+				$("#selected-mode").val(window.mode);
+				if (window.mode == "checkpoint") {
+					$("#form").empty();
+					$(".param-3").css("display", "none");
+					$(".param-2").css("display", "table-cell");
+					$(".param-1").css("display", "none");
+				} else if (window.mode == "trend") {
+					$("#form").empty();
+					$(".param-1").css("display", "none");
+					$(".param-2").css("display", "none");
+					$(".param-3").css("display", "table-cell");				
+				} else {
+					$("#form").empty();
+					$(".param-1").css("display", "table-cell");
+					$("#script-form").css("display", "table-row");
+					$(".param-1>label").css("display", "table-caption");
+					$(".param-2").css("display", "none");
+					$(".param-3").css("display", "none");
+				}
+				//console.log($("#compress-mode").val());
+			}
+
+			/*
+			function toggleScriptInput(mode) {
+				$(".param-1-1").toggle();
+				if ($("#checkbox1").get(0).checked) {
+					window.pattern = "USER";					
+				} else {
+					window.pattern = "all";
+				}
+				$("#pattern").val(window.pattern);
+			}
+			
+			function logScriptPath(mode) {
+				if (mode == 0) {
+					window.script = $("#param-1-1").val();
+					$("#script-dir").val(window.script);
+				} else {
+					$("#param-1-1").val(window.script);
+					$("#script-dir").val(window.script);
+				}
+			}
+			*/
+
+			function logHistory(e) {
+				var base_url = "//"+window.location.host+window.location.pathname+"?mode="+window.mode+"&compress="+window.compress_mode;	
+				//var base_url = "//pv007:8087/index?mode="+window.mode+"&compress="+window.compress_mode;		
+				if (window.input_num != "None") {
+					base_url += "&input_num=" + window.input_num
+					//alert(window.input_num);
+					for (i=1;i<=window.input_num;i++) {
+						var input = $("#input"+i).val();
+						//alert(input);
+						base_url += "&input"+i+"="+encodeURIComponent(input);
+					}
+				}
+
+				if (window.script_num != "None") {
+					base_url += "&script_num=" + window.script_num;
+					for (i=1;i<=window.script_num;i++) {
+						var script = $("#script"+i).val();
+						//alert(input);
+						base_url += "&script"+i+"="+encodeURIComponent(script);
+					}
+				}
+				window.history.pushState('null', 'null', base_url);
+			}
+
+		</script> 
+
+	    <nav class="navbar navbar-inverse navbar-fixed-top">
+
+			<div class="container">
+		        <div class="navbar-header">
+		          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+		            <span class="sr-only">Toggle navigation</span>
+		            <span class="icon-bar"></span>
+		            <span class="icon-bar"></span>
+		            <span class="icon-bar"></span>
+		          </button>
+		          <a class="navbar-brand" href="#" style="color:#fff;">QoR Analyzer Web</a>
+		        </div>
+		        <div id="navbar" class="navbar-collapse collapse">
+		          <ul class="nav navbar-nav">
+		            <li class="active"><a href="{{ url_for('index') }}">Home</a></li>
+		            <li><a href="{{ url_for('qor_analysis_tricks') }}">Analysis</a></li>
+					<li><a href="#">About</a></li>
+				  </ul>
+
+		        </div><!--/.nav-collapse -->
+		  	</div>
+	    </nav>  
+
+		<div class="container bs-docs-container" role="main">
+			<!-- Main jumbotron for a primary marketing message or call to action -->
+			<div class="row" style="width:120%;">
+				<div class="col-md-9" role="main">
+					<div class="alert alert-success" role="alert">
+				    	<strong>Welcome! {{user}}</strong>
+				  	</div>
+				  	<div class="alert alert-info alert-dismissible" role="alert">
+						<button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+						New Features are ready now:</br>
+						2017-04-12: <strong>Multi-pattern</strong> Support log with "PREROUTE", "ROPT", "GROPT" pattern.</br>
+						2017-04-12: <strong>Ropt, Fopt extension</strong> Support "nwropt"/"nwfopt" log extraction.</br>
+					</div>
+				  	<!-- Split button -->
+					<div class="row" style="margin-left:0px;">
+						<div class="btn-group" style="margin-bottom: 18px;">
+						  <button id="mode" type="button" class="btn btn-info">Select a Mode</button>
+						  <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height:34px;">
+						    <span class="caret" style="margin-top: 4px"></span>
+						    <span class="sr-only">Toggle Dropdown</span>
+						  </button>
+						  <ul class="dropdown-menu">
+						    <li><a href="#" onclick="activeMode(this, 1);">log</a></li>
+						    <li><a href="#" onclick="activeMode(this, 1);">flow</a></li>
+						    {% if active_duo %}
+						    <li><a href="#" onclick="activeMode(this, 1);">checkpoint</a></li>
+						    {% endif %}
+						    <!--<li><a href="#" onclick="activeMode(this);">trend</a></li>-->
+						  </ul>
+						</div>
+						<div class="input-group" style="width:500px;margin-bottom:10px;">
+						  <span class="input-group-addon param-1" style="display:none;border-radius:4px 0 0 4px;border-right: 0">Input No.</span>
+						  <input style="width:300px;display:none;" id="param-1" type="text" class="form-control param-1" placeholder="Number of inputs (max 10)" onkeyup="addInput(0, 'Null');">
+
+						</div>
+
+						<div class="input-group" style="width:200px;margin-bottom:2px;margin-left:20px;color: white;">
+						 <label class="radio param-1" style="display:none;font-weight: normal">
+						  <input type="radio" name="optionsRadios" value="0">
+						  No compress
+						</label>
+						<label class="radio param-1" style="display:none;font-weight: normal">
+						  <input type="radio" name="optionsRadios" value="1" checked>
+						  Compress
+						</label>
+
+						</div>
+						
+					</div> 
+					<div class="row">
+						<form class="navbar-form navbar-left" role="search" action="{{ url_for('qor_profile') }}" method=post>
+							<div id="form" class="form-group" >
+							</div>
+							<div>
+								<div id='input-group' class="input-group" style="width:300px;">
+									<input style="width:300px;margin-bottom:2px;display:none;" class="form-control" type="text" id='selected-mode' name="selected-mode">
+									<input style="width:300px;margin-bottom:2px;display:none;" class="form-control" type="text" id='compress-mode' name="compress-mode">
+									<input style="width:300px;margin-bottom:2px;display:none;" class="form-control" type="text" id='pattern' name="pattern">
+									<input style="width:300px;margin-bottom:2px;display:none;" class="form-control" type="text" id='param-num' name="param-num">
+									<input style="width:300px;margin-bottom:2px;display:none;" class="form-control" type="text" id='script-num' name="script-num">
+									<input style="width:300px;margin-bottom:2px;display:none;" class="form-control" type="text" id='param-dir' name="param-dir">
+									<input style="width:300px;margin-bottom:2px;display:none;" class="form-control" type="text" id='script-dir' name="script-dir">
+									<span class="input-group-addon param-2" style="display:none;border-radius:4px 0 0 4px;border-right: 0;margin-bottom:2px;">Input Dir</span>
+									<input style="width:600px;display:none;" class="form-control param-2" type="text" id="param-2" name="param-2" placeholder="Checkpoint run dictory">
+									<!--
+									<span class="input-group-addon param-3" style="display:none;border-radius:4px 0 0 4px;border-right: 0;margin-bottom:2px;">Base Dir</span>
+									<input style="width:600px;display:none;margin-bottom:2px;" class="form-control param-3" type="text" id="param-3-1" name="param-3-2" placeholder="Base flow dictory">
+
+									<span class="input-group-addon param-3" style="display:none;border-radius:4px 0 0 4px;border-right: 0;margin-bottom:2px;">Compare Dir</span>
+									<input style="width:600px;display:none;margin-bottom:2px;" class="form-control param-3" type="text" id="param-3-2" name="param-3-2" placeholder="Compare flow dictory">
+									-->		
+									<div class='param-1' style='display:none;padding-bottom: 5px;'>
+										<button type="button" class="btn btn-warning btn-xs" style="width:15px;height:15px;border-radius:15px;margin-bottom: 1px;" onclick="addPatternScript(0, 'Null');">
+										  <span class="glyphicon glyphicon-plus" style="font-size:10px;top:-1px;margin-left:-4px;"></span>
+										</button>
+										
+										<span style="font-size:14px;color:white;">  User pattern</span>
+									</div>
+									<!--
+									<div class="checkbox param-1" style="display:none;width:100px;padding-right: 10px;">
+										<label style="width:100px;color: white;margin-bottom: 6px;">
+										<input id="checkbox1" type="checkbox" name="checkbox" onclick="toggleScriptInput(0);"> User pattern
+										</label>
+									</div>
+									-->
+									<!--
+									<span class="input-group-addon param-1-1" style="display:none;border-radius:4px 0 0 4px;border-right: 0">Script</span>
+									<input style="width:200px;display:none;" id="param-1-1" type="text" class="form-control param-1-1" placeholder="User pattern1 script path" onchange="logScriptPath(0);">	
+									-->
+									<div id='script-form' class="form-group param-1" style='display:none;'>
+									</div>				
+								</div>
+							<div>
+								<button type="submit" class="btn btn-default" style="margin-top: 5px;" onclick="logHistory();">Submit</button>
+							</div>
+								
+								
+							</div>
+						</form> 	
+					</div>
+
+				</div>
+				<!-- col-9 -->
+				
+			</div>                   
+		</div>
+
+
+		<nav class="navbar navbar-inverse navbar-fixed-bottom">
+		    <div class="navbar-inner navbar-content-center" style="text-align:center;">
+		        <p class="text-muted credit" style="margin:5px 0 0 0;color:white">Chrome/Firefox browsers with 1600x1200+ are suggested</p>
+		        <p class="text-muted credit" style="margin:0px;color:white">Contact <a href="mailto:phyan@synopsys.com">Leo Yan</a> if needed</p>
+		    </div>
+		</nav>
+
+	</body>
+</html>
