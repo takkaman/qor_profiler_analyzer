@@ -4,13 +4,15 @@
 	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
 	    <meta name="viewport" content="width=device-width, initial-scale=1">
 	    <script src="{{ url_for('static', filename='jquery/1.11.1/jquery.min.js') }}"></script>
-		<script src="{{ url_for('static', filename='libs/jqueryui/jquery.ui-1.9.0.min.js') }}"></script>		
+		<script src="{{ url_for('static', filename='libs/jqueryui/jquery.ui-1.9.0.min.js') }}"></script>	
+		{{ flask_util_js.js }}
 	<!-- 引入 Bootstrap -->
 	<!--
 		<link href="/u/phyan/workspace/python/qor_analyzer/libs/bootstrap/2.3.2/css/bootstrap.min.css" rel="stylesheet">	
 		-->
 		<script type="text/javascript" src="{{ url_for('static', filename='bootstrap/js/bootstrap.js') }}"></script>
-		<script type="text/javascript" src="{{ url_for('static', filename='bootstrap/js/Chart_v1.js') }}"></script>
+		<script type="text/javascript" src="{{ url_for('static', filename='bootstrap/js/Chart_v2.6.js') }}"></script>
+		<!--<script type="text/javascript" src="{{ url_for('static', filename='bootstrap/js/chartjs-plugin-zoom.js') }}"></script>-->
 		<style type="text/css" src="{{ url_for('static', filename='bootstrap/css/bootstrap.css') }}"></style>
 		<meta name="description" content="">
 	    <meta name="author" content="">
@@ -26,12 +28,24 @@
         <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/ladda-bootstrap-master/dist/ladda-themeless.min.css') }}">
 		<script src="{{ url_for('static', filename='bootstrap/ladda-bootstrap-master/dist/spin.min.js') }}"></script>
 		<script src="{{ url_for('static', filename='bootstrap/ladda-bootstrap-master/dist/ladda.min.js') }}"></script>
+	    <script type="text/javascript" src="{{ url_for('static', filename='bootstrap/bootstrap-multiselect-master/js/bootstrap-multiselect.js') }}"></script>
+    	<link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/bootstrap-multiselect-master/css/bootstrap-multiselect.css') }}" type="text/css"/>
+		<style>
+			canvas {
+				-moz-user-select: none;
+				-webkit-user-select: none;
+				-ms-user-select: none;
+			}
+		</style>
 	</head>
 
 
 	<body role="document" style="background-image: url('{{ url_for('static', filename='bootstrap/images/qor_analyzer.jpg') }}'); background-size:100% 100%;">
 	<style>
 	.navbar .nav>li>a{padding: 15px 10px 15px 10px}
+	li.inactive>a:hover{color:#563d7c;}
+	li.inactive>a{color:white;}
+	li.active>a{color:white;}
 
 	.metrics-nav-other>li {font-size:14px; padding: 0px 10px 0px 10px; color:white;}
 	.metrics-nav-other>li>a {font-size:13px; padding: 4px 8px; color:white;border-left: 2px solid rgb(239, 239, 239);}
@@ -62,7 +76,7 @@
 		$(function() {
 			window.pattern = "{{pattern|safe}}";
 			window.script_list = {{script_list|safe}};
-			//console.log(window.pattern,window.script_list);
+			console.log(window.pattern,window.script_list);
 			var qorArray = Array();
 			window.active_design = "{{active_design|safe}}";
 			window.active_metrics = "{{active_metrics|safe}}";
@@ -72,7 +86,15 @@
 			window.prev_p = -1;
 			window.crnt_d = -1;
 			window.crnt_p = -1;
+			window.selected_tech_nodes = {{tech_nodes|safe}};
+			window.selected_customers = {{customers|safe}};
+			// update jump profile form for tech_nodes, customers input
+			$("#tech_nodes").val(window.selected_tech_nodes)  
+			$("#customers").val(window.selected_customers)  
+			console.log(window.selected_tech_nodes, window.selected_customers)
 			var dir_list = {{dir_list|safe}};
+
+			$("#share").css('display','none');
 			if (window.active_metrics != "undefined" && window.active_metrics != "None") {
 				console.log("Share by metrics")
 				window.prev_d = {{point_dict['prev_d']|safe}};
@@ -101,80 +123,18 @@
 			        compress: compress,
     		        pattern: window.pattern,
 		        	script_list: window.script_list,
+		        	selected_tech_nodes: window.selected_tech_nodes,
+		        	selected_customers: window.selected_customers
 			    }, function () {
 			    	console.log("sending post...")
 			    })
 			    .done(function(data) {
 			    	window.l.stop();
 			    	displayMetricsCharts(data);
-			    	window.active_pattern = "{{active_pattern|safe}}";
-			    	;
-
-			    	if (window.crnt_p != -1) {
-						var qorArray = Array();
-						var datasetIndex = window.crnt_d;
-						var pointIndex = window.crnt_p;
-						var color_list = data['color_list'];
-				    	var qor_dict = data['design_qor'][window.active_design]
-				    	var metrics_order_dict = data['metrics_order_dict'];
-						var metrics_order = metrics_order_dict[window.active_pattern];
-				    	var qorArray = Array();
-				    	var step_qor_list = qor_dict["step_qor_dict"][pattern];
-				    	var steps_list = qor_dict["steps_dict"][window.active_pattern]
-						qorArray = step_qor_list[datasetIndex][pointIndex]; //2:wns, 3:tns, etc	
-						step_name = steps_list[datasetIndex][pointIndex];
-						$("#first_name").val(step_name.split(')')[1]);
-						$("#single_name").val(step_name.split(')')[1]);
-						if (step_name.length > 10) {
-				    		step_name = step_name.substr(0,12)
-				    	}
-						$("#"+window.active_pattern+"_"+"crnt_label").text(step_name);
-						$("#"+window.active_pattern+"_"+"crnt_label").css("color", color_list[datasetIndex]);
-						$.each(metrics_order, function(i,metrics) {
-							var crnt = $("#"+window.active_pattern+"_"+metrics+">.crnt");
-							crnt.text(qorArray[i]);
-						});
-					}
-
-					if (window.prev_p != -1) {
-						var qorArray = Array();
-						var datasetIndex = window.prev_d;
-						var pointIndex = window.prev_p;
-						qorArray = step_qor_list[datasetIndex][pointIndex]; //2:wns, 3:tns, etc	
-						step_name = steps_list[datasetIndex][pointIndex];
-						$("#first_name").val(step_name.split(')')[1]);
-						$("#single_name").val(step_name.split(')')[1]);
-						if (step_name.length > 10) {
-				    		step_name = step_name.substr(0,12)
-				    	}
-						$("#"+window.active_pattern+"_"+"prev_label").text(step_name);
-						$("#"+window.active_pattern+"_"+"prev_label").css("color", color_list[datasetIndex]);
-						$.each(metrics_order, function(i,metrics) {
-				    		var crnt = $("#"+window.active_pattern+"_"+metrics+">.crnt");
-			    			var prev = $("#"+window.active_pattern+"_"+metrics+">.prev");
-			    			var pct = $("#"+window.active_pattern+"_"+metrics+">.pct");
-
-			    			prev.text(qorArray[i]);
-			    			var pct_value = (parseFloat(crnt.text()) / parseFloat(prev.text())) * 100 - 100
-			    			if (pct_value > 10000) {
-			    				pct_value = parseInt(pct_value).toExponential(2)
-			    				pct.text(pct_value)
-			    			} else {
-			    				pct.text(pct_value.toFixed(2));
-			    			}
-			    			
-					    	if (parseFloat(crnt.text()) > parseFloat(prev.text())) {
-					    		crnt.css("color", "red");
-					    		pct.css("color", "red");							    		
-					    	} else if (parseFloat(crnt.text()) < parseFloat(prev.text())) {
-					    		crnt.css("color", "green");
-					    		pct.css("color", "green");
-					    	} else {
-					    		crnt.css("color", "black");
-					    		pct.css("color", "black");
-					    	}
-						});
-					}	
+			    	// no cache store due to metrics data too large
+			    	handleMetricsData(data);
+			    	// do design list again due to metrics handling happened later than initial design filter via tech node and customers
+			    	update_design_list();
 			    	console.log("pass!")
 			    	
 			    })
@@ -203,140 +163,592 @@
 				$("#link_nav").empty();
 				window.l = Ladda.create( document.querySelector( '#design-name' ) );
 	 			window.l.start();
-				
-				$.post('display_design_chart', {
-			        active_design: window.active_design,
-			        dir_list: dir_list,
-			        cmd: cmd,
-			        compress: compress,
-    		        pattern: window.pattern,
-		        	script_list: window.script_list,
-			    }, function () {
-			    	console.log("sending post...")
-			    })
-			    .done(function(data) {
-			    	displayDesignCharts(data);		
-			    		
-			    	window.active_pattern = "{{active_pattern|safe}}";			    	
-					//activate shared point/pattern
-					var color_list = data['color_list'];
-					var qorArray = Array();
-					pattern_list = Object.keys(data['qor_metrics_dict']);
-					var active_num = jQuery.inArray(window.active_pattern, pattern_list);
-					var step_qor_dict = data['step_qor_dict'];
-					var step_qor_list = step_qor_dict[window.active_pattern];
-					var steps_dict = data['steps_dict'];
-					var steps_list = steps_dict[window.active_pattern];
-					var metrics_order_dict = data['metrics_order_dict'];
-					//console.log(metrics_order_dict);
-					var metrics_order = metrics_order_dict[window.active_pattern];
-					var selected_pattern = window.active_pattern;
-					//$("#chart_nav li").eq(active_num).tab("show");				
-					$(".pattern_nav").addClass('inactive_nav');
-					$(".pattern_nav").removeClass('active_nav');
-					$("."+selected_pattern+"_nav").removeClass('inactive_nav');
-					$("."+selected_pattern+"_nav").addClass('active_nav');
+	 			// session storage
+	 			window.active_stage = cmd;
+	 			var keyinfo = active_stage+'-'+active_design+"-design_info";
+				if(sessionStorage.getItem(keyinfo)&&(sessionStorage.getItem('dirlists')==dir_list)){
+					console.log('Found log cache, load it.')
+					strdata = sessionStorage.getItem(keyinfo);
+					inputdata = JSON.parse(strdata);
+					inputdata.log_name_list = [active_design+".nwpopt.out"];
+					// lists = sessionStorage.getItem('dirlists');
+					displayDesignCharts(inputdata);
+					handleDesignData(inputdata)
+					window.l.stop();
 
-					//$('.nav-tabs a[href="#'+selected_pattern+'"]').tab('show'); // this will cause chartjs canvas not update (need size window manually) when tab switch to prev inactive tab
-					/*
-					$(".tab-pane").removeClass("active");
-					$(".tab-pane").addClass("inactive");
-					$("#"+selected_pattern).addClass("active");
-					$("#"+selected_pattern).removeClass("inactive");
-					*/
-					/*
-					$.each(pattern_list, function(i, pattern) {
-						$("#"+pattern).addClass('inactive');
-						$("#"+pattern).removeClass('active');
-					})
-					*/
-					
-					if (window.crnt_p != -1) {
-						var qorArray = Array();
-						var datasetIndex = window.crnt_d;
-						var pointIndex = window.crnt_p;
-						qorArray = step_qor_list[datasetIndex][pointIndex]; //2:wns, 3:tns, etc	
-						step_name = steps_list[datasetIndex][pointIndex];
-						$("#first_name").val(step_name.split(')')[1]);
-						$("#single_name").val(step_name.split(')')[1]);
-						if (step_name.length > 10) {
-				    		step_name = step_name.substr(0,12)
-				    	}
+					// inputdata.selected_pattern = active_pattern;
+				} else {
+					console.log('Not found design cache, send post')
+					$.post('display_design_chart', {
+				        active_design: window.active_design,
+				        dir_list: dir_list,
+				        cmd: cmd,
+				        compress: compress,
+	    		        pattern: window.pattern,
+			        	script_list: window.script_list,
+				    }, function () {
+				    	console.log("sending post...")
+				    })
+				    .done(function(data) {
+				    	displayDesignCharts(data);		
+				    	var keydata = JSON.stringify(data); 
+				    	var keyvalue = active_stage+'-'+active_design+"-design_info"
+				    	sessionStorage.setItem(keyvalue,keydata);
+				    	sessionStorage.setItem("dirlists",dir_list);
+				    	//window.active_pattern = "{{active_pattern|safe}}";			    	
+						//activate shared point/pattern
+						handleDesignData(data)  
+				    	console.log("pass!")
+				    	window.l.stop();
+				    })
+				    .fail(function() {
+				        //$(destId).text("Error: Could not contact server.");
+				        //l.stop();
+				        console.log("fail!")
+				        window.l.stop();
+				    });
+				}
+			} 
+			// if($("#design-name").text()!="Select by design"){
+			// 	$("#show_name").css("display","table-cell");
+			// }
+			// window.selected_tech_nodes = new Array();
+			window.all_tech_nodes = {{tech_node_dict.keys()|safe}};
+			window.tect_node_dict = {{tech_node_dict|safe}}
+			// console.log(tect_node_dict)		
+			$('#tech_node_list').multiselect("destroy").multiselect({
+	            includeSelectAllOption: true,
+	            buttonWidth: '150px',
+                onSelectAll: function() {
+                    $.each(window.all_tech_nodes,function(index,value){
+                    	pos = jQuery.inArray(value, window.selected_tech_nodes);
+                    	// console.log(value,pos)
+                    	if (pos == -1) {
+                    		window.selected_tech_nodes.push(value);
+                    	}                     
+                    });
+                    update_design_list() 
+                    $("#tech_nodes").val(window.selected_tech_nodes)   
+                    // console.log(window.selected_tech_nodes);          
+                },
+                onDeselectAll:function(){
+                    window.selected_tech_nodes = [];
+                    // console.log(window.selected_tech_nodes);
+                    update_design_list()
+                    $("#tech_nodes").val(window.selected_tech_nodes) 
+                },
+                onChange: function(option, checked, select) {
+                    tech_node = $(option).val();
+                    if (checked == true) {
+                        window.selected_tech_nodes.push(tech_node);
+                    }
 
-						$("#"+window.active_pattern+"_"+"crnt_label").text(step_name);
-						$("#"+window.active_pattern+"_"+"crnt_label").css("color", color_list[datasetIndex]);
-						$.each(metrics_order, function(i,metrics) {
-							var crnt = $("#"+window.active_pattern+"_"+metrics+">.crnt");
-							crnt.text(qorArray[i]);
-						});
-					}
+                    if (checked == false) {
+                        pos = jQuery.inArray(tech_node, window.selected_tech_nodes);
+                        window.selected_tech_nodes.splice(pos,1)
+                    }                           
+                    // console.log(window.selected_tech_nodes);
+                    update_design_list()
+                    $("#tech_nodes").val(window.selected_tech_nodes) 
+                }
+            });
 
-					if (window.prev_p != -1) {
-						var qorArray = Array();
-						var datasetIndex = window.prev_d;
-						var pointIndex = window.prev_p;
+            // window.selected_customers = new Array();
+			window.all_customers = {{customer_dict.keys()|safe}};	
+			window.customer_dict = {{customer_dict|safe}}
+			// console.log(customer_dict, selected_customers)
+			
+			$('#customer_list').multiselect("destroy").multiselect({
+	            includeSelectAllOption: true,
+	            buttonWidth: '150px',
+	            onSelectAll: function() {
+                    $.each(window.all_customers,function(index,value){
+                    	pos = jQuery.inArray(value, window.selected_customers);
+                    	// console.log(value,pos)
+                    	if (pos == -1) {
+                    		window.selected_customers.push(value);
+                    	}                     
+                    });     
+                    // console.log(window.selected_customers);     
+                    update_design_list() 
+                    $("#customers").val(window.selected_customers)     
+                },
+                onDeselectAll:function(){
+                    window.selected_customers = [];
+                    // console.log(window.selected_customers);
+                    update_design_list()
+                    $("#customers").val(window.selected_customers)   
+                },
+                onChange: function(option, checked, select) {
+                    customer = $(option).val();
+                    if (checked == true) {
+                        window.selected_customers.push(customer);
+                    }
 
-						qorArray = step_qor_list[datasetIndex][pointIndex]; //2:wns, 3:tns, etc	
-						step_name = steps_list[datasetIndex][pointIndex];
-						$("#first_name").val(step_name.split(')')[1]);
-						$("#single_name").val(step_name.split(')')[1]);
-						if (step_name.length > 10) {
-				    		step_name = step_name.substr(0,12)
-				    	}
+                    if (checked == false) {
+                        pos = jQuery.inArray(customer, window.selected_customerss);
+                        window.selected_customers.splice(pos,1)
+                    }                           
+                    // console.log(window.selected_customers);
+                    update_design_list()
+                    $("#customers").val(window.selected_customers)   
+                }
+            });
+			update_design_list()
+		});
 
-						$("#"+window.active_pattern+"_"+"prev_label").text(step_name);
-						$("#"+window.active_pattern+"_"+"prev_label").css("color", color_list[datasetIndex]);
-						$.each(metrics_order, function(i,metrics) {
-				    		var crnt = $("#"+window.active_pattern+"_"+metrics+">.crnt");
-			    			var prev = $("#"+window.active_pattern+"_"+metrics+">.prev");
-			    			var pct = $("#"+window.active_pattern+"_"+metrics+">.pct");
-			    			prev.text(qorArray[i]);
-			    			var pct_value = (parseFloat(crnt.text()) / parseFloat(prev.text())) * 100 - 100
-							if (pct_value > 10000) {
-			    				pct_value = parseInt(pct_value).toExponential(2)
-			    				pct.text(pct_value)
-			    			} else {
-			    				pct.text(pct_value.toFixed(2));
-			    			}	    			
-					    	if (parseFloat(crnt.text()) > parseFloat(prev.text())) {
-					    		crnt.css("color", "red");
-					    		pct.css("color", "red");							    		
-					    	} else if (parseFloat(crnt.text()) < parseFloat(prev.text())) {
-					    		crnt.css("color", "green");
-					    		pct.css("color", "green");
+		function update_design_list() {
+			design_list_by_tech_node = new Array();
+			if (window.selected_tech_nodes.length == 0) {
+				$.each(window.all_tech_nodes, function(index,value){
+					design_list_by_tech_node = $.unique(design_list_by_tech_node.concat(window.tect_node_dict[value]))
+					// console.log(window.tect_node_dict[value])
+				})
+			} else {
+				$.each(window.selected_tech_nodes, function(index,value){
+					design_list_by_tech_node = $.unique(design_list_by_tech_node.concat(window.tect_node_dict[value]))
+					// console.log(window.tect_node_dict[value])
+				})
+			}
+			// console.log(design_list_by_tech_node)
+
+			design_list_by_customer = new Array();
+			if (window.selected_customers.length == 0) {
+				$.each(window.all_customers, function(index,value){
+					design_list_by_customer = $.unique(design_list_by_customer.concat(window.customer_dict[value]))
+					// console.log(window.customer_dict[value])
+				})
+			} else {
+				$.each(window.selected_customers, function(index,value){
+					design_list_by_customer = $.unique(design_list_by_customer.concat(window.customer_dict[value]))
+					// console.log(window.customer_dict[value])
+				})
+			}
+			// console.log(design_list_by_customer)
+
+			let design_list = design_list_by_tech_node.filter(v => design_list_by_customer.includes(v)) 
+			// console.log(design_list)
+
+			$('#design_ul').empty();
+			if (typeof(window.active_metrics) != 'undefined') {
+				$('div.'+window.active_metrics.toLowerCase()).css('display','none')
+			}
+			$.each(design_list, function(index,design) {
+				$('#design_ul').append('<li class="design '+design+'" onclick="activeDesign(this);"><a href="#">'+design+'</a></li>');
+				if (window.active_metrics != 'undefined') {
+					$('.'+design).css('display','block')	
+				}		
+				// console.log(design)		
+			});						    
+		}
+
+		function handleDesignData(data) {
+			var color_list = data['color_list'];
+			var qorArray = Array();
+			pattern_list = Object.keys(data['qor_metrics_dict']);
+			var active_num = jQuery.inArray(window.active_pattern, pattern_list);
+			var step_qor_dict = data['step_qor_dict'];
+			var step_qor_list = step_qor_dict[window.active_pattern];
+			var steps_dict = data['steps_dict'];
+			var steps_list = steps_dict[window.active_pattern];
+			var metrics_order_dict = data['metrics_order_dict'];
+			//console.log(metrics_order_dict);
+			var metrics_order = metrics_order_dict[window.active_pattern];
+			var selected_pattern = window.active_pattern;
+			//$("#chart_nav li").eq(active_num).tab("show");				
+			$(".pattern_nav").addClass('inactive_nav');
+			$(".pattern_nav").removeClass('active_nav');
+			$("."+selected_pattern+"_nav").removeClass('inactive_nav');
+			$("."+selected_pattern+"_nav").addClass('active_nav');
+
+			//$('.nav-tabs a[href="#'+selected_pattern+'"]').tab('show'); // this will cause chartjs canvas not update (need size window manually) when tab switch to prev inactive tab
+			/*
+			$(".tab-pane").removeClass("active");
+			$(".tab-pane").addClass("inactive");
+			$("#"+selected_pattern).addClass("active");
+			$("#"+selected_pattern).removeClass("inactive");
+			*/
+			/*
+			$.each(pattern_list, function(i, pattern) {
+				$("#"+pattern).addClass('inactive');
+				$("#"+pattern).removeClass('active');
+			})
+			*/
+			
+			if (window.crnt_p != -1) {
+				var qorArray = Array();
+				var datasetIndex = window.crnt_d;
+				var pointIndex = window.crnt_p;
+				qorArray = step_qor_list[datasetIndex][pointIndex]; //2:wns, 3:tns, etc	
+				step_name = steps_list[datasetIndex][pointIndex];
+				if(step_name[0]=="("){
+			    	mark_name = step_name.split(')')[1]
+			    }
+			    else{
+			    	mark_name = step_name;
+			    }
+				$("#first_name").val(mark_name);
+				$("#single_name").val(mark_name);
+				if (step_name.length > 10) {
+		    		step_name = step_name.substr(0,12)
+		    	}
+
+				if(window.prev_p>window.crnt_p && window.prev_d == window.crnt_d){
+		    		$("#"+window.active_pattern+"_"+"prev_label").text(step_name);
+		    		$("#"+window.active_pattern+"_"+"prev_label").css("color", color_list[datasetIndex]);
+		    		$.each(metrics_order, function(i,metrics) {
+					var prev = $("#"+window.active_pattern+"_"+metrics+">.prev");
+					prev.text(qorArray[i]);
+				});
+		    	}
+		    	else{
+		    		$("#"+window.active_pattern+"_"+"crnt_label").text(step_name);
+		    		$("#"+window.active_pattern+"_"+"crnt_label").css("color", color_list[datasetIndex]);
+		    		$.each(metrics_order, function(i,metrics) {
+					var crnt = $("#"+window.active_pattern+"_"+metrics+">.crnt");
+					crnt.text(qorArray[i]);
+				});
+		    	}
+			}
+
+			if (window.prev_p != -1) {
+				var qorArray = Array();
+				var datasetIndex = window.prev_d;
+				var pointIndex = window.prev_p;
+
+				qorArray = step_qor_list[datasetIndex][pointIndex]; //2:wns, 3:tns, etc	
+				step_name = steps_list[datasetIndex][pointIndex];
+				if(step_name[0]=="("){
+			    	mark_name = step_name.split(')')[1]
+			    }
+			    else{
+			    	mark_name = step_name;
+			    }
+				$("#first_name").val(mark_name);
+				$("#single_name").val(mark_name);
+				if (step_name.length > 10) {
+		    		step_name = step_name.substr(0,12)
+		    	}
+
+				if(window.prev_p>window.crnt_p && window.prev_d == window.crnt_d){
+		    		$("#"+window.active_pattern+"_"+"crnt_label").text(step_name);
+		    		$("#"+window.active_pattern+"_"+"crnt_label").css("color", color_list[datasetIndex]);
+		    	}
+		    	else{
+		    		$("#"+window.active_pattern+"_"+"prev_label").text(step_name);
+					$("#"+window.active_pattern+"_"+"prev_label").css("color", color_list[datasetIndex]);
+		    	}
+				$.each(metrics_order, function(i,metrics) {
+		    		var crnt = $("#"+window.active_pattern+"_"+metrics+">.crnt");
+	    			var prev = $("#"+window.active_pattern+"_"+metrics+">.prev");
+	    			var pct = $("#"+window.active_pattern+"_"+metrics+">.pct");
+	    			if(window.prev_p>window.crnt_p && window.prev_d == window.crnt_d){
+	    				crnt.text(qorArray[i]);
+	    			}
+	    			else{
+	    				prev.text(qorArray[i]);
+	    			}
+	    			var pct_value = (parseFloat(crnt.text()) / parseFloat(prev.text())) * 100 - 100
+					if (pct_value > 10000) {
+	    				pct_value = parseInt(pct_value).toExponential(2)
+	    				pct.text(pct_value)
+	    			} else {
+	    				pct.text(pct_value.toFixed(2));
+	    			}	    			
+
+							if (pct_value > 0) {
+								if ( metrics == 'FREQUENCY_GHz') {
+									crnt.css("color", "green");
+					    			pct.css("color", "green");
+								} else {
+					    			crnt.css("color", "red");
+					    			pct.css("color", "red");	
+					    		}						    		
+					    	} else if (pct_value < 0) {
+					    		if ( metrics == 'FREQUENCY_GHz') {
+					    			crnt.css("color", "red");
+					    			pct.css("color", "red");	
+					    		} else {
+					    			crnt.css("color", "green");
+					    			pct.css("color", "green");
+					    		}
 					    	} else {
 					    		crnt.css("color", "black");
 					    		pct.css("color", "black");
 					    	}
-						});
-					}			  	    
-			    	console.log("pass!")
-			    	window.l.stop();
-			    })
-			    .fail(function() {
-			        //$(destId).text("Error: Could not contact server.");
-			        //l.stop();
-			        console.log("fail!")
-			        window.l.stop();
-			    });
-			} 
-		});
+				});
+			}			  	  
+		}
+
+		function handleMetricsData(data) {
+			window.active_pattern = "{{active_pattern|safe}}";
+			var selected_pattern = window.active_pattern;
+			//$("#chart_nav li").eq(active_num).tab("show");				
+			$(".pattern_nav").addClass('inactive_nav');
+			$(".pattern_nav").removeClass('active_nav');
+			$("."+selected_pattern+"_nav").removeClass('inactive_nav');
+			$("."+selected_pattern+"_nav").addClass('active_nav');
+
+	    	if (window.crnt_p != -1) {
+				var qorArray = Array();
+				var datasetIndex = window.crnt_d;
+				var pointIndex = window.crnt_p;
+				console.log(datasetIndex, pointIndex)
+				var color_list = data['color_list'];
+		    	var qor_dict = data['design_qor'][window.active_design]
+		    	var metrics_order_dict = data['metrics_order_dict'];
+				var metrics_order = metrics_order_dict[window.active_pattern];
+		    	var qorArray = Array();
+		    	var step_qor_list = qor_dict["step_qor_dict"][window.active_pattern];
+		    	var steps_list = qor_dict["steps_dict"][window.active_pattern]
+		    	// console.log(step_qor_list)
+				qorArray = step_qor_list[datasetIndex][pointIndex]; //2:wns, 3:tns, etc	
+				step_name = steps_list[datasetIndex][pointIndex];
+				// console.log(step_name)
+				if(step_name[0]=="("){
+			    	mark_name = step_name.split(')')[1];
+			    }
+			    else{
+			    	mark_name = step_name;
+			    }
+				$("#first_name").val(mark_name);
+				$("#single_name").val(mark_name);
+				if (step_name.length > 10) {
+		    		step_name = step_name.substr(0,12);
+		    	}
+		    	if(window.prev_p>window.crnt_p && window.prev_d == window.crnt_d){
+		    		$("#"+window.active_pattern+"_"+"prev_label").text(step_name);
+		    		$("#"+window.active_pattern+"_"+"prev_label").css("color", color_list[datasetIndex]);
+		    		$.each(metrics_order, function(i,metrics) {
+					var prev = $("#"+window.active_pattern+"_"+metrics+">.prev");
+					prev.text(qorArray[i]);
+					});
+		    	}
+		    	else{
+		    		$("#"+window.active_pattern+"_"+"crnt_label").text(step_name);
+		    		$("#"+window.active_pattern+"_"+"crnt_label").css("color", color_list[datasetIndex]);
+		    		$.each(metrics_order, function(i,metrics) {
+					var crnt = $("#"+window.active_pattern+"_"+metrics+">.crnt");
+					crnt.text(qorArray[i]);
+				});s
+		    	}
+				
+			}
+
+			if (window.prev_p != -1) {
+				var qorArray = Array();
+				var datasetIndex = window.prev_d;
+				var pointIndex = window.prev_p;
+				qorArray = step_qor_list[datasetIndex][pointIndex]; //2:wns, 3:tns, etc	
+				step_name = steps_list[datasetIndex][pointIndex];
+				if(step_name[0]=="("){
+			    	mark_name = step_name.split(')')[1]
+			    }
+			    else{
+			    	mark_name = step_name;
+			    }
+				$("#first_name").val(mark_name);
+				$("#single_name").val(mark_name);
+				if (step_name.length > 10) {
+		    		step_name = step_name.substr(0,12)
+		    	}
+		    	if(window.prev_p>window.crnt_p && window.prev_d == window.crnt_d){
+		    		$("#"+window.active_pattern+"_"+"crnt_label").text(step_name);
+		    		$("#"+window.active_pattern+"_"+"crnt_label").css("color", color_list[datasetIndex]);
+		    	}
+		    	else{
+		    		$("#"+window.active_pattern+"_"+"prev_label").text(step_name);
+					$("#"+window.active_pattern+"_"+"prev_label").css("color", color_list[datasetIndex]);
+		    	}
+				
+				$.each(metrics_order, function(i,metrics) {
+		    		var crnt = $("#"+window.active_pattern+"_"+metrics+">.crnt");
+	    			var prev = $("#"+window.active_pattern+"_"+metrics+">.prev");
+	    			var pct = $("#"+window.active_pattern+"_"+metrics+">.pct");
+
+	    			if(window.prev_p>window.crnt_p && window.prev_d == window.crnt_d){
+	    				crnt.text(qorArray[i]);
+	    			}
+	    			else{
+	    				prev.text(qorArray[i]);
+	    			}
+	    			
+	    			var pct_value = (parseFloat(crnt.text()) / parseFloat(prev.text())) * 100 - 100
+	    			if (pct_value > 10000) {
+	    				pct_value = parseInt(pct_value).toExponential(2)
+	    				pct.text(pct_value)
+	    			} else {
+	    				pct.text(pct_value.toFixed(2));
+	    			}
+	    			
+					if (pct_value > 0) {
+						if ( metrics == 'FREQUENCY_GHz') {
+							crnt.css("color", "green");
+			    			pct.css("color", "green");
+						} else {
+			    			crnt.css("color", "red");
+			    			pct.css("color", "red");	
+			    		}						    		
+			    	} else if (pct_value < 0) {
+			    		if ( metrics == 'FREQUENCY_GHz') {
+			    			crnt.css("color", "red");
+			    			pct.css("color", "red");	
+			    		} else {
+			    			crnt.css("color", "green");
+			    			pct.css("color", "green");
+			    		}
+			    	} else {
+			    		crnt.css("color", "black");
+			    		pct.css("color", "black");
+			    	}
+
+				});
+			}
+		}
+
+		function hintChange(){
+			// $("#show_hint").css("display","block"); // hide
+            $("#show_hint").css("display","none");
+			var hint = $("#show_hint");
+			var dir_list = {{dir_list|safe}};
+			hint.text("");
+			if(window.crnt_d!=-1){
+				index = window.crnt_d+1;
+				index1 = window.prevdir+1;
+				index2 = window.crnt_d+2;
+				window.mark1 = 0;
+				window.mark2 = 0;
+
+				// hint.append("<div><input type='radio' name='enter' id='option1' onclick='getValue(this)'/>Compare step <strong>"+ $("#single_name").val() + "</strong> with previous step in <strong> flow"+index+"</strong>? </div><div><input type='radio' name='enter' id='option2' onclick='getValue(this)'/>Find trajectory <strong> >10%  </strong> in <strong> flow"+index+"</strong>? </div>");
+				hint.append("<div><input type='radio' name='enter' id='option1'  onclick='getValue(this)'/>(SQB) Compare step <strong>"+ $("#single_name").val() + "</strong> with previous step in <strong> flow"+index+"</strong>? </div><div><input type='radio' name='enter' id='option2' style='float:left' onclick='getValue(this)'/><span style='float:left;margin-right:5px;'>(SQT) Find trajectory > </span><div id='cdiv' style='position:relative;float:left;width: 45;height: 20px'> <span style='margin-left:65px;width:18px;overflow:hidden'>  <select id='bound_number' style='width:65px;height: 20px;margin-left:-65px' ></select></span> <input id='bound_input' name='tbp.vccorptype' style='width:45px;position:absolute;left:0px;height:20px;float:left;'></div><span style='float:left;margin-left:25px;'> in <strong> flow"+index+"</strong>?</span> </div><div style='clear:both'></div>");
+				$("#bound_input").val("10");
+				var onselect = $("#bound_number");
+				for(var i=10;i<=100;i+=10){
+					onselect.append("<option value="+i+">"+i+"</option>");
+				};
+
+				$("#bound_number").on("change",function(){
+         			var text = $(this).find("option:selected").text();
+         			$("#bound_input").val(text);
+      			});
+				//first click s
+				if(window.prevdir==-1){
+					
+					if(dir_list.length>1){
+						if(window.crnt_d==0){
+							mark1 = index;
+							mark2 = index2;
+						}
+						else{
+							mark1 = window.crnt_d;
+							mark2 = index;
+						}
+						if(active_pattern=="QOR_STG" || active_pattern=="FULL_FLOW_PPA"){
+							hint.append("<div><input type='radio' name='enter' id='option4' onclick='getValue(this)'/>(SQC) Compare step <strong>"+ $("#single_name").val() + "</strong> between <strong> flow"+mark1+"</strong> and <strong> flow"+mark2+"</strong>? </div>");
+						}
+						
+					}
+				}
+				//second and more click
+				else{
+					//click the same flow
+					    	
+					if(window.crnt_d==window.prevdir&&$("#first_name").val()!=$("#second_name").val()){
+						hint.append("<div><input type='radio' name='enter' id='option3' onclick='getValue(this)'/>(SQC) Compare step <strong>"+ $("#first_name").val() + "</strong> with step <strong>"+ $("#second_name").val() +"</strong> in <strong> flow"+index+"</strong>? </div>");
+					}
+					else{
+						//click different flow with same step
+						if($("#first_name").val()==$("#second_name").val()&&window.crnt_d!=window.prevdir){
+							mark1 = index1;
+							mark2 = index;
+							if(active_pattern=="QOR_STG" || active_pattern=="FULL_FLOW_PPA"){
+								hint.append("<div><input type='radio' name='enter' id='option4' onclick='getValue(this)'/>(SQC) compare step <strong> "+ $("#single_name").val() + " </strong> between <strong> flow"+mark1+"</strong> and <strong> flow"+mark2+"</strong>? </div>");
+							}
+						}
+					}
+					
+				}
+				hint.append("<div style='padding-top:10px;'><button style='border:1px;' type='submit' id='enter_btn' class='btn-xs btn-primary' data-style='expand-right' onclick='AllactiveChange(this);'>Start!</button></div>");
+			}
+		}
+
+		function AllactiveChange(tmp){
+			var dir_list = {{dir_list|safe}};
+			var stage = "{{cmd|safe}}";
+			var pattern = window.active_pattern;
+
+			if(window.radioValue=="option1"){
+				flow_dir = dir_list[window.crnt_d];
+				$("#first_dir").val(flow_dir);
+				$("#first_stage").val(stage);
+				$("#first_pattern").val(pattern);
+				$("#mode").val("4");
+			}
+			if(window.radioValue=="option2"){
+				flow_dir = dir_list[window.crnt_d];
+				$("#first_dir").val(flow_dir);
+				$("#first_stage").val(stage);
+				$("#first_pattern").val(pattern);
+				$("#number").val($("#bound_input").val());
+				$("#mode").val("3");
+			}
+			if(window.radioValue=="option3"){
+				flow_dir = dir_list[window.crnt_d];
+				$("#first_dir").val(flow_dir);
+				$("#first_stage").val(stage);
+				$("#first_pattern").val(pattern);
+				$("#mode").val("2");
+			}
+			if(window.radioValue=="option4"){
+				flow_dir = dir_list[mark1-1];
+				if(crnt_d!=prevdir){
+					second_dir = dir_list[mark2-1];
+				}
+				$("#first_dir").val(flow_dir);
+				$("#second_dir").val(second_dir);
+				$("#first_stage").val(stage);
+				$("#first_pattern").val(pattern);
+				$("#mode").val("1");
+			}
+		}
+
+		function getValue(tmp){
+			window.radioValue = tmp.getAttribute("id");
+		}
 
 		function activeChange(tmp){			
+			var dir_list = {{dir_list|safe}};
+			var stage = "{{cmd|safe}}";
+			flow_dir = dir_list[0];
+			second_dir = dir_list[1];
+			var pattern = window.active_pattern;
+			// var step_name = $("#first_name").val();
+			$("#first_dir").val(flow_dir);
+			$("#second_dir").val(second_dir);
+			$("#first_stage").val(stage);
+			$("#first_pattern").val(pattern);
+			console.log("enter start process");
+			$("#mode").val("1");
+
+		}
+
+
+		function activeChange1(tmp){
+			
 			var dir_list = {{dir_list|safe}};
 			var stage = "{{cmd|safe}}";
 			flow_dir = dir_list[0];
 			var pattern = window.active_pattern;
 			// var step_name = $("#first_name").val();
 			$("#first_dir").val(flow_dir);
-			$("#first_stage").val(stage);
 			$("#first_pattern").val(pattern);
+			$("#first_stage").val(stage);
 			console.log("enter start process");
-			$("#mode").val("1");
+			$("#mode").val("3");
+
 		}
 
-
-		function activeChange1(tmp){
+		function activeChange2(tmp){
 			
 			var dir_list = {{dir_list|safe}};
 			var stage ="{{cmd|safe}}";
@@ -346,16 +758,17 @@
 			$("#first_dir").val(flow_dir);
 			$("#first_stage").val(stage);
 			$("#first_pattern").val(pattern);
-			console.log("enter start process");
 			$("#mode").val("2");
 
 		}
 
 		function activeDesign(tmp) {
-			$("#show_name").css("display","table-cell");
+			// $("#show_name").css("display","table-cell");
 			$("#first_name").val("");
 			$("#second_name").val("");
 			$("#single_name").val("");
+			$("#show_hint").css("display","none");
+			$("#show_hint").empty();
 			window.l = Ladda.create( document.querySelector( '#design-name' ) );
 			if (!window.l.isLoading()) {
 				window.prev_d = -1;
@@ -364,6 +777,8 @@
 				window.crnt_p = -1;
 				window.active_metrics = undefined;
 				var design_name = $(tmp).attr('class').split(" ")[1];
+				window.active_design = design_name;
+				window.active_pattern = "None"
 				$("#design-name").html(design_name);
 				$("#metrics-name").html("Select by metrics");
 				var dir_list = {{dir_list|safe}};
@@ -376,6 +791,19 @@
 				$("#link_nav").empty();
 				window.l = Ladda.create( document.querySelector( '#design-name' ) );
 	 			window.l.start();
+	 			$("#share").css('display','none');
+	 			window.active_stage = cmd;
+	 			var keyinfo = active_stage+'-'+active_design+"-design_info";
+				if(sessionStorage.getItem(keyinfo)&&(sessionStorage.getItem('dirlists')==dir_list)){
+					strdata = sessionStorage.getItem(keyinfo);
+					inputdata = JSON.parse(strdata);
+					inputdata.log_name_list = [active_design+".nwpopt.out"];
+					// lists = sessionStorage.getItem('dirlists');
+					displayDesignCharts(inputdata);
+					window.l.stop();
+					// inputdata.selected_pattern = active_pattern;
+				}
+				else{
 				//console.log(window.pattern);
 				$.post('display_design_chart', {
 			        active_design: design_name,
@@ -388,7 +816,11 @@
 			    	console.log("sending post...")
 			    })
 			    .done(function(data) {
-			    	displayDesignCharts(data)	  
+			    	var keydata = JSON.stringify(data); 
+			    	var keyvalue = active_stage+'-'+active_design+"-design_info"
+			    	sessionStorage.setItem(keyvalue,keydata);
+			    	sessionStorage.setItem("dirlists",dir_list);
+			    	displayDesignCharts(data);	  
 			    	console.log("pass!")
 			    	window.l.stop();
 			    })
@@ -399,10 +831,12 @@
 			        window.l.stop();
 			    });
 			}
+			}
 		}
 
 		function activeMetrics(tmp) {
 			window.l = Ladda.create( document.querySelector( '#metrics-name' ) );
+
 			//console.log(window.l.isLoading())
 			if (!window.l.isLoading()) {
 				window.prev_d = -1;
@@ -414,6 +848,7 @@
 				var metrics_catogory = $(tmp).attr('class').split(" ")[0];
 				window.active_metrics = metrics_name;
 				window.active_pattern = metrics_catogory.toUpperCase();
+				window.active_design = undefined;
 				$("#design-name").html("Select by design");
 				$("#metrics-name").html(metrics_name);
 				var dir_list = {{dir_list|safe}};
@@ -424,8 +859,23 @@
 				$("#tab-content").empty();
 				$('#qor_comp_nav').empty();
 				$("#link_nav").empty();
+				$("#show_hint").css("display","none");
+				$("#show_hint").empty();
+				$("#share").css('display','none');
 				window.l = Ladda.create( document.querySelector( '#metrics-name' ) );
 	 			window.l.start();
+	 			window.active_stage = cmd;
+	 			var keyinfo = active_stage+'-'+active_pattern+"-metrics_info";
+				if(sessionStorage.getItem(keyinfo)&&(sessionStorage.getItem('dirlists')==dir_list)){
+					strdata = sessionStorage.getItem(keyinfo);
+					inputdata = JSON.parse(strdata);
+					inputdata.metrics = active_metrics;
+					// lists = sessionStorage.getItem('dirlists');
+					displayMetricsCharts(inputdata);
+					window.l.stop();
+					// inputdata.selected_pattern = active_pattern;
+				}
+				else{
 				//console.log(window.pattern)
 				$.post('display_metrics_chart', {
 			        active_metrics: metrics_name,
@@ -435,11 +885,24 @@
 			        compress: compress,
 			        pattern: window.pattern,
 			        script_list: window.script_list,
+		        	selected_tech_nodes: window.selected_tech_nodes,
+		        	selected_customers: window.selected_customers
 			    }, function () {
 			    	console.log("sending post...")
 			    })
 			    .done(function(data) {
 			    	window.l.stop();
+			    	var keydata = JSON.stringify(data); 
+			    	var keyvalue = active_stage+'-'+active_pattern+"-metrics_info"
+			    	try {
+						sessionStorage.setItem(keyvalue,keydata);
+			    		sessionStorage.setItem("dirlists",dir_list);
+					}
+					catch(err) {
+						console.log("quta exceed for "+keyvalue);
+					}
+			    	
+			    	// sessionStorage.setItem("current_stage",);
 			    	//console.log(window.pattern)
 			    	displayMetricsCharts(data);
 			    	console.log("pass!")		    	
@@ -450,34 +913,40 @@
 			        window.l.stop();
 			        console.log("fail!")		        
 			    });
+			}  //else end part
 			}
 		}
 
 		function displayDesignCharts(data) {
-			if (window.active_pattern == "None") {
+			$("#share").css('display','block');
+			if (window.active_pattern == "None" || window.active_pattern == "undefined") {
 				var active_flag = "active";
 			} else {
 				var active_flag = "inactive";
 			}
 		
-			//console.log(data["qor_metrics_dict"])
-			//console.log(window.active_pattern)
+			// console.log(active_flag)
+			// console.log(window.active_pattern)
 			window.myLineChart = new Array();
 	    	$.each(data["qor_metrics_dict"], function(pattern, qor_metrics_list) {
 	    		//console.log(qor_metrics_list)
-	    		//console.log(pattern)
-
+	    		// console.log(pattern)
+	    		var reg = /\d+/;
 	    		var metrics_order = data["metrics_order_dict"][pattern];
 	    		
     			//add nav   			
     			if (pattern == window.active_pattern) {
-    				$("#chart_nav").append("<li role='presentation' class='active'><a href='#"+pattern+"' class='"+pattern+"' aria-controls='"+pattern+"' role='tab' data-toggle='tab' style='color:white;' onclick='activePatternNav(this);''><strong>"+pattern+"</strong></a></li>");
+    				$("#chart_nav").append("<li role='presentation' class='inactive active'><a href='#"+pattern+"' class='"+pattern+"' aria-controls='"+pattern+"' role='tab' data-toggle='tab' style='color:white;' onclick='activePatternNav(this);''><strong>"+pattern+"</strong></a></li>");
     			} else {
-    				$("#chart_nav").append("<li role='presentation' class='"+active_flag+"'><a href='#"+pattern+"' class='"+pattern+"' aria-controls='"+pattern+"' role='tab' data-toggle='tab' style='color:white;' onclick='activePatternNav(this);''><strong>"+pattern+"</strong></a></li>");
+    				$("#chart_nav").append("<li role='presentation' class='inactive "+active_flag+"'><a href='#"+pattern+"' class='"+pattern+"' aria-controls='"+pattern+"' role='tab' data-toggle='tab' onclick='activePatternNav(this);''><strong>"+pattern+"</strong></a></li>");
     			}
     			
     			//add qor comp panel
-    			var qor_comp = "<div class='panel panel-danger pattern_nav "+active_flag+"_nav "+pattern+"_nav'><!-- Default panel contents --><div class='panel-heading'><strong>QoR Compare</strong></div><!-- Table --><table class='table table-striped' style='font-size:12px;'><thead><th>#</th><th id='"+pattern+"_prev_label'>prev</th><th id='"+pattern+"_crnt_label'>crnt</th><th id='"+pattern+"_crnt_label'>pct.(%)</th></thead><tbody id='tb_"+pattern+"' style='font-size:12px;'></tbody></table></div>"
+    			if (pattern == window.active_pattern) {
+    				var qor_comp = "<div class='panel panel-danger pattern_nav active_nav "+pattern+"_nav'><!-- Default panel contents --><div class='panel-heading'><strong>QoR Compare</strong></div><!-- Table --><table class='table table-striped' style='font-size:12px;'><thead><th>#</th><th id='"+pattern+"_prev_label'>prev</th><th id='"+pattern+"_crnt_label'>crnt</th><th id='"+pattern+"_crnt_label'>pct.(%)</th></thead><tbody id='tb_"+pattern+"' style='font-size:12px;'></tbody></table></div>"
+    			} else {   				
+    				var qor_comp = "<div class='panel panel-danger pattern_nav "+active_flag+"_nav "+pattern+"_nav'><!-- Default panel contents --><div class='panel-heading'><strong>QoR Compare</strong></div><!-- Table --><table class='table table-striped' style='font-size:12px;'><thead><th>#</th><th id='"+pattern+"_prev_label'>prev</th><th id='"+pattern+"_crnt_label'>crnt</th><th id='"+pattern+"_crnt_label'>pct.(%)</th></thead><tbody id='tb_"+pattern+"' style='font-size:12px;'></tbody></table></div>"
+    			}
 				$("#qor_comp_nav").append(qor_comp);
 
 				$.each(metrics_order, function(i, metrics) {
@@ -486,14 +955,20 @@
 				})
 
 				//add quick link
-				var pattern_nav = "<div class='col-md-1 nav-target pattern_nav "+active_flag+"_nav "+pattern+"_nav' role='complementary'><!-- metrics nav --><nav class='bs-docs-sidebar hidden-print hidden-xs hidden-sm affix' style='top:180px;width:8%;display:block'><ul id='"+pattern+"_metrics_nav' class='nav bs-docs-sidenav metrics-nav'><li><strong>Inner-link</strong></li></ul></br><!-- metrics toggle --><ul id='"+pattern+"_metrics_toggle' class='nav bs-docs-sidenav checkbox-nav'><li style='font-size:14px;''><strong>Check-box</strong></li></ul></div>"
+				if (pattern == window.active_pattern) {
+					var pattern_nav = "<div class='col-md-1 nav-target pattern_nav active_nav "+pattern+"_nav' role='complementary'><!-- metrics nav --><nav class='bs-docs-sidebar hidden-print hidden-xs hidden-sm affix' style='top:180px;width:9%;display:block;margin-left:-30px;'><ul id='"+pattern+"_metrics_nav' class='nav bs-docs-sidenav metrics-nav'><li><strong>Inner-link</strong></li></ul></br><!-- metrics toggle --><ul id='"+pattern+"_metrics_toggle' class='nav bs-docs-sidenav checkbox-nav'><li style='font-size:14px;''><strong>Check-box</strong></li></ul></div>"
+				} else {
+					var pattern_nav = "<div class='col-md-1 nav-target pattern_nav "+active_flag+"_nav "+pattern+"_nav' role='complementary'><!-- metrics nav --><nav class='bs-docs-sidebar hidden-print hidden-xs hidden-sm affix' style='top:180px;width:9%;display:block;margin-left:-30px;'><ul id='"+pattern+"_metrics_nav' class='nav bs-docs-sidenav metrics-nav'><li><strong>Inner-link</strong></li></ul></br><!-- metrics toggle --><ul id='"+pattern+"_metrics_toggle' class='nav bs-docs-sidenav checkbox-nav'><li style='font-size:14px;''><strong>Check-box</strong></li></ul></div>"
+				}
 				$("#link_nav").append(pattern_nav)
 
 				$.each(metrics_order, function(i, metrics) {
-					li1 = "<li><a href='#"+metrics.toLowerCase()+"'>"+metrics+"</a></li>"
-					$("#"+pattern+"_metrics_nav").append(li1);
-					li2 = "<li><input type='checkbox' name='"+metrics+"' checked onchange=\"$('."+metrics.toLowerCase()+"').toggle()\">&nbsp;&nbsp;"+metrics+"</input></li>"
-					$("#"+pattern+"_metrics_toggle").append(li2);
+					if (metrics != 'Line') {
+						li1 = "<li><a href='#"+pattern.toLowerCase()+'_'+metrics.toLowerCase()+"'>"+metrics+"</a></li>"
+						$("#"+pattern+"_metrics_nav").append(li1);
+						li2 = "<li><input type='checkbox' name='"+metrics+"' checked onchange=\"$('."+metrics.toLowerCase()+"').toggle()\">&nbsp;&nbsp;"+metrics+"</input></li>"
+						$("#"+pattern+"_metrics_toggle").append(li2);
+					}
 				})
 				$("#"+pattern+"_metrics_nav").append("<li><a class='back-to-top' href='#top'><strong> Back To Top</strong></a></li>");
 
@@ -506,7 +981,7 @@
 	    		
 
 				if (active_flag == "active") {	
-					if (window.active_pattern == "None") {
+					if (window.active_pattern == "None" || window.active_pattern == "undefined") {
 						window.active_pattern = pattern;
 					}
 	    			active_flag = "inactive";
@@ -514,6 +989,8 @@
 
 	    		//add info panel
 	    		var step_match = data["step_match_dict"][pattern]
+	    		// step match, same chart
+	    		var sharemark = "false";
 	    		if (step_match == 1) {
 	    			pattern_chart_info = "<div class='alert alert-info' role='alert' id='chart-info'><strong>QoR Metrics (steps match, show qor-metrics in same charts)</strong></div>";
 	    			$("#"+pattern).append(pattern_chart_info);
@@ -523,13 +1000,572 @@
 			  		var chart_data = new Array();
 			  		chart_data[pattern] = new Array();
 			  		//add canvas for each metrics
+			  		console.log(qor_metrics_list);
 				  	$.each(metrics_order, function(i, metrics) {
+				  		if (metrics != 'Line') {
+				  		//console.log(metrics);
 				  		//chart_data[pattern][metrics] = new Array();
 				  		//myLineChart[pattern][metrics] = new Array();
+					  		var datasets = new Array();
+					  		$.each(qor_metrics_list, function(index, qor_metrics) {
+					  			if (pattern == "FUNC_DIST") {
+									datasets[index] = {
+						                label: data["flow_list"][index]+'/'+data["log_name_list"][index],
+						                backgroundColor: [
+						                    data["color_list"][index],
+						                    data["color_list"][index],
+						                    data["color_list"][index],
+						                    data["color_list"][index],
+						                    data["color_list"][index],
+						                ],
+						                borderColor: [
+						                    data["color_list"][index],
+						                    data["color_list"][index],
+						                    data["color_list"][index],
+						                    data["color_list"][index],
+						                    data["color_list"][index],
+						                ],
+						                borderWidth: 1,
+						                data: qor_metrics[metrics],
+						            }
+					  			} else {
+					  				console.log(qor_metrics[metrics]);
+						  			datasets[index] = {
+							            label:  data["flow_list"][index]+'/'+data["log_name_list"][index], 
+							            fill: false,
+							            lineTension: 0.4,
+							            backgroundColor: data["color_list"][index],
+							            borderColor: data["color_list"][index],
+							            borderCapStyle: 'butt',
+							            borderDash: [],
+							            borderDashOffset: 0.0,
+							            borderJoinStyle: 'miter',
+							            pointBorderColor: data["color_list"][index],
+							            pointBackgroundColor: data["color_list"][index],
+							            pointBorderWidth: 1,
+							            pointHoverRadius: 3,
+							            pointHoverBackgroundColor: "#fff",
+							            pointHoverBorderColor: data["color_list"][index],
+							            pointHoverBorderWidth: 2,
+							            pointRadius: 3,
+							            pointHitRadius: 1,
+							            data: qor_metrics[metrics],
+							            spanGaps: false,
+							        }	
+							    }							
+							}); // end qor_metrics_list
+				  			row = "<div class='row'><div class='col-md-12 "+metrics.toLowerCase()+"' id='"+pattern.toLowerCase()+'_'+metrics.toLowerCase()+"'><div class='panel' style='border-color: #39ADB4;'><!-- Default panel contents --><div class='panel-heading' style='background-color: #39ADB4; color: white; font-weight: bold'>"+metrics+"</div><canvas id='myChart_"+pattern+"_"+metrics+"' width='350' height='150'></canvas></div></div></div>"
+					  		$("#"+pattern).append(row);
+
+							var ctx = $("#myChart_"+pattern+"_"+metrics).get(0).getContext("2d");
+							chart_data[pattern][metrics] = {
+							    labels: data["steps_dict"][pattern][0],
+							    datasets: datasets,
+							};
+							var line_num = qor_metrics_list[0]["Line"];
+							console.log(line_num);
+							//console.log(data["metrics_property_dict"][pattern][metrics]);
+							if (pattern == "FUNC_DIST") {
+								/**
+								window.myLineChart[pattern][metrics] = new Chart(ctx, {
+									type: 'doughnut',
+					        		data: chart_data[pattern][metrics],
+					    		});	
+								*/
+					    		
+								window.myLineChart[pattern][metrics] = new Chart(ctx, {
+									type: 'bar',
+							        data: chart_data[pattern][metrics],
+							        options: {
+							            showAllTooltips: true,
+							            legend: {
+							                display: true,
+							            },
+							            tooltips: {
+							                callbacks: {
+							                    label: function(tooltipItem, data) {
+							                        var allData = data.datasets[tooltipItem.datasetIndex].data;
+							                        var tooltipLabel = data.labels[tooltipItem.index];
+							                        var tooltipData = allData[tooltipItem.index];
+							                        var total = 0;
+							                        for (var i in allData) {
+							                            total += parseFloat(allData[i]);
+							                        }
+							                        // console.log(total)
+							                        var tooltipPercentage = Math.round((tooltipData / total) * 100);
+							                        // console.log(tooltipPercentage)
+							                        return tooltipData + ' (' + tooltipPercentage + '%)';
+							                    },
+							                }
+							            },
+							            scales: {
+							                xAxes: [{
+							                    stacked: false
+							                }],
+							                yAxes: [{
+							                    stacked: false
+							                }]
+							            },
+							        }
+							    });	
+							    
+							} else {
+								window.myLineChart[pattern][metrics] = new Chart(ctx, {
+							    	type: 'line',
+							   		data: chart_data[pattern][metrics],
+								    options: {
+								        scales: {
+								            xAxes: [{
+								                ticks: {
+								                    autoSkip: data["auto_skip_dict"][pattern][0],
+								                    display: true,
+								                }
+								            }],
+								            yAxes: [{
+								            	type: data["metrics_property_dict"][pattern][metrics][1],
+								            }],
+								        },
+								        // tooltips: {
+							         //        callbacks: {
+							         //            label: function(tooltipItem, data) {
+							         //                var allData = data.datasets[tooltipItem.datasetIndex].data;
+							         //                var tooltipLabel = data.labels[tooltipItem.index];
+							         //                var tooltipData = allData[tooltipItem.index];
+							                       
+							         //                return "Line: "+qor_metrics["Line"][tooltipItem.index]+" - " + tooltipData;
+							         //            },
+							         //        }
+							         //    },
+								        /*
+										pan: {
+											enabled: false,
+											mode: 'xy',
+											speed: 10,
+											threshold: 10
+										},
+										zoom: {
+											enabled: false,
+											mode: 'xy',
+											limits: {
+												max: 10,
+												min: 0.5
+											}
+										},
+										*/
+								    }
+								});			
+							}																			
+							
+							$("#myChart_"+pattern+"_"+metrics).click(function (evt) {		
+						        var activePoints = window.myLineChart[pattern][metrics].getElementAtEvent(evt.originalEvent);							    	
+						    	var pointIndex = activePoints[0]._index;
+						    	var datasetIndex = activePoints[0]._datasetIndex;					   	
+						    	var step_qor_list = data["step_qor_dict"][pattern];
+						    	var color_list = data["color_list"];
+						    	var metrics_order = data["metrics_order_dict"][pattern];
+						    	var qorArray = Array();
+						    	var steps_list = data["steps_dict"][pattern];
+						    	qorArray = step_qor_list[datasetIndex][pointIndex]; //2:wns, 3:tns, etc
+						    	var step_name = steps_list[datasetIndex][pointIndex];
+						    	window.prevdir = window.crnt_d;
+						    	var markdiffer = "false";
+						    	if(step_name[0]=="("){
+						    		mark_name = step_name.split(')')[1]
+						    	}
+						    	else{
+						    		mark_name = step_name;
+						    	}
+						    	var middle_name = mark_name;
+						    	$("#single_name").val(mark_name);
+
+						    	$("#first_name").val(mark_name);	
+						    	if($("#second_name").val()==""){
+						    		$("#second_name").val($("#first_name").val());
+						    	}
+						    	if (step_name.length > 10) {
+						    		step_name = step_name.substr(0,12)
+						    	}
+						    	
+						    	if ($("#"+pattern+"_crnt_label").text() == "crnt") {
+						    		if (step_name == 0) {
+						    			$("#"+pattern+"_crnt_label").text(pointIndex);	
+						    		} else {
+						    			$("#"+pattern+"_crnt_label").text(step_name);	
+						    		}
+						    		// record step_name last time
+						    		window.markContent = $("#"+pattern+"_crnt_label").text();
+						    		$("#"+pattern+"_crnt_label").css("color", color_list[datasetIndex]);	
+						    		window.crnt_d = datasetIndex;
+						    		window.crnt_p = pointIndex;			    		
+						    	} else {
+						    		// enter page via share mode, decide which point to be previous to be compare before click new point
+						    		if(sharemark=="false"){			
+						    			if (window.prev_p>window.crnt_p && window.prev_d == window.crnt_d) {
+						    				window.markContent = $("#"+pattern+"_prev_label").text(); // prev_label stores crnt step name
+						    			} else {					    							    					    			
+					    					window.markContent = $("#"+pattern+"_crnt_label").text();		
+						    			}					    				
+						    			sharemark = "true";
+						    		}
+						    		if (step_name == 0) {
+						    			$("#"+pattern+"_crnt_label").text(pointIndex);	
+						    		} else {
+						    			$("#"+pattern+"_crnt_label").text(step_name);	
+						    		}
+						    							    	
+						    		// $("#"+pattern+"_crnt_label").css("color", color_list[datasetIndex]);
+						    		window.prev_d = window.crnt_d;
+						    		window.prev_p = window.crnt_p;
+						    		window.crnt_d = datasetIndex;
+						    		window.crnt_p = pointIndex;
+
+						    		prevContent =  markContent;
+						    		// console.log(markContent)
+						    		curContent = step_name;
+							    	prevIndex = window.prev_p;
+							    	curIndex = window.crnt_p;
+
+							    	if(window.prev_p>window.crnt_p && window.prev_d == window.crnt_d){
+							    		markdiffer = "true";
+							    		// $("#first_name").val(middle_name);
+							    		$("#"+pattern+"_prev_label").text(curContent);
+							    		$("#"+pattern+"_crnt_label").text(prevContent);
+							    		$("#"+pattern+"_prev_label").css("color", color_list[window.crnt_d]);
+							    		$("#"+pattern+"_crnt_label").css("color", color_list[window.prev_d]);
+							    		leftqorArray = step_qor_list[crnt_d][crnt_p];
+							    		rightqorArray = step_qor_list[prev_d][prev_p];						    		
+							    	}
+							    	else{
+							    		$("#first_name").val($("#second_name").val());
+							    		$("#second_name").val(middle_name);
+							    		$("#"+pattern+"_prev_label").text(prevContent);
+							    		$("#"+pattern+"_crnt_label").text(curContent);
+							    		$("#"+pattern+"_prev_label").css("color", color_list[window.prev_d]);
+							    		$("#"+pattern+"_crnt_label").css("color", color_list[window.crnt_d]);
+							    		leftqorArray = step_qor_list[prev_d][prev_p];
+							    		rightqorArray = step_qor_list[crnt_d][crnt_p];						    		
+							    	}
+							    	// console.log(prev_d, prev_p, crnt_d, crnt_p)
+							    	// console.log(leftqorArray, rightqorArray)
+							    	markContent = step_name;
+						    	}
+						    	hintChange();
+						    	// qorArray = step_qor_list[datasetIndex][pointIndex]; 
+						    	$.each(metrics_order, function(i,metrics) {
+						    		var crnt = $("#"+pattern+"_"+metrics+">.crnt");
+					    			var prev = $("#"+pattern+"_"+metrics+">.prev");
+					    			var pct = $("#"+pattern+"_"+metrics+">.pct");
+						    		if (crnt.text() == "") {
+						    			crnt.text(qorArray[i]);
+						    		} else {
+						    			prev.text(leftqorArray[i]);
+						    			crnt.text(rightqorArray[i]);
+						    			var pct_value = (parseFloat(crnt.text()) / parseFloat(prev.text())) * 100 - 100
+						    			//console.log(pct_value);
+						    			if (pct_value > 10000) {
+						    				pct_value = parseInt(pct_value).toExponential(2)
+						    				pct.text(pct_value)
+						    			} else {
+						    				pct.text(pct_value.toFixed(2));
+						    			}
+						    			
+										if (pct_value > 0) {
+											if ( metrics == 'FREQUENCY_GHz') {
+												crnt.css("color", "green");
+								    			pct.css("color", "green");
+											} else {
+								    			crnt.css("color", "red");
+								    			pct.css("color", "red");	
+								    		}						    		
+								    	} else if (pct_value < 0) {
+								    		if ( metrics == 'FREQUENCY_GHz') {
+								    			crnt.css("color", "red");
+								    			pct.css("color", "red");	
+								    		} else {
+								    			crnt.css("color", "green");
+								    			pct.css("color", "green");
+								    		}
+								    	} else {
+								    		crnt.css("color", "black");
+								    		pct.css("color", "black");
+								    	}
+						    		};
+						    	});
+					    	});  
+					    }							
+			  		});	// end metrics_order
+	    		} else { // step unmatch, different charts
+	    			pattern_chart_info = "<div class='alert alert-warning' role='alert'><strong>QoR Metrics (steps mismatch, show qor-metrics in different charts)</strong></div>";		
+			  		$("#"+pattern).append(pattern_chart_info);
+
+			  		var myLineChart = new Array();
+			  		myLineChart[pattern] = new Array();
+			  		var chart_data = new Array();
+			  		chart_data[pattern] = new Array();
+			  		//add canvas for each metrics
+				  	$.each(metrics_order, function(i, metrics) {
+				  		if (metrics != 'Line') {
+					  		chart_data[pattern][metrics] = new Array();
+					  		myLineChart[pattern][metrics] = new Array();
+					  		$.each(qor_metrics_list, function(index, qor_metrics) {
+					  			row = "<div class='row'><div class='col-md-12 "+metrics.toLowerCase()+"' id='"+pattern.toLowerCase()+'_'+metrics.toLowerCase()+"'><div class='panel' style='border-color: #39ADB4;'><!-- Default panel contents --><div class='panel-heading' style='background-color: #39ADB4; color: white; font-weight: bold'>"+metrics+"</div><canvas id='myChart_"+pattern+"_"+metrics+"_"+index+"' class='"+index+"' width='350' height='150'></canvas></div></div></div>"
+						  		$("#"+pattern).append(row);
+
+								var ctx = $("#myChart_"+pattern+"_"+metrics+"_"+index).get(0).getContext("2d");								
+								chart_data[pattern][metrics][index] = {
+								    labels: data["steps_dict"][pattern][index],
+								    datasets: [			    
+								        {
+								            label: data["flow_list"][index]+'/'+data["log_name_list"][index], 
+								            fill: false,
+								            lineTension: 0.4,
+								            backgroundColor: data["color_list"][index],
+								            borderColor: data["color_list"][index],
+								            borderCapStyle: 'butt',
+								            borderDash: [],
+								            borderDashOffset: 0.0,
+								            borderJoinStyle: 'miter',
+								            pointBorderColor: data["color_list"][index],
+								            pointBackgroundColor: data["color_list"][index],
+								            pointBorderWidth: 1,
+								            pointHoverRadius: 3,
+								            pointHoverBackgroundColor: "#fff",
+								            pointHoverBorderColor: data["color_list"][index],
+								            pointHoverBorderWidth: 2,
+								            pointRadius: 3,
+								            pointHitRadius: 1,
+								            data: qor_metrics[metrics],
+								            spanGaps: false,
+								        },
+							   	 	]
+								};
+
+								myLineChart[pattern][metrics][index] = new Chart(ctx, {
+							    	type: 'line',
+							   		data: chart_data[pattern][metrics][index],
+								    options: {
+								        scales: {
+								            xAxes: [{
+								                ticks: {
+								                    autoSkip: data["auto_skip_dict"][pattern][index],
+								                    display: true,
+								                }
+								            }],
+								            yAxes: [{
+								            	type: data["metrics_property_dict"][pattern][metrics][1],
+								            }],
+								        }
+								    }
+								});																						
+
+								$("#myChart_"+pattern+"_"+metrics+"_"+index).click(function (evt) {		
+
+							        var activePoints = myLineChart[pattern][metrics][index].getElementAtEvent(evt.originalEvent);							    	
+							    	var pointIndex = activePoints[0]._index;
+							    	var datasetIndex = parseInt($("#myChart_"+pattern+"_"+metrics+"_"+index).attr("class"));							    	
+							    	var step_qor_list = data["step_qor_dict"][pattern];
+							    	var color_list = data["color_list"];
+							    	var metrics_order = data["metrics_order_dict"][pattern];
+							    	var qorArray = Array();
+							    	var steps_list = data["steps_dict"][pattern];
+							    	//var pattern = pattern;
+							    	qorArray = step_qor_list[datasetIndex][pointIndex]; //2:wns, 3:tns, etc
+							    	var step_name = steps_list[datasetIndex][pointIndex];
+							    	window.prevdir = window.crnt_d;
+							    	var markdiffer = "false";
+							    	if(step_name[0]=="("){
+						    			mark_name = step_name.split(')')[1]
+						    		}
+						    		else{
+						    			mark_name = step_name;
+						    		}
+							    	$("#single_name").val(mark_name);
+							    	$("#first_name").val(mark_name);		
+							    	if (step_name.length > 10) {
+							    		step_name = step_name.substr(0,12)
+							    	}	    		    	
+								    	
+							    	if ($("#"+pattern+"_crnt_label").text() == "crnt") {
+							    		if (step_name == 0) {
+							    			$("#"+pattern+"_crnt_label").text(pointIndex);	
+							    		} else {
+							    			$("#"+pattern+"_crnt_label").text(step_name);	
+							    		}
+							    		window.markContent1 = $("#"+pattern+"_crnt_label").text();
+							    		$("#"+pattern+"_crnt_label").css("color", color_list[datasetIndex]);	
+							    		window.crnt_d = datasetIndex;
+							    		window.crnt_p = pointIndex;			    		
+							    	} else {
+							    		// $("#"+pattern+"_prev_label").text($("#"+pattern+"_crnt_label").text());
+							    		// $("#"+pattern+"_prev_label").css("color",$("#"+pattern+"_crnt_label").css("color"));
+										if(sharemark=="false"){			
+							    			if (window.prev_p>window.crnt_p && window.prev_d == window.crnt_d) {
+							    				window.markContent = $("#"+pattern+"_prev_label").text(); // prev_label stores crnt step name
+							    			} else {					    							    					    			
+						    					window.markContent = $("#"+pattern+"_crnt_label").text();		
+							    			}					    				
+							    			sharemark = "true";
+							    		}
+							    		if (step_name == 0) {
+							    			$("#"+pattern+"_crnt_label").text(pointIndex);	
+							    		} else {
+							    			$("#"+pattern+"_crnt_label").text(step_name);	
+							    		}
+							    	
+							    		// $("#"+pattern+"_crnt_label").css("color", color_list[datasetIndex]);
+							    		window.prev_d = window.crnt_d;
+							    		window.prev_p = window.crnt_p;
+							    		window.crnt_d = datasetIndex;
+							    		// console.log(datasetIndex, pointIndex)
+							    		window.crnt_p = pointIndex;
+
+							    		prevContent =  markContent1;
+						    			curContent = step_name;
+						    			// console.log(markContent1, step_name)
+							    		prevIndex = window.prev_p;
+							    		curIndex = window.crnt_p;
+
+							    		if(window.prev_p>window.crnt_p && window.prev_d == window.crnt_d){
+							    			markdiffer = "true";
+							    			$("#"+pattern+"_prev_label").text(curContent);
+							    			$("#"+pattern+"_crnt_label").text(prevContent);
+							    			$("#"+pattern+"_prev_label").css("color", color_list[window.crnt_d]);
+							    			$("#"+pattern+"_crnt_label").css("color", color_list[window.prev_d]);
+							    			leftqorArray = step_qor_list[crnt_d][crnt_p];
+							    			rightqorArray = step_qor_list[prev_d][prev_p];
+							    		}
+							    		else{
+							    			$("#"+pattern+"_prev_label").text(prevContent);
+							    			$("#"+pattern+"_crnt_label").text(curContent);
+							    			$("#"+pattern+"_prev_label").css("color", color_list[window.prev_d]);
+							    			$("#"+pattern+"_crnt_label").css("color", color_list[window.crnt_d]);
+							    			leftqorArray = step_qor_list[prev_d][prev_p];
+							    			rightqorArray = step_qor_list[crnt_d][crnt_p];						    			
+							    		}
+							    		markContent1 = step_name;
+							    	}
+							    	hintChange();
+							    	$.each(metrics_order, function(i,metrics) {
+							    		var crnt = $("#"+pattern+"_"+metrics+">.crnt");
+						    			var prev = $("#"+pattern+"_"+metrics+">.prev");
+						    			var pct = $("#"+pattern+"_"+metrics+">.pct");
+
+							    		if (crnt.text() == "") {
+							    			crnt.text(qorArray[i]);
+							    		} else {
+							    			
+						    				prev.text(leftqorArray[i]);
+						    				crnt.text(rightqorArray[i]);
+						    				
+							    			var pct_value = (parseFloat(crnt.text()) / parseFloat(prev.text())) * 100 - 100
+							    			if (pct_value > 10000) {
+							    				pct_value = parseInt(pct_value).toExponential(2)
+							    				pct.text(pct_value)
+							    			} else {
+							    				pct.text(pct_value.toFixed(2));
+							    			}
+							    			
+										if (pct_value > 0) {
+											if ( metrics == 'FREQUENCY_GHz') {
+												crnt.css("color", "green");
+								    			pct.css("color", "green");
+											} else {
+								    			crnt.css("color", "red");
+								    			pct.css("color", "red");	
+								    		}						    		
+								    	} else if (pct_value < 0) {
+								    		if ( metrics == 'FREQUENCY_GHz') {
+								    			crnt.css("color", "red");
+								    			pct.css("color", "red");	
+								    		} else {
+								    			crnt.css("color", "green");
+								    			pct.css("color", "green");
+								    		}
+								    	} else {
+								    		crnt.css("color", "black");
+								    		pct.css("color", "black");
+								    	}
+							    		};
+							    	});
+						    	});  															
+							}); // end qor_metrics_list
+						}
+			  		});	// end metrics_order				  		
+				};// end step_match if
+	    	});
+
+		}
+
+		function displayMetricsCharts(data) {
+			$("#share").css('display','block');
+			metrics = data['metrics'];
+	    	selected_pattern = data['selected_pattern'];
+	    	// console.log(window.pattern)
+	    	var reg = /\d+/;
+			if (window.active_pattern == "None" || window.active_pattern == "undefined") {
+				var active_flag = "active";
+			} else {
+				var active_flag = "inactive";
+			}
+
+	    	if (selected_pattern == "QOR" || selected_pattern == "QOR_STG") {
+	    		var pattern_list = ["QOR", "QOR_STG"];
+	    	} else {
+	    		var pattern_list = [selected_pattern];
+	    	}
+
+	    	$.each(pattern_list, function(index, selected_pattern) {
+			//add qor comp panel
+				if (selected_pattern == window.active_pattern) {
+					var qor_comp = "<div class='panel panel-danger pattern_nav active_nav "+selected_pattern+"_nav'><!-- Default panel contents --><div class='panel-heading'><strong>QoR Compare</strong></div><!-- Table --><table class='table table-striped' style='font-size:12px;'><thead><th>#</th><th id='"+selected_pattern+"_prev_label'>prev</th><th id='"+selected_pattern+"_crnt_label'>crnt</th><th id='"+selected_pattern+"_crnt_label'>pct.(%)</th></thead><tbody id='tb_"+selected_pattern+"' style='font-size:12px;'></tbody></table></div>"
+				} else {
+					var qor_comp = "<div class='panel panel-danger pattern_nav "+active_flag+"_nav "+selected_pattern+"_nav'><!-- Default panel contents --><div class='panel-heading'><strong>QoR Compare</strong></div><!-- Table --><table class='table table-striped' style='font-size:12px;'><thead><th>#</th><th id='"+selected_pattern+"_prev_label'>prev</th><th id='"+selected_pattern+"_crnt_label'>crnt</th><th id='"+selected_pattern+"_crnt_label'>pct.(%)</th></thead><tbody id='tb_"+selected_pattern+"' style='font-size:12px;'></tbody></table></div>"
+				}
+				$("#qor_comp_nav").append(qor_comp);
+
+				$.each(data['metrics_order_dict'][selected_pattern], function(i, metrics) {
+					tr = "<tr id='"+selected_pattern+"_"+metrics.toLowerCase()+"'><td><strong>"+metrics+"</strong></td><td class='prev'></td><td class='crnt'></td><td class='pct'></td></tr>"
+					$("#tb_"+selected_pattern).append(tr);
+				})
+
+    			if (selected_pattern == window.active_pattern) {
+    				$("#chart_nav").append("<li role='presentation' class='active'><a href='#"+selected_pattern+"' class='"+selected_pattern+"' aria-controls='"+selected_pattern+"' role='tab' data-toggle='tab' style='color:white;' onclick='activePatternNav(this);''><strong>"+selected_pattern+"</strong></a></li>");
+    			} else {
+    				$("#chart_nav").append("<li role='presentation' class='"+active_flag+"'><a href='#"+selected_pattern+"' class='"+selected_pattern+"' aria-controls='"+selected_pattern+"' role='tab' data-toggle='tab' style='color:white;' onclick='activePatternNav(this);''><strong>"+selected_pattern+"</strong></a></li>");
+    			}
+
+				if (selected_pattern == window.active_pattern) {
+    				tappanel = "<div role='tabpanel' class='tab-pane active' id="+selected_pattern+"></div>";
+    			} else {
+    				tappanel = "<div role='tabpanel' class='tab-pane "+active_flag+"' id="+selected_pattern+"></div>";
+    			}
+    			$("#tab-content").append(tappanel);
+
+				if (active_flag == "active") {	
+					if (window.active_pattern == "None" || window.active_pattern == "undefined") {
+						window.active_pattern = selected_pattern;
+					}
+	    			active_flag = "inactive";
+	    		}
+
+				$.each(data['design_qor'], function(design_name, qor_dict){	
+					if (typeof(qor_dict['qor_metrics_dict'][selected_pattern]) == "undefined") {
+						return true
+					}
+					//add info panel
+		    		var step_match = qor_dict['step_match_dict'][selected_pattern]
+		    		if (step_match == 1) {
+				  		var myLineChart = new Array();
+				  		myLineChart[selected_pattern] = new Array();
+				  		var chart_data = new Array();
+				  		chart_data[selected_pattern] = new Array();
+				  		//add canvas for each metrics
 				  		var datasets = new Array();
-				  		$.each(qor_metrics_list, function(index, qor_metrics) {
+				  		//console.log(qor_dict['qor_metrics_dict'][selected_pattern])
+				  		// false each, actually handling qor_dict['qor_metrics_dict'][selected_pattern][0], only show selected metrics
+				  		$.each(qor_dict['qor_metrics_dict'][selected_pattern], function(index, qor_metrics) {
 				  			datasets[index] = {
-						            label:  data["flow_list"][index]+'/'+data["log_name_list"][index], 
+						            label:  data["flow_list"][index]+'/'+qor_dict["log_name_list"][index], 
 						            fill: false,
 						            lineTension: 0.4,
 						            backgroundColor: data["color_list"][index],
@@ -551,107 +1587,172 @@
 						            spanGaps: false,
 						        }								
 						}); // end qor_metrics_list
-			  			row = "<div class='row'><div class='col-md-12 "+metrics.toLowerCase()+"' id='"+metrics.toLowerCase()+"'><div class='panel' style='border-color: #39ADB4;'><!-- Default panel contents --><div class='panel-heading' style='background-color: #39ADB4; color: white; font-weight: bold'>"+metrics+"</div><canvas id='myChart_"+pattern+"_"+metrics+"' width='350' height='100'></canvas></div></div></div>"
-				  		$("#"+pattern).append(row);
+			  			row = "<div class='row'><div class='col-md-12 "+metrics.toLowerCase()+" "+design_name+"' id='"+pattern.toLowerCase()+'_'+metrics.toLowerCase()+"'><div class='panel' style='border-color: #39ADB4;'><!-- Default panel contents --><div class='panel-heading' style='background-color: #39ADB4; color: white; font-weight: bold'>"+metrics+" - "+design_name+"</div><canvas id='myChart_"+design_name+"_"+selected_pattern+"_"+metrics+"' width='350' height='150'></canvas></div></div></div>"
+				  		$("#"+selected_pattern).append(row);
 
-						var ctx = $("#myChart_"+pattern+"_"+metrics).get(0).getContext("2d");
-						chart_data[pattern][metrics] = {
-						    labels: data["steps_dict"][pattern][0],
+						var ctx = $("#myChart_"+design_name+"_"+selected_pattern+"_"+metrics).get(0).getContext("2d");
+						chart_data[selected_pattern][metrics] = {
+						    labels: qor_dict["steps_dict"][selected_pattern][0],
 						    datasets: datasets,
 						};
-						//console.log(data["metrics_property_dict"][pattern][metrics]);
-						window.myLineChart[pattern][metrics] = new Chart(ctx, {
+
+						myLineChart[selected_pattern][metrics] = new Chart(ctx, {
 					    	type: 'line',
-					   		data: chart_data[pattern][metrics],
+					   		data: chart_data[selected_pattern][metrics],
 						    options: {
 						        scales: {
 						            xAxes: [{
 						                ticks: {
-						                    autoSkip: data["auto_skip_dict"][pattern][0],
+						                    autoSkip: qor_dict["auto_skip_dict"][selected_pattern][0],
 						                    display: true,
 						                }
 						            }],
 						            yAxes: [{
-						            	type: data["metrics_property_dict"][pattern][metrics][1],
+						            	type: data["metrics_property_dict"][selected_pattern][metrics][1],
 						            }],
 						        }
 						    }
 						});																						
 
-						$("#myChart_"+pattern+"_"+metrics).click(function (evt) {		
-					        var activePoints = window.myLineChart[pattern][metrics].getElementAtEvent(evt.originalEvent);							    	
+						var sharemark = "false";
+						$("#myChart_"+design_name+"_"+selected_pattern+"_"+metrics).click(function (evt) {	
+							window.active_design = design_name;	
+					        var activePoints = myLineChart[selected_pattern][metrics].getElementAtEvent(evt.originalEvent);							    	
 					    	var pointIndex = activePoints[0]._index;
-					    	var datasetIndex = activePoints[0]._datasetIndex;					   	
-					    	var step_qor_list = data["step_qor_dict"][pattern];
+					    	var datasetIndex = activePoints[0]._datasetIndex;
+					    	
+					    	var step_qor_list = qor_dict["step_qor_dict"][selected_pattern];
 					    	var color_list = data["color_list"];
-					    	var metrics_order = data["metrics_order_dict"][pattern];
+					    	var metrics_order = data["metrics_order_dict"][selected_pattern];
+
 					    	var qorArray = Array();
-					    	var steps_list = data["steps_dict"][pattern];
+					    	var steps_list = qor_dict["steps_dict"][selected_pattern];
+					    	//var pattern = pattern;
 					    	qorArray = step_qor_list[datasetIndex][pointIndex]; //2:wns, 3:tns, etc
 					    	var step_name = steps_list[datasetIndex][pointIndex];
-					    	var middle_name = step_name.split(')')[1];
-					    	$("#single_name").val(step_name.split(')')[1]);
+					    	window.prevdir = window.crnt_d;
+					    	var markdiffer = "false";
+					    	if(step_name[0]=="("){
+					    		mark_name = step_name.split(')')[1]
+					    	}
+					    	else{
+					    		mark_name = step_name;
+					    	}
+					    	var middle_name = mark_name;
+				    		$("#single_name").val(mark_name);
+					    	$("#first_name").val(mark_name);	
 					    	if($("#second_name").val()==""){
 					    		$("#second_name").val($("#first_name").val());
 					    	}
-					    	$("#first_name").val(step_name.split(')')[1]);	
-					    	if (step_name.length > 10) {
-					    		step_name = step_name.substr(0,12)
-					    	}
+				    		if (step_name.length > 10) {
+				    			step_name = step_name.substr(0,12)
+				    		}			    		    	
 					    	
-					    	if ($("#"+pattern+"_crnt_label").text() == "crnt") {
-					    		//debugger;
+					    	if ($("#"+selected_pattern+"_crnt_label").text() == "crnt") {
 					    		if (step_name == 0) {
-					    			$("#"+pattern+"_crnt_label").text(pointIndex);	
+					    			$("#"+selected_pattern+"_crnt_label").text(pointIndex);	
 					    		} else {
-					    			$("#"+pattern+"_crnt_label").text(step_name);	
+					    			$("#"+selected_pattern+"_crnt_label").text(step_name);	
 					    		}
-					    		$("#"+pattern+"_crnt_label").css("color", color_list[datasetIndex]);	
+								sharemark = "true";
+					    		window.markContent2 = $("#"+selected_pattern+"_crnt_label").text();
+					    		$("#"+selected_pattern+"_crnt_label").css("color", color_list[datasetIndex]);	
 					    		window.crnt_d = datasetIndex;
 					    		window.crnt_p = pointIndex;			    		
 					    	} else {
-					    		//debugger;
-					    		$("#"+pattern+"_prev_label").text($("#"+pattern+"_crnt_label").text());
-					    		$("#first_name").val($("#second_name").val());
-					    		$("#"+pattern+"_prev_label").css("color",$("#"+pattern+"_crnt_label").css("color"));
-					    		if (step_name == 0) {
-					    			$("#"+pattern+"_crnt_label").text(pointIndex);	
-					    		} else {
-					    			$("#"+pattern+"_crnt_label").text(step_name);	
-					    			$("#second_name").val(middle_name);
+					    		// $("#"+selected_pattern+"_prev_label").text($("#"+selected_pattern+"_crnt_label").text());
+					    		// $("#"+selected_pattern+"_prev_label").css("color",$("#"+selected_pattern+"_crnt_label").css("color"));
+					    		if(sharemark=="false"){
+					    			if($("#"+selected_pattern+"_prev_label").text()=="prev"){
+					    				window.markContent2 = $("#"+selected_pattern+"_crnt_label").text();
+					    				$.each(metrics_order, function(i,metrics){
+					    					var crnt = $("#"+selected_pattern+"_"+metrics+">.crnt");
+				    						var prev = $("#"+selected_pattern+"_"+metrics+">.prev");
+				    						prev.text(crnt.text());
+					    				});
+
+					    			}
+					    			else{
+					    				window.markContent2 = $("#"+selected_pattern+"_prev_label").text();
+					    			}
+					    			sharemark = "true";
 					    		}
-					    		$("#"+pattern+"_crnt_label").css("color", color_list[datasetIndex]);
+					    		if (step_name == 0) {
+					    			$("#"+selected_pattern+"_crnt_label").text(pointIndex);	
+					    		} else {
+					    			$("#"+selected_pattern+"_crnt_label").text(step_name);	
+					    		}
+					    							    		
+					    		// $("#"+selected_pattern+"_crnt_label").css("color", color_list[datasetIndex]);
 					    		window.prev_d = window.crnt_d;
 					    		window.prev_p = window.crnt_p;
 					    		window.crnt_d = datasetIndex;
 					    		window.crnt_p = pointIndex;
+
+					    		prevContent =  markContent2;
+					    		curContent = step_name;
+						    	prevIndex = window.prev_p;
+						    	curIndex = window.crnt_p;
+
+						    	if(prevIndex<=curIndex){
+						    		$("#first_name").val($("#second_name").val());
+						    		$("#second_name").val(middle_name);
+						    		$("#"+selected_pattern+"_prev_label").text(prevContent);
+						    		$("#"+selected_pattern+"_crnt_label").text(curContent);
+						    		$("#"+selected_pattern+"_prev_label").css("color", color_list[window.prev_d]);
+						    		$("#"+selected_pattern+"_crnt_label").css("color", color_list[window.crnt_d]);
+						    		leftqorArray = step_qor_list[prev_d][prev_p];
+						    		rightqorArray = step_qor_list[crnt_d][crnt_p];
+						    	}
+						    	else{
+						    		markdiffer = "true";
+						    		$("#"+selected_pattern+"_prev_label").text(curContent);
+						    		$("#"+selected_pattern+"_crnt_label").text(prevContent);
+						    		$("#"+selected_pattern+"_prev_label").css("color", color_list[window.crnt_d]);
+						    		$("#"+selected_pattern+"_crnt_label").css("color", color_list[window.prev_d]);
+						    		leftqorArray = step_qor_list[crnt_d][crnt_p];
+						    		rightqorArray = step_qor_list[prev_d][prev_p];
+						    	}
+						    	markContent2 = step_name;
 					    	}
+					    	hintChange();
 
 					    	$.each(metrics_order, function(i,metrics) {
-					    		var crnt = $("#"+pattern+"_"+metrics+">.crnt");
-				    			var prev = $("#"+pattern+"_"+metrics+">.prev");
-				    			var pct = $("#"+pattern+"_"+metrics+">.pct");
+					    		var crnt = $("#"+selected_pattern+"_"+metrics+">.crnt");
+				    			var prev = $("#"+selected_pattern+"_"+metrics+">.prev");
+				    			var pct = $("#"+selected_pattern+"_"+metrics+">.pct");
 
 					    		if (crnt.text() == "") {
 					    			crnt.text(qorArray[i]);
+					    			// prev.text(qorArray[i]);
 					    		} else {
-					    			prev.text(crnt.text());
-					    			crnt.text(qorArray[i]);
+					    			// prev.text(crnt.text());
+					    			prev.text(leftqorArray[i]);
+					    			crnt.text(rightqorArray[i]);
 					    			var pct_value = (parseFloat(crnt.text()) / parseFloat(prev.text())) * 100 - 100
-					    			//console.log(pct_value);
 					    			if (pct_value > 10000) {
 					    				pct_value = parseInt(pct_value).toExponential(2)
 					    				pct.text(pct_value)
 					    			} else {
 					    				pct.text(pct_value.toFixed(2));
-					    			}
-					    			
-							    	if (parseFloat(crnt.text()) > parseFloat(prev.text())) {
-							    		crnt.css("color", "red");
-							    		pct.css("color", "red");							    		
-							    	} else if (parseFloat(crnt.text()) < parseFloat(prev.text())) {
-							    		crnt.css("color", "green");
-							    		pct.css("color", "green");
+					    			}				    			
+
+									if (pct_value > 0) {
+										if ( metrics == 'FREQUENCY_GHz') {
+											crnt.css("color", "green");
+							    			pct.css("color", "green");
+										} else {
+							    			crnt.css("color", "red");
+							    			pct.css("color", "red");	
+							    		}						    		
+							    	} else if (pct_value < 0) {
+							    		if ( metrics == 'FREQUENCY_GHz') {
+							    			crnt.css("color", "red");
+							    			pct.css("color", "red");	
+							    		} else {
+							    			crnt.css("color", "green");
+							    			pct.css("color", "green");
+							    		}
 							    	} else {
 							    		crnt.css("color", "black");
 							    		pct.css("color", "black");
@@ -659,29 +1760,27 @@
 					    		};
 					    	});
 				    	});  							
-			  		});	// end metrics_order
-	    		} else {
-	    			pattern_chart_info = "<div class='alert alert-warning' role='alert'><strong>QoR Metrics (steps mismatch, show qor-metrics in different charts)</strong></div>";		
-			  		$("#"+pattern).append(pattern_chart_info);
+		    		} else {
+		    			//pattern_chart_info = "<div class='alert alert-warning' role='alert'><strong>QoR Metrics (steps mismatch, show qor-metrics in different charts)</strong></div>";		
+				  		//$("#"+pattern).append(pattern_chart_info);
 
-			  		var myLineChart = new Array();
-			  		myLineChart[pattern] = new Array();
-			  		var chart_data = new Array();
-			  		chart_data[pattern] = new Array();
-			  		//add canvas for each metrics
-				  	$.each(metrics_order, function(i, metrics) {
-				  		chart_data[pattern][metrics] = new Array();
-				  		myLineChart[pattern][metrics] = new Array();
-				  		$.each(qor_metrics_list, function(index, qor_metrics) {
-				  			row = "<div class='row'><div class='col-md-12 "+metrics.toLowerCase()+"' id='"+metrics.toLowerCase()+"'><div class='panel' style='border-color: #39ADB4;'><!-- Default panel contents --><div class='panel-heading' style='background-color: #39ADB4; color: white; font-weight: bold'>"+metrics+"</div><canvas id='myChart_"+pattern+"_"+metrics+"_"+index+"' class='"+index+"' width='350' height='100'></canvas></div></div></div>"
-					  		$("#"+pattern).append(row);
+				  		var myLineChart = new Array();
+				  		myLineChart[selected_pattern] = new Array();
+				  		var chart_data = new Array();
+				  		chart_data[selected_pattern] = new Array();
+				  		//add canvas for each metrics
+				  		chart_data[selected_pattern][metrics] = new Array();
+				  		myLineChart[selected_pattern][metrics] = new Array();
+				  		$.each(qor_dict['qor_metrics_dict'][selected_pattern], function(index, qor_metrics) {
+				  			row = "<div class='row'><div class='col-md-12 "+metrics.toLowerCase()+" "+design_name+"' id='"+pattern.toLowerCase()+'_'+metrics.toLowerCase()+"'><div class='panel' style='border-color: #39ADB4;'><!-- Default panel contents --><div class='panel-heading' style='background-color: #39ADB4; color: white; font-weight: bold'>"+metrics+" - "+design_name+"</div><canvas id='myChart_"+design_name+"_"+selected_pattern+"_"+metrics+"_"+index+"' class='"+index+"' width='350' height='150'></canvas></div></div></div>"
+					  		$("#"+selected_pattern).append(row);
 
-							var ctx = $("#myChart_"+pattern+"_"+metrics+"_"+index).get(0).getContext("2d");								
-							chart_data[pattern][metrics][index] = {
-							    labels: data["steps_dict"][pattern][index],
+							var ctx = $("#myChart_"+design_name+"_"+selected_pattern+"_"+metrics+"_"+index).get(0).getContext("2d");								
+							chart_data[selected_pattern][metrics][index] = {
+							    labels: qor_dict["steps_dict"][selected_pattern][index],
 							    datasets: [			    
 							        {
-							            label: data["flow_list"][index]+'/'+data["log_name_list"][index], 
+							            label: data["flow_list"][index]+'/'+qor_dict["log_name_list"][index], 
 							            fill: false,
 							            lineTension: 0.4,
 							            backgroundColor: data["color_list"][index],
@@ -705,76 +1804,114 @@
 						   	 	]
 							};
 
-							myLineChart[pattern][metrics][index] = new Chart(ctx, {
+							myLineChart[selected_pattern][metrics][index] = new Chart(ctx, {
 						    	type: 'line',
-						   		data: chart_data[pattern][metrics][index],
+						   		data: chart_data[selected_pattern][metrics][index],
 							    options: {
 							        scales: {
 							            xAxes: [{
 							                ticks: {
-							                    autoSkip: data["auto_skip_dict"][pattern][index],
+							                    autoSkip: qor_dict["auto_skip_dict"][selected_pattern][index],
 							                    display: true,
 							                }
 							            }],
 							            yAxes: [{
-							            	type: data["metrics_property_dict"][pattern][metrics][1],
+							            	type: data["metrics_property_dict"][selected_pattern][metrics][1],
 							            }],
 							        }
 							    }
 							});																						
 
-							$("#myChart_"+pattern+"_"+metrics+"_"+index).click(function (evt) {		
-						        var activePoints = myLineChart[pattern][metrics][index].getElementAtEvent(evt.originalEvent);							    	
+							$("#myChart_"+design_name+"_"+selected_pattern+"_"+metrics+"_"+index).click(function (evt) {	
+								window.active_design = design_name;		
+						        var activePoints = myLineChart[selected_pattern][metrics][index].getElementAtEvent(evt.originalEvent);							    	
 						    	var pointIndex = activePoints[0]._index;
-						    	var datasetIndex = parseInt($("#myChart_"+pattern+"_"+metrics+"_"+index).attr("class"));							    	
-						    	var step_qor_list = data["step_qor_dict"][pattern];
+						    	var datasetIndex = parseInt($("#myChart_"+selected_pattern+"_"+metrics+"_"+index).attr("class"));							    	
+						    	var step_qor_list = qor_dict["step_qor_dict"][selected_pattern];
 						    	var color_list = data["color_list"];
-						    	var metrics_order = data["metrics_order_dict"][pattern];
+						    	var metrics_order = data["metrics_order_dict"][selected_pattern];
 						    	var qorArray = Array();
-						    	var steps_list = data["steps_dict"][pattern];
+						    	var steps_list = qor_dict["steps_dict"][selected_pattern];
 						    	//var pattern = pattern;
 						    	qorArray = step_qor_list[datasetIndex][pointIndex]; //2:wns, 3:tns, etc
 						    	var step_name = steps_list[datasetIndex][pointIndex];
-						    	$("#single_name").val(step_name.split(')')[1]);
-						    	$("#first_name").val(step_name.split(')')[1]);		
+						    	window.prevdir = window.crnt_d;
+						    	var markdiffer = "false";
+						    	if(step_name[0]=="("){
+					    			mark_name = step_name.split(')')[1]
+					    		}
+					    		else{
+					    			mark_name = step_name;
+					    		}
+						    	$("#first_name").val(mark_name);	
+						    	$("#single_name").val(mark_name);
 						    	if (step_name.length > 10) {
 						    		step_name = step_name.substr(0,12)
-						    	}	    		    	
-							    	
-						    	if ($("#"+pattern+"_crnt_label").text() == "crnt") {
+						    	}		    		    	
+						    	
+						    	if ($("#"+selected_pattern+"_crnt_label").text() == "crnt") {
 						    		if (step_name == 0) {
-						    			$("#"+pattern+"_crnt_label").text(pointIndex);	
+						    			$("#"+selected_pattern+"_crnt_label").text(pointIndex);	
 						    		} else {
-						    			$("#"+pattern+"_crnt_label").text(step_name);	
+						    			$("#"+selected_pattern+"_crnt_label").text(step_name);	
 						    		}
-						    		$("#"+pattern+"_crnt_label").css("color", color_list[datasetIndex]);	
+						    		window.markContent3 = $("#"+selected_pattern+"_crnt_label").text();
+						    		$("#"+selected_pattern+"_crnt_label").css("color", color_list[datasetIndex]);	
 						    		window.crnt_d = datasetIndex;
 						    		window.crnt_p = pointIndex;			    		
 						    	} else {
-						    		$("#"+pattern+"_prev_label").text($("#"+pattern+"_crnt_label").text());
-						    		$("#"+pattern+"_prev_label").css("color",$("#"+pattern+"_crnt_label").css("color"));
+						    		// $("#"+selected_pattern+"_prev_label").text($("#"+selected_pattern+"_crnt_label").text());
+
+						    		// $("#"+selected_pattern+"_prev_label").css("color",$("#"+selected_pattern+"_crnt_label").css("color"));
 						    		if (step_name == 0) {
-						    			$("#"+pattern+"_crnt_label").text(pointIndex);	
+						    			$("#"+selected_pattern+"_crnt_label").text(pointIndex);	
 						    		} else {
-						    			$("#"+pattern+"_crnt_label").text(step_name);	
+						    			$("#"+selected_pattern+"_crnt_label").text(step_name);	
 						    		}
-						    		$("#"+pattern+"_crnt_label").css("color", color_list[datasetIndex]);
+
+
+						    		// $("#"+selected_pattern+"_crnt_label").css("color", color_list[datasetIndex]);
 						    		window.prev_d = window.crnt_d;
 						    		window.prev_p = window.crnt_p;
 						    		window.crnt_d = datasetIndex;
 						    		window.crnt_p = pointIndex;
+
+						    		prevContent =  markContent3;
+					    			curContent = step_name;
+						    		prevIndex = window.prev_p;
+						    		curIndex = window.crnt_p;
+
+						    		if(prevIndex<=curIndex){
+						    			$("#"+selected_pattern+"_prev_label").text(prevContent);
+						    			$("#"+selected_pattern+"_crnt_label").text(curContent);
+						    			$("#"+selected_pattern+"_prev_label").css("color", color_list[window.prev_d]);
+						    			$("#"+selected_pattern+"_crnt_label").css("color", color_list[window.crnt_d]);
+						    			leftqorArray = step_qor_list[prev_d][prev_p];
+						    			rightqorArray = step_qor_list[crnt_d][crnt_p];
+						    		}
+						    		else{
+						    			markdiffer = "true";
+						    			$("#"+selected_pattern+"_prev_label").text(curContent);
+						    			$("#"+selected_pattern+"_crnt_label").text(prevContent);
+						    			$("#"+selected_pattern+"_prev_label").css("color", color_list[window.crnt_d]);
+						    			$("#"+selected_pattern+"_crnt_label").css("color", color_list[window.prev_d]);
+						    			leftqorArray = step_qor_list[crnt_d][crnt_p];
+						    			rightqorArray = step_qor_list[prev_d][prev_p];
+						    		}
+						    		markContent3 = step_name;
 						    	}
+						    	hintChange();
 
 						    	$.each(metrics_order, function(i,metrics) {
-						    		var crnt = $("#"+pattern+"_"+metrics+">.crnt");
-					    			var prev = $("#"+pattern+"_"+metrics+">.prev");
-					    			var pct = $("#"+pattern+"_"+metrics+">.pct");
+						    		var crnt = $("#"+selected_pattern+"_"+metrics+">.crnt");
+					    			var prev = $("#"+selected_pattern+"_"+metrics+">.prev");
+					    			var pct = $("#"+selected_pattern+"_"+metrics+">.pct");
 
 						    		if (crnt.text() == "") {
 						    			crnt.text(qorArray[i]);
 						    		} else {
-						    			prev.text(crnt.text());
-						    			crnt.text(qorArray[i]);
+						    			prev.text(leftqorArray[i]);
+					    				crnt.text(rightqorArray[i]);
 						    			var pct_value = (parseFloat(crnt.text()) / parseFloat(prev.text())) * 100 - 100
 						    			if (pct_value > 10000) {
 						    				pct_value = parseInt(pct_value).toExponential(2)
@@ -782,327 +1919,38 @@
 						    			} else {
 						    				pct.text(pct_value.toFixed(2));
 						    			}
-						    			
-								    	if (parseFloat(crnt.text()) > parseFloat(prev.text())) {
-								    		crnt.css("color", "red");
-								    		pct.css("color", "red");							    		
-								    	} else if (parseFloat(crnt.text()) < parseFloat(prev.text())) {
-								    		crnt.css("color", "green");
-								    		pct.css("color", "green");
-								    	} else {
-								    		crnt.css("color", "black");
-								    		pct.css("color", "black");
-								    	}
-						    		};
-						    	});
-					    	});  															
-						}); // end qor_metrics_list
-			  		});	// end metrics_order				  		
-				};// end step_match if
-	    	});
-
-		}
-
-		function displayMetricsCharts(data) {
-			metrics = data['metrics'];
-	    	selected_pattern = data['selected_pattern'];
-	    	console.log(window.pattern)
-			//add qor comp panel
-			var qor_comp = "<div class='panel panel-danger pattern_nav active_nav "+selected_pattern+"_nav'><!-- Default panel contents --><div class='panel-heading'><strong>QoR Compare</strong></div><!-- Table --><table class='table table-striped' style='font-size:12px;'><thead><th>#</th><th id='"+selected_pattern+"_prev_label'>prev</th><th id='"+selected_pattern+"_crnt_label'>crnt</th><th id='"+selected_pattern+"_crnt_label'>pct.(%)</th></thead><tbody id='tb_"+selected_pattern+"' style='font-size:12px;'></tbody></table></div>"
-			$("#qor_comp_nav").append(qor_comp);
-
-			$.each(data['metrics_order_dict'][selected_pattern], function(i, metrics) {
-				tr = "<tr id='"+selected_pattern+"_"+metrics.toLowerCase()+"'><td><strong>"+metrics+"</strong></td><td class='prev'></td><td class='crnt'></td><td class='pct'></td></tr>"
-				$("#tb_"+selected_pattern).append(tr);
-			})
-
-	    	tappanel = "<div role='tabpanel' class='tab-pane active' id="+selected_pattern+"></div>";
-			$("#tab-content").append(tappanel);
-
-			$.each(data['design_qor'], function(design_name, qor_dict){	
-				if (typeof(qor_dict['qor_metrics_dict'][selected_pattern]) == "undefined") {
-					return true
-				}
-				//add info panel
-	    		var step_match = qor_dict['step_match_dict'][selected_pattern]
-	    		if (step_match == 1) {
-			  		var myLineChart = new Array();
-			  		myLineChart[selected_pattern] = new Array();
-			  		var chart_data = new Array();
-			  		chart_data[selected_pattern] = new Array();
-			  		//add canvas for each metrics
-			  		var datasets = new Array();
-			  		console.log(qor_dict['qor_metrics_dict'][selected_pattern])
-			  		// false each, actually handling qor_dict['qor_metrics_dict'][selected_pattern][0], only show selected metrics
-			  		$.each(qor_dict['qor_metrics_dict'][selected_pattern], function(index, qor_metrics) {
-			  			//console.log(qor_metrics)
-			  			datasets[index] = {
-					            label:  data["flow_list"][index]+'/'+qor_dict["log_name_list"][index], 
-					            fill: false,
-					            lineTension: 0.4,
-					            backgroundColor: data["color_list"][index],
-					            borderColor: data["color_list"][index],
-					            borderCapStyle: 'butt',
-					            borderDash: [],
-					            borderDashOffset: 0.0,
-					            borderJoinStyle: 'miter',
-					            pointBorderColor: data["color_list"][index],
-					            pointBackgroundColor: data["color_list"][index],
-					            pointBorderWidth: 1,
-					            pointHoverRadius: 3,
-					            pointHoverBackgroundColor: "#fff",
-					            pointHoverBorderColor: data["color_list"][index],
-					            pointHoverBorderWidth: 2,
-					            pointRadius: 3,
-					            pointHitRadius: 1,
-					            data: qor_metrics[metrics],
-					            spanGaps: false,
-					        }								
-					}); // end qor_metrics_list
-		  			row = "<div class='row'><div class='col-md-12 "+metrics.toLowerCase()+"' id='"+metrics.toLowerCase()+"'><div class='panel' style='border-color: #39ADB4;'><!-- Default panel contents --><div class='panel-heading' style='background-color: #39ADB4; color: white; font-weight: bold'>"+metrics+" - "+design_name+"</div><canvas id='myChart_"+design_name+"_"+selected_pattern+"_"+metrics+"' width='350' height='100'></canvas></div></div></div>"
-			  		$("#"+selected_pattern).append(row);
-
-					var ctx = $("#myChart_"+design_name+"_"+selected_pattern+"_"+metrics).get(0).getContext("2d");
-					chart_data[selected_pattern][metrics] = {
-					    labels: qor_dict["steps_dict"][selected_pattern][0],
-					    datasets: datasets,
-					};
-
-					myLineChart[selected_pattern][metrics] = new Chart(ctx, {
-				    	type: 'line',
-				   		data: chart_data[selected_pattern][metrics],
-					    options: {
-					        scales: {
-					            xAxes: [{
-					                ticks: {
-					                    autoSkip: qor_dict["auto_skip_dict"][selected_pattern][0],
-					                    display: true,
-					                }
-					            }],
-					            yAxes: [{
-					            	type: data["metrics_property_dict"][selected_pattern][metrics][1],
-					            }],
-					        }
-					    }
-					});																						
-
-					$("#myChart_"+design_name+"_"+selected_pattern+"_"+metrics).click(function (evt) {	
-						window.active_design = design_name;	
-				        var activePoints = myLineChart[selected_pattern][metrics].getElementAtEvent(evt.originalEvent);							    	
-				    	var pointIndex = activePoints[0]._index;
-				    	var datasetIndex = activePoints[0]._datasetIndex;
-				    	
-				    	var step_qor_list = qor_dict["step_qor_dict"][selected_pattern];
-				    	var color_list = data["color_list"];
-				    	var metrics_order = data["metrics_order_dict"][selected_pattern];
-
-				    	var qorArray = Array();
-				    	var steps_list = qor_dict["steps_dict"][selected_pattern];
-				    	//var pattern = pattern;
-				    	qorArray = step_qor_list[datasetIndex][pointIndex]; //2:wns, 3:tns, etc
-				    	var step_name = steps_list[datasetIndex][pointIndex];
-				    	$("#first_name").val(step_name.split(')')[1]);
-				    	$("#single_name").val(step_name.split(')')[1]);
-				    	if (step_name.length > 10) {
-				    		step_name = step_name.substr(0,12)
-				    	}			    		    	
-				    	
-				    	if ($("#"+selected_pattern+"_crnt_label").text() == "crnt") {
-				    		if (step_name == 0) {
-				    			$("#"+selected_pattern+"_crnt_label").text(pointIndex);	
-				    		} else {
-				    			$("#"+selected_pattern+"_crnt_label").text(step_name);	
-				    		}
-				    		$("#"+selected_pattern+"_crnt_label").css("color", color_list[datasetIndex]);	
-				    		window.crnt_d = datasetIndex;
-				    		window.crnt_p = pointIndex;			    		
-				    	} else {
-				    		$("#"+selected_pattern+"_prev_label").text($("#"+selected_pattern+"_crnt_label").text());
-				    		$("#"+selected_pattern+"_prev_label").css("color",$("#"+selected_pattern+"_crnt_label").css("color"));
-				    		if (step_name == 0) {
-				    			$("#"+selected_pattern+"_crnt_label").text(pointIndex);	
-				    		} else {
-				    			$("#"+selected_pattern+"_crnt_label").text(step_name);	
-				    		}
-				    		$("#"+selected_pattern+"_crnt_label").css("color", color_list[datasetIndex]);
-				    		window.prev_d = window.crnt_d;
-				    		window.prev_p = window.crnt_p;
-				    		window.crnt_d = datasetIndex;
-				    		window.crnt_p = pointIndex;
-				    	}
-
-				    	$.each(metrics_order, function(i,metrics) {
-				    		var crnt = $("#"+selected_pattern+"_"+metrics+">.crnt");
-			    			var prev = $("#"+selected_pattern+"_"+metrics+">.prev");
-			    			var pct = $("#"+selected_pattern+"_"+metrics+">.pct");
-
-				    		if (crnt.text() == "") {
-				    			crnt.text(qorArray[i]);
-				    		} else {
-				    			prev.text(crnt.text());
-				    			crnt.text(qorArray[i]);
-				    			var pct_value = (parseFloat(crnt.text()) / parseFloat(prev.text())) * 100 - 100
-				    			if (pct_value > 10000) {
-				    				pct_value = parseInt(pct_value).toExponential(2)
-				    				pct.text(pct_value)
-				    			} else {
-				    				pct.text(pct_value.toFixed(2));
-				    			}				    			
-						    	if (parseFloat(crnt.text()) > parseFloat(prev.text())) {
-						    		crnt.css("color", "red");
-						    		pct.css("color", "red");							    		
-						    	} else if (parseFloat(crnt.text()) < parseFloat(prev.text())) {
-						    		crnt.css("color", "green");
-						    		pct.css("color", "green");
-						    	} else {
-						    		crnt.css("color", "black");
-						    		pct.css("color", "black");
-						    	}
-				    		};
-				    	});
-			    	});  							
-	    		} else {
-	    			//pattern_chart_info = "<div class='alert alert-warning' role='alert'><strong>QoR Metrics (steps mismatch, show qor-metrics in different charts)</strong></div>";		
-			  		//$("#"+pattern).append(pattern_chart_info);
-
-			  		var myLineChart = new Array();
-			  		myLineChart[selected_pattern] = new Array();
-			  		var chart_data = new Array();
-			  		chart_data[selected_pattern] = new Array();
-			  		//add canvas for each metrics
-			  		chart_data[selected_pattern][metrics] = new Array();
-			  		myLineChart[selected_pattern][metrics] = new Array();
-			  		$.each(qor_dict['qor_metrics_dict'][selected_pattern], function(index, qor_metrics) {
-			  			row = "<div class='row'><div class='col-md-12 "+metrics.toLowerCase()+"' id='"+metrics.toLowerCase()+"'><div class='panel' style='border-color: #39ADB4;'><!-- Default panel contents --><div class='panel-heading' style='background-color: #39ADB4; color: white; font-weight: bold'>"+metrics+" - "+design_name+"</div><canvas id='myChart_"+design_name+"_"+selected_pattern+"_"+metrics+"_"+index+"' class='"+index+"' width='350' height='100'></canvas></div></div></div>"
-				  		$("#"+selected_pattern).append(row);
-
-						var ctx = $("#myChart_"+design_name+"_"+selected_pattern+"_"+metrics+"_"+index).get(0).getContext("2d");								
-						chart_data[selected_pattern][metrics][index] = {
-						    labels: qor_dict["steps_dict"][selected_pattern][index],
-						    datasets: [			    
-						        {
-						            label: data["flow_list"][index]+'/'+qor_dict["log_name_list"][index], 
-						            fill: false,
-						            lineTension: 0.4,
-						            backgroundColor: data["color_list"][index],
-						            borderColor: data["color_list"][index],
-						            borderCapStyle: 'butt',
-						            borderDash: [],
-						            borderDashOffset: 0.0,
-						            borderJoinStyle: 'miter',
-						            pointBorderColor: data["color_list"][index],
-						            pointBackgroundColor: data["color_list"][index],
-						            pointBorderWidth: 1,
-						            pointHoverRadius: 3,
-						            pointHoverBackgroundColor: "#fff",
-						            pointHoverBorderColor: data["color_list"][index],
-						            pointHoverBorderWidth: 2,
-						            pointRadius: 3,
-						            pointHitRadius: 1,
-						            data: qor_metrics[metrics],
-						            spanGaps: false,
-						        },
-					   	 	]
-						};
-
-						myLineChart[selected_pattern][metrics][index] = new Chart(ctx, {
-					    	type: 'line',
-					   		data: chart_data[selected_pattern][metrics][index],
-						    options: {
-						        scales: {
-						            xAxes: [{
-						                ticks: {
-						                    autoSkip: qor_dict["auto_skip_dict"][selected_pattern][index],
-						                    display: true,
-						                }
-						            }],
-						            yAxes: [{
-						            	type: data["metrics_property_dict"][selected_pattern][metrics][1],
-						            }],
-						        }
-						    }
-						});																						
-
-						$("#myChart_"+design_name+"_"+selected_pattern+"_"+metrics+"_"+index).click(function (evt) {	
-							window.active_design = design_name;		
-					        var activePoints = myLineChart[selected_pattern][metrics][index].getElementAtEvent(evt.originalEvent);							    	
-					    	var pointIndex = activePoints[0]._index;
-					    	var datasetIndex = parseInt($("#myChart_"+selected_pattern+"_"+metrics+"_"+index).attr("class"));							    	
-					    	var step_qor_list = qor_dict["step_qor_dict"][selected_pattern];
-					    	var color_list = data["color_list"];
-					    	var metrics_order = data["metrics_order_dict"][selected_pattern];
-					    	var qorArray = Array();
-					    	var steps_list = qor_dict["steps_dict"][selected_pattern];
-					    	//var pattern = pattern;
-					    	qorArray = step_qor_list[datasetIndex][pointIndex]; //2:wns, 3:tns, etc
-					    	var step_name = steps_list[datasetIndex][pointIndex];
-					    	$("#first_name").val(step_name.split(')')[1]);	
-					    	$("#single_name").val(step_name.split(')')[1]);
-					    	if (step_name.length > 10) {
-					    		step_name = step_name.substr(0,12)
-					    	}		    		    	
-					    	
-					    	if ($("#"+selected_pattern+"_crnt_label").text() == "crnt") {
-					    		if (step_name == 0) {
-					    			$("#"+selected_pattern+"_crnt_label").text(pointIndex);	
-					    		} else {
-					    			$("#"+selected_pattern+"_crnt_label").text(step_name);	
-					    		}
-					    		$("#"+selected_pattern+"_crnt_label").css("color", color_list[datasetIndex]);	
-					    		window.crnt_d = datasetIndex;
-					    		window.crnt_p = pointIndex;			    		
-					    	} else {
-					    		$("#"+selected_pattern+"_prev_label").text($("#"+selected_pattern+"_crnt_label").text());
-					    		$("#"+selected_pattern+"_prev_label").css("color",$("#"+selected_pattern+"_crnt_label").css("color"));
-					    		if (step_name == 0) {
-					    			$("#"+selected_pattern+"_crnt_label").text(pointIndex);	
-					    		} else {
-					    			$("#"+selected_pattern+"_crnt_label").text(step_name);	
-					    		}
-					    		$("#"+selected_pattern+"_crnt_label").css("color", color_list[datasetIndex]);
-					    		window.prev_d = window.crnt_d;
-					    		window.prev_p = window.crnt_p;
-					    		window.crnt_d = datasetIndex;
-					    		window.crnt_p = pointIndex;
-					    	}
-
-					    	$.each(metrics_order, function(i,metrics) {
-					    		var crnt = $("#"+selected_pattern+"_"+metrics+">.crnt");
-				    			var prev = $("#"+selected_pattern+"_"+metrics+">.prev");
-				    			var pct = $("#"+selected_pattern+"_"+metrics+">.pct");
-
-					    		if (crnt.text() == "") {
-					    			crnt.text(qorArray[i]);
-					    		} else {
-					    			prev.text(crnt.text());
-					    			crnt.text(qorArray[i]);
-					    			var pct_value = (parseFloat(crnt.text()) / parseFloat(prev.text())) * 100 - 100
-					    			if (pct_value > 10000) {
-					    				pct_value = parseInt(pct_value).toExponential(2)
-					    				pct.text(pct_value)
-					    			} else {
-					    				pct.text(pct_value.toFixed(2));
-					    			}
-							    			
-							    	if (parseFloat(crnt.text()) > parseFloat(prev.text())) {
-							    		crnt.css("color", "red");
-							    		pct.css("color", "red");							    		
-							    	} else if (parseFloat(crnt.text()) < parseFloat(prev.text())) {
-							    		crnt.css("color", "green");
-							    		pct.css("color", "green");
+								    			
+									if (pct_value > 0) {
+										if ( metrics == 'FREQUENCY_GHz') {
+											crnt.css("color", "green");
+							    			pct.css("color", "green");
+										} else {
+							    			crnt.css("color", "red");
+							    			pct.css("color", "red");	
+							    		}						    		
+							    	} else if (pct_value < 0) {
+							    		if ( metrics == 'FREQUENCY_GHz') {
+							    			crnt.css("color", "red");
+							    			pct.css("color", "red");	
+							    		} else {
+							    			crnt.css("color", "green");
+							    			pct.css("color", "green");
+							    		}
 							    	} else {
 							    		crnt.css("color", "black");
 							    		pct.css("color", "black");
 							    	}
-					    		};
-					    	});
-				    	});  						
-					}); // end qor_metrics_list			  		
-				}; // end step_match if
-			})	    	
+						    		};
+						    	});
+					    	});  						
+						}); // end qor_metrics_list			  		
+					}; // end step_match if
+				});	// end design iteration
+			}); // end pattern iter    	
 		}
 
 		function activeModal() {
+			var cmd = "{{cmd|safe}}";
 			var url = "{{url|safe}}";
 			if ($("#design-name>.ladda-label").length == 1) {
 				var active_design = $("#design-name>.ladda-label")[0].outerText
@@ -1116,7 +1964,17 @@
 				var active_metrics = undefined
 			}
 
-			$("#url-link").val(url+"&active_design="+active_design+"&active_metrics="+active_metrics+"&active_pattern="+window.active_pattern+"&prev_d="+window.prev_d+"&prev_p="+window.prev_p+"&crnt_d="+window.crnt_d+"&crnt_p="+window.crnt_p);				
+			var tech_node_url = ""
+			$.each(window.selected_tech_nodes, function(i,tech_node) {
+				tech_node_url += "&tech_nodes="+tech_node
+			})
+			var customer_url = ""
+			$.each(window.selected_customers, function(i,customer) {
+				customer_url += "&customers="+customer
+			})
+			console.log(tech_node_url, customer_url)
+
+			$("#url-link").val(url+"&active_design="+active_design+"&active_metrics="+active_metrics+"&active_pattern="+window.active_pattern+"&prev_d="+window.prev_d+"&prev_p="+window.prev_p+"&crnt_d="+window.crnt_d+"&crnt_p="+window.crnt_p+tech_node_url+customer_url);				
 			$("#myModal").modal();
 			$("#url-link").select();
 			$("#url-link").focus();
@@ -1129,6 +1987,25 @@
 			$(".pattern_nav").removeClass('active_nav');
 			$("."+selected_pattern+"_nav").removeClass('inactive_nav');
 			$("."+selected_pattern+"_nav").addClass('active_nav');
+			window.prev_d = -1;
+			window.prev_p = -1;
+			window.crnt_d = -1;
+			window.crnt_p = -1;
+		}
+
+		function flaskURL(stage, stage_url, active_pattern) {
+			var cmd = stage;
+			var compress = "{{compress|safe}}";
+			var input_list = {{dir_list|safe}};
+			var pattern = "{{pattern|safe}}";
+			var script_list = {{script_list|safe}};
+			if (script_list.length) {
+				var url = flask_util.url_for(stage_url, {cmd: cmd, active_design: window.active_design, mode: 'flow', compress: compress, input_list: input_list, pattern: pattern, script_list: script_list, prev_d: -1, prev_p: -1, crnt_d: -1, crnt_p: -1, active_pattern: active_pattern, selected_tech_nodes: window.selected_tech_nodes, selected_customers: window.selected_customers});
+			} else {
+				var url = flask_util.url_for(stage_url, {cmd: cmd, active_design: window.active_design, mode: 'flow', compress: compress, input_list: input_list, pattern: pattern, prev_d: -1, prev_p: -1, crnt_d: -1, crnt_p: -1, active_pattern: active_pattern, selected_tech_nodes: window.selected_tech_nodes, selected_customers: window.selected_customers});
+			}
+			// alert(url);
+			location.href = url;
 		}
 
 	</script>
@@ -1147,18 +2024,9 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
-          	<li><a href="{{ url_for('index') }}">Home</a></li>
-            <li class="dropdown active">
-	          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">DashBoard<span class="caret"></span></a>
-	          <ul class="dropdown-menu">
-	          	<li class="dropdown-header">Select a core OPT stage</li>
-	            <li><a href="{{ url_for('qor_profile_popt', mode='flow', compress=compress, input_list=dir_list, pattern=pattern, script_list=script_list) }}">Popt QoR Profiler</a></li>
-	            <li><a href="{{ url_for('qor_profile_copt', mode='flow', compress=compress, input_list=dir_list, pattern=pattern, script_list=script_list) }}">Copt QoR Profiler</a></li>	   
-	            <li><a href="{{ url_for('qor_profile_ropt', mode='flow', compress=compress, input_list=dir_list, pattern=pattern, script_list=script_list) }}">Ropt QoR Profiler</a></li>       
-	            <li><a href="{{ url_for('qor_profile_fopt', mode='flow', compress=compress, input_list=dir_list, pattern=pattern, script_list=script_list) }}">Fopt QoR Profiler</a></li>
-	          </ul>
-	        </li>
-			<li><a href="#">About</a></li>
+          	<li><a href="{{ url_for('index') }}"><small><span class="glyphicon glyphicon-home"></span></small>&nbsp;&nbsp;Home</a></li>
+          	<li class="active"><a href="#"><small><span class="glyphicon glyphicon-dashboard"></span></small>&nbsp;&nbsp;DashBoard</a></li>
+			<li><a href="{{ url_for('about') }}"><small><span class="glyphicon glyphicon-info-sign"></span></small>&nbsp;&nbsp;About</a></li>
 		  </ul>
 
         </div><!--/.nav-collapse -->
@@ -1171,12 +2039,12 @@
 			</div> 
 				<!-- col-3 -->
 			<div class="col-md-9" role="main">
-				<!-- Main jumbotron for a primary marketing message or call to action -->
+				<!-- Main jumbotron for a primary marketing message or call to action --><!--
 				<div class="alert alert-success alert-dismissible" role="alert">
 					<button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
 			    	<strong>QoR Analyzer: data loaded successfully!! (Will adapt "0" qor value to "0.00001" to avoid logarithmic exception)</strong>
 			  	</div>
-
+				-->
 			  	<h4 style="margin-bottom:18px;">
 			  	<span class="label label-primary">Mode: {{mode}}</span>
 			  	{% if compress==0 %}
@@ -1184,12 +2052,14 @@
 			  	{% else %}
 			  		<span class="label label-primary">Compress: yes</span>
 			  	{% endif %}
-			  	<span class="label label-primary">Stage: nw{{cmd}}</span>
+			  	<!--
+			  	<span class="label label-primary">Stage: {{cmd|upper}}</span>
+			  	-->
 			  	</h4>
 			  	{% set color_index = 0 %}
 			  	{% for dir in dir_list%}
 			  	<h4 style="margin-bottom:18px;">
-			  	<span class="label label-info" style="background-color: {{color_list[color_index]|safe}}">{{dir}}</span>
+			  	<span class="label label-info" style="background-color: {{color_list[color_index]|safe}}">Flow{{color_index+1}}:</span><span class="label label-info">{{dir}}</span>
 			  	</h4>
 			  	{% set color_index = color_index + 1 %}
 			  	{% endfor %}
@@ -1225,34 +2095,60 @@
 				</h4>
 				<!-- Split button -->
 				<div class="row">
+					<!--select stage-->
+					<div class="col-md-12" style="margin-bottom:10px;">
+					<!--
+					<div style="padding-right:10px;display:table-cell;">
+				  	<h4 style="margin-bottom:18px;">
+				  	<span class="label label-primary">Stage:</span>
+				  	</h4>
+				  	</div>
+				  	-->
+					<div class="btn-group" style="display:table-cell;padding-right: 15px;">
+
+					  <button id="stage-name" type="button" class="btn btn-success ladda-button" data-style="expand-right">Stage : {{cmd|upper}}</button>
+					  <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height:34px;">
+					    <span class="caret" style="margin-top: 4px"></span>
+					    <span class="sr-only">Toggle Dropdown</span>
+					  </button>
+					  <ul class="dropdown-menu">
+			          	<li class="dropdown-header">Select a core FLOW stage</li>
+			          	<li><a href="#", onclick="flaskURL('full_flow','profile_flow');">Full-Flow QoR Profiler</a></li>
+			            <li><a href="#", onclick="flaskURL('popt','profile_flow');">Popt QoR Profiler</a></li>
+			            <li><a href="#", onclick="flaskURL('copt','profile_flow');">Copt QoR Profiler</a></li>	   
+			            <li><a href="#", onclick="flaskURL('ropt','profile_flow');">Ropt QoR Profiler</a></li>       
+			            <li><a href="#", onclick="flaskURL('fopt','profile_flow');">Fopt QoR Profiler</a></li>
+					  </ul>
+					</div>
 					<!--select by design-->
-					<div class="col-md-12">
-					<div class="btn-group" style="margin-bottom: 18px;display:table-cell;">
+					<div class="btn-group" style="display:table-cell;">
 					  <button id="design-name" type="button" class="btn btn-warning ladda-button" data-style="expand-right">Select by design</button>
 					  <button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height:34px;">
 					    <span class="caret" style="margin-top: 4px"></span>
 					    <span class="sr-only">Toggle Dropdown</span>
 					  </button>
-					  <ul class="dropdown-menu">
+					  <ul id='design_ul' class="dropdown-menu">
 					  	{% for design in design_list %}
 					    <li class="design {{design}}" onclick="activeDesign(this);"><a href="#">{{design}}</a></li>
 					    {% endfor %}
 					  </ul>
 					</div>
+
+
 					<div style="padding-left: 10px;padding-right:10px;display:table-cell;">
-				  	<h4 style="margin-bottom:18px;">
+				  	<h4 >
 				  	<span class="label label-primary">OR</span>
 				  	</h4>
 				  	</div>
 				  	<!--select by metrics-->
 
-					<div class="btn-group" style="margin-bottom: 18px;display:table-cell;">
+					<div class="btn-group" style="padding-right:15px;display:table-cell;">
 					  <button id="metrics-name" type="button" class="btn btn-warning ladda-button" data-style="expand-right">Select by metrics</button>
 					  <button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height:34px;">
 					    <span class="caret" style="margin-top: 4px"></span>
 					    <span class="sr-only">Toggle Dropdown</span>
 					  </button>
-					  <ul class="dropdown-menu">
+					  <ul id='metrics_ul' class="dropdown-menu">
 					  	{% if pattern|string() == 'USER' %}
 					  		{% set pattern_index = 1 %}
 					  		{% for script in script_list%}
@@ -1264,55 +2160,80 @@
 						    {% set pattern_index = pattern_index + 1 %}
 			  				{% endfor %}
 						{% endif %}
-					  	{% if cmd|string() == 'popt' %}
-							<li class="dropdown-header">PREROUTE metrics</li>
-							{% for metrics in metrics_order_dict["PREROUTE"] %}
-						    	<li class="preroute metrics {{metrics}}" onclick="activeMetrics(this);"><a href="#">{{metrics}}</a></li>
+						{% if cmd|string() == 'full_flow' %}
+							<li class="dropdown-header">Full Flow metrics</li>
+							{% for metrics in metrics_order_dict["FULL_FLOW_PPA"] %}
+						    	<li class="full_flow_ppa metrics {{metrics}}" onclick="activeMetrics(this);"><a href="#">{{metrics}}</a></li>
 						    {% endfor %}
-						{% elif cmd|string() == 'copt' %}
-							<li class="dropdown-header">PREROUTE metrics</li>
-							{% for metrics in metrics_order_dict["PREROUTE"] %}
-						    	<li class="preroute metrics {{metrics}}" onclick="activeMetrics(this);"><a href="#">{{metrics}}</a></li>
-						    {% endfor %}	
-						    <li role="separator" class="divider"></li>					
-							<li class="dropdown-header">GROPT metrics</li>            
-							{% for metrics in metrics_order_dict["GROPT"] %}
-						    	<li class="gropt metrics {{metrics}}" onclick="activeMetrics(this);"><a href="#">{{metrics}}</a></li>
+					    {% elif cmd|string() != 'full_flow' %}
+							<li class="dropdown-header">QoR metrics</li>
+							{% for metrics in metrics_order_dict["QOR"] %}
+								{% if metrics|string() != 'Line' %}
+							    	<li class="qor metrics {{metrics}}" onclick="activeMetrics(this);"><a href="#">{{metrics}}</a></li>
+								{% endif %}
 						    {% endfor %}
-						{% elif cmd|string() == 'ropt' %}
-							<li class="dropdown-header">ROPT metrics</li>            
-							{% for metrics in metrics_order_dict["ROPT"] %}
-						    	<li class="ropt metrics {{metrics}}" onclick="activeMetrics(this);"><a href="#">{{metrics}}</a></li>
-						    {% endfor %}
-						{% elif cmd|string() == 'fopt' %}
-							<li class="dropdown-header">FOPT metrics</li>            
-							{% for metrics in metrics_order_dict["ROPT"] %}
-						    	<li class="ropt metrics {{metrics}}" onclick="activeMetrics(this);"><a href="#">{{metrics}}</a></li>
-						    {% endfor %}						    
+						{% else %}
+						  	{% if cmd|string() == 'popt' %}
+								<li class="dropdown-header">QOR metrics</li>
+								{% for metrics in metrics_order_dict["QOR"] %}
+							    	<li class="qor metrics {{metrics}}" onclick="activeMetrics(this);"><a href="#">{{metrics}}</a></li>
+							    {% endfor %}
+							{% elif cmd|string() == 'copt' %}
+								<li class="dropdown-header">QOR metrics</li>
+								{% for metrics in metrics_order_dict["QOR"] %}
+							    	<li class="qor metrics {{metrics}}" onclick="activeMetrics(this);"><a href="#">{{metrics}}</a></li>
+							    {% endfor %}	
+							    <li role="separator" class="divider"></li>					
+								<li class="dropdown-header">GROPT metrics</li>            
+								{% for metrics in metrics_order_dict["GROPT"] %}
+							    	<li class="gropt metrics {{metrics}}" onclick="activeMetrics(this);"><a href="#">{{metrics}}</a></li>
+							    {% endfor %}
+							{% elif cmd|string() == 'ropt' %}
+								<li class="dropdown-header">QOR metrics</li>            
+								{% for metrics in metrics_order_dict["QOR"] %}
+							    	<li class="qor metrics {{metrics}}" onclick="activeMetrics(this);"><a href="#">{{metrics}}</a></li>
+							    {% endfor %}
+							{% elif cmd|string() == 'fopt' %}
+								<li class="dropdown-header">QOR metrics</li>            
+								{% for metrics in metrics_order_dict["QOR"] %}
+								{% if metrics|string() != 'Line' %}
+							    	<li class="qor metrics {{metrics}}" onclick="activeMetrics(this);"><a href="#">{{metrics}}</a></li>
+								{% endif %}
+							    {% endfor %}
+							{% endif %}						    
 						{% endif %}
 					  </ul>
 					</div>
-					<form role="search" action="/jump_profile" method=post style="margin-top: 1em">
-					<div id="show_name" class="btn-group" style="margin-bottom: 18px;display:none;width: 1600px;">
-						<div style="float: left;">
-						<div class="input-group-addon" style="display:table-cell;border-right: 0;float: left;width: 150px;height: 34px;line-height: 1.5">Analysis Single Step</div>
-						<input style="width:150px;display:table-cell;float: left;border-radius: 0px;" id="single_name" name="single_name" type="text" class="form-control" placeholder="Single Name">
-						<div class="input-group-btn" style="display:table-cell;float: left;"><button type="submit" id="enter_btn" class="btn btn-primary" data-style="expand-right" onclick="activeChange(this);">Start!</button></div>
-						</div>
-						<div style="float: left;width: 800px;padding-left: 30px;">
-						<div class="input-group-addon" style="display:table-cell;border-right: 0;float: left;width: 140px;height: 34px;line-height: 1.5">Analysis Steps</div>
-						<button type="button" class="btn btn-warn" style="width:70px;border-radius:0px;float: left;">Base</button>
-						<input style="width:150px;display:table-cell;float: left;border-radius: 0px;" id="first_name" name="first_name" type="text" class="form-control" placeholder="base Name">
-						<button type="button" class="btn btn-warn" style="width:80px;border-radius:0px;float: left;">Compare</button>
-						<input style="width:150px;border-radius: 0px;display:table-cell;float: left;" class="form-control" type="text" id="second_name" name="second_name" placeholder="Compare Name">
-						<div class="input-group-btn" style="display:table-cell;float: left;"><button type="submit" id="enter2_btn" class="btn btn-primary" data-style="expand-right" onclick="activeChange1(this);">Start!</button></div>
-						</div>
-						<input style="width:300px;margin-bottom:2px;display:none;" class="form-control" type="text" id="first_dir" name="first_dir">
-						<input style="width:300px;margin-bottom:2px;display:none;" class="form-control" type="text" id="mode" name="mode">
-						<input style="width:300px;margin-bottom:2px;display:none;" class="form-control" type="text" id="first_pattern" name="first_pattern">
-						<input style="width:300px;margin-bottom:2px;display:none;" class="form-control" type="text" id="first_stage" name="first_stage">
+
+					<div style="border-style: solid; border-width: 1px;border-radius:4px;border-color:white;padding-left: 10px;padding-right:10px;display:table-cell;">
+					<!--filter-->
+					<div style="padding-left: 10px;padding-right:10px;display:table-cell;">
+				  	<h4 >
+				  	<span class="label label-primary">Tech Node filter</span>
+				  	</h4>
+				  	</div>					
+					<div class="btn-group" style="display:table-cell;">
+					  <select id="tech_node_list" multiple="multiple" style="margin-left: 15px;padding-left: 15px;">
+					  {% for tech_node in tech_node_dict %}
+					  	<option value='{{tech_node}}' {% if tech_node in tech_nodes %} selected {% endif %}> {{tech_node}}</option>
+					  {% endfor %}
+                    </select>
 					</div>
-					</form>
+
+					<div style="padding-left: 10px;padding-right:10px;display:table-cell;">
+				  	<h4 >
+				  	<span class="label label-primary">Customer filter</span>
+				  	</h4>
+				  	</div>					
+					<div class="btn-group" style="display:table-cell;">
+					  <select id="customer_list" multiple="multiple" style="margin-left: 15px;padding-left: 15px;">
+  					  {% for customer in customer_dict %}
+					  	<option value='{{customer}}' {% if customer in customers %} selected {% endif %}> {{customer}}</option>
+					  {% endfor %}
+                    </select>
+					</div>
+					</div>
+
 					</div>
 				</div>
 			
@@ -1331,11 +2252,45 @@
 			</div>
 			<!-- col-9 -->
 			<div class="col-md-2" role="complementary" style="padding-left: 0px;">
-				<nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" style="top:252px;width:400px;">
+					<form role="search" action="jump_profile" method=post target="_blank" style="margin-top: 1em">
+					<div id="show_name" class="btn-group" style="margin-bottom: 18px;display:none;width: 1600px;">
+						<div style="float: left;">
+						<div class="input-group-addon" style="display:table-cell;border-right: 0;float: left;width: 150px;height: 34px;line-height: 1.5">Analysis Single Step</div>
+						<input style="width:120px;display:table-cell;float: left;border-radius: 0px;" id="single_name" name="single_name" type="text" class="form-control" placeholder="Single Name">
+						<div class="input-group-btn" style="display:table-cell;float: left;"><button type="submit" id="enter_btn" class="btn btn-primary" data-style="expand-right" onclick="activeChange(this);">Start!</button></div>
+						</div>
+						<div style="float: left;padding-left: 30px;">
+						<div class="input-group-addon" style="display:table-cell;border-right: 0;float: left;width: 140px;height: 34px;line-height: 1.5">Trajectory Analysis</div>
+						<input style="width:75px;display:table-cell;float: left;border-radius: 0px;" id="number" name="number" type="text" class="form-control" placeholder="number">
+						<div class="input-group-btn" style="display:table-cell;float: left;"><button type="submit" id="enter1_btn" class="btn btn-primary" data-style="expand-right" onclick="activeChange1(this);">Start!</button></div>
+						</div>
+						<div style="float: left;width: 600px;padding-left: 30px;">
+						<div class="input-group-addon" style="display:table-cell;border-right: 0;float: left;width: 120px;height: 34px;line-height: 1.5">Analysis Steps</div>
+						<button type="button" class="btn btn-warn" style="width:50px;border-radius:0px;float: left;">Base</button>
+						<input style="width:100px;display:table-cell;float: left;border-radius: 0px;" id="first_name" name="first_name" type="text" class="form-control" placeholder="base Name">
+						<button type="button" class="btn btn-warn" style="width:80px;border-radius:0px;float: left;">Compare</button>
+						<input style="width:130px;border-radius: 0px;display:table-cell;float: left;" class="form-control" type="text" id="second_name" name="second_name" placeholder="Compare Name">
+						<div class="input-group-btn" style="display:table-cell;float: left;"><button type="submit" id="enter2_btn" class="btn btn-primary" data-style="expand-right" onclick="activeChange2(this);">Start!</button></div>
+						</div>
+						<div style="clear: both;"></div>						
+						<input style="width:300px;margin-bottom:2px;display:none;" class="form-control" type="text" id="first_dir" name="first_dir">
+						<input style="width:300px;margin-bottom:2px;display:none;" class="form-control" type="text" id="second_dir" name="second_dir">
+						<input style="width:300px;margin-bottom:2px;display:none;" class="form-control" type="text" id="mode" name="mode">
+						<input style="width:300px;margin-bottom:2px;display:none;" class="form-control" type="text" id="first_pattern" name="first_pattern">
+						<input style="width:300px;margin-bottom:2px;display:none;" class="form-control" type="text" id="first_stage" name="first_stage">
+						<input style="width:300px;margin-bottom:2px;display:none;" class="form-control" type="text" id="tech_nodes" name="tech_nodes">
+						<input style="width:300px;margin-bottom:2px;display:none;" class="form-control" type="text" id="customers" name="customers">
+					</div>
+					<div id="show_hint" class='alert alert-warning bs-docs-sidebar hidden-print hidden-xs hidden-sm affix' style="width: 400px;margin-top: 20px;display: none;">
+							<strong>QoR Analysis Note! </strong>
+							<span id="hint_btn" style="margin-left: 20px;" class="btn btn-primary" data-style="expand-right" onclick="hintChange();">Start!</span>
+					</div>
+					</form>
+				<nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" style="top:290px;width:400px;">
 				  	<h4 style="margin-bottom:18px;">
 					<!-- Button trigger modal -->
-					<button type="button" class="btn btn-success btn-xs" onclick="activeModal();">
-					  <span class="glyphicon glyphicon-share"></span><strong>Share</strong>
+					<button type="button" class="btn btn-success btn-s" id="share" onclick="activeModal();">
+					  <span class="glyphicon glyphicon-share"></span><strong>&nbsp;Share</strong>
 					</button>
 
 					</h4>

@@ -16,10 +16,10 @@ just_start = True
 wns = wnhs = 0
 
 for line in f:
-    if "START_FUNC: Concurrent Clock Data Optimization Engine" in line:
+    if "START_FUNC: Concurrent Clock Data Optimization Engine" in line or "CCD initialization runtime:" in line:
         ccd_start = True
         continue
-    if "END_FUNC: Concurrent Clock Data Optimization Engine" in line:
+    if "END_FUNC: Concurrent Clock Data Optimization Engine" in line or "CCD flow runtime:" in line:
         print step_name, (" ").join(ccd_qor_list['setup']), (" ").join(ccd_qor_list['hold'])
         ccd_start = False
         continue

@@ -1,11 +1,9 @@
 #!/remote/us01home40/phyan/depot/Python-2.7.11/bin/python
-import sys 
-import os
-import copy
-import commands
-import re
-import getpass
-import datetime
+import sys, os, commands
+import copy, re, getpass, datetime
+import threading
+from multiprocessing import Pool, Process
+from multiprocessing.managers import BaseManager, DictProxy
 import MySQLdb
 from urllib import urlencode
 from werkzeug import MultiDict
@@ -19,44 +17,84 @@ from socket import error as SocketError
 import errno
 
 from flask import Flask, request, render_template, Response, jsonify
+from flask_util_js import FlaskUtilJs
 import json
 #heartbeat extraction
 #from preroute import pr_log_extractor
 from qorProfiler import QorProfiler
+from record_usage import *
+from utility import *
 
 app = Flask(__name__)
+fujs = FlaskUtilJs(app)
 
+class MyManager(BaseManager):
+    pass
+
+MyManager.register('defaultdict', defaultdict, DictProxy)    
 #==========================
 # global var init
 #==========================
-COLOR_LIST = ["#FF6384","#36A2EB","#fdb45c","#46bfbd","#99CC33","#CC9933"]
+COLOR_LIST = ["#FF6384","#36A2EB","#fdb45c","#46bfbd","#996699","#99CC33"]
+COLOR_LIST1 = [["#f5486c","#3399cc","#e49d46","#009999","#8c548c","#99cc66"], ["#FF6384","#36A2EB","#fdb45c","#46bfbd","#996699","#99CC33"]]
 #COLOR_LIST = ["#FF6384","#36A2EB","#FFCE56","#99CC33","#CC9933"]
 METRICS_PROPERTY_DICT = {
-	"PREROUTE":
-		{"ELAPSE_TIME" : [1, 'linear'], "WNS" : [2, 'logarithmic'], "TNS" : [3, 'logarithmic'], "AREA" : [4, 'linear'], "MAXTRAN" : [5, 'logarithmic'],
+	"APS":
+		{"Line": [0, 'linear'], "ELAPSE_TIME" : [1, 'linear'], "WNS" : [2, 'logarithmic'], "TNS" : [3, 'logarithmic'], "AREA" : [4, 'linear'], "MAXTRAN" : [5, 'logarithmic'],
 		 "MAXCAP" : [6, 'logarithmic'], "BUFFCNT" : [7, 'linear'], "INVCNT" : [8, 'linear'], "LVTCNT" : [9, 'linear'],
 		  "LVTPCNT" : [10, 'linear'], "MEM" : [11, 'linear'], "LEAKPWR" : [12, 'linear'], "WHNS" : [13, 'linear']},
-	"PREROUTE_STG":
-		{"ELAPSE_TIME" : [1, 'linear'], "WNS" : [2, 'logarithmic'], "TNS" : [3, 'logarithmic'], "AREA" : [4, 'linear'], "MAXTRAN" : [5, 'logarithmic'],
-		 "MAXCAP" : [6, 'logarithmic'], "BUFFCNT" : [7, 'linear'], "INVCNT" : [8, 'linear'], "LVTCNT" : [9, 'linear'],
-		  "LVTPCNT" : [10, 'linear'], "MEM" : [11, 'linear'], "LEAKPWR" : [12, 'linear'], "WHNS" : [13, 'linear']},
+	"QOR":
+		{"Line": [0, 'linear'], "TNS" : [1, 'logarithmic'], "LDRC" : [2, 'logarithmic'], "AREA" : [3, 'linear'], "LEAKAGE" : [4, 'linear'], "ELAPSE" : [5, 'linear']},		
+	"QOR_STG":
+		{"Line": [0, 'linear'], "TNS" : [1, 'logarithmic'], "LDRC" : [2, 'logarithmic'], "AREA" : [3, 'linear'], "LEAKAGE" : [4, 'linear'], "ELAPSE" : [5, 'linear']},	
+	# "QOR_STG":
+	# 	{"ELAPSE_TIME" : [1, 'linear'], "WNS" : [2, 'logarithmic'], "TNS" : [3, 'logarithmic'], "AREA" : [4, 'linear'], "MAXTRAN" : [5, 'logarithmic'],
+	# 	 "MAXCAP" : [6, 'logarithmic'], "BUFFCNT" : [7, 'linear'], "INVCNT" : [8, 'linear'], "LVTCNT" : [9, 'linear'],
+	# 	  "LVTPCNT" : [10, 'linear'], "MEM" : [11, 'linear'], "LEAKPWR" : [12, 'linear'], "WHNS" : [13, 'linear']},
 	"ROPT":
-		{"RSETUP" : [1, 'logarithmic'], "SETUP_COST" : [2, 'logarithmic'], "RHOLD" : [3, 'logarithmic'], "HOLD_COST" : [4, 'linear'], "RLDRC_MT" : [5, 'logarithmic'],
+		{"Line": [0, 'linear'], "RSETUP" : [1, 'logarithmic'], "SETUP_COST" : [2, 'logarithmic'], "RHOLD" : [3, 'logarithmic'], "HOLD_COST" : [4, 'linear'], "RLDRC_MT" : [5, 'logarithmic'],
 	    "RLDRC_MC" : [6, 'logarithmic'], "LDRC_COST" : [7, 'logarithmic'], "AREA" : [8, 'linear'], "LEAKAGE" : [9, 'linear'], "ELAPSE" : [10, 'linear']},
+	"DF_ROPT":
+		{"Line": [0, 'linear'], "SETUP_COST" : [1, 'logarithmic'],"HOLD_COST" : [2, 'linear'],"LDRC_COST" : [3, 'logarithmic'], "AREA" : [4, 'linear'], "LEAKAGE" : [5, 'linear'], "ELAPSE" : [6, 'linear']},	    
     "GROPT":
-		{"RSETUP" : [1, 'logarithmic'], "SETUP_COST" : [2, 'logarithmic'], "RHOLD" : [3, 'logarithmic'], "HOLD_COST" : [4, 'linear'], "RLDRC_MT" : [5, 'logarithmic'],
+		{"Line": [0, 'linear'], "RSETUP" : [1, 'logarithmic'], "SETUP_COST" : [2, 'logarithmic'], "RHOLD" : [3, 'logarithmic'], "HOLD_COST" : [4, 'linear'], "RLDRC_MT" : [5, 'logarithmic'],
 	    "RLDRC_MC" : [6, 'logarithmic'], "LDRC_COST" : [7, 'logarithmic'], "AREA" : [8, 'linear'], "LEAKAGE" : [9, 'linear'], "ELAPSE" : [10, 'linear']},
-    "NPO":
-		{"RSETUP" : [1, 'logarithmic'], "SETUP_COST" : [2, 'logarithmic'], "RHOLD" : [3, 'logarithmic'], "HOLD_COST" : [4, 'linear'], "RLDRC_MT" : [5, 'logarithmic'],
-	    "RLDRC_MC" : [6, 'logarithmic'], "LDRC_COST" : [7, 'logarithmic'], "AREA" : [8, 'linear'], "LEAKAGE" : [9, 'linear'], "ELAPSE" : [10, 'linear']}
+	"DF_GROPT":
+		{"Line": [0, 'linear'], "SETUP_COST" : [1, 'logarithmic'],"HOLD_COST" : [2, 'linear'],"LDRC_COST" : [3, 'logarithmic'], "AREA" : [4, 'linear'], "LEAKAGE" : [5, 'linear'], "ELAPSE" : [6, 'linear']},	    	    
+    "NPO_COPT":
+		{"Line": [0, 'linear'], "RSETUP" : [1, 'logarithmic'], "SETUP_COST" : [2, 'logarithmic'], "RHOLD" : [3, 'logarithmic'], "HOLD_COST" : [4, 'linear'], "RLDRC_MT" : [5, 'logarithmic'],
+	    "RLDRC_MC" : [6, 'logarithmic'], "LDRC_COST" : [7, 'logarithmic'], "AREA" : [8, 'linear'], "LEAKAGE" : [9, 'linear'], "ELAPSE" : [10, 'linear']},
+	"DF_NPO_COPT":
+		{"Line": [0, 'linear'], "SETUP_COST" : [1, 'logarithmic'],"HOLD_COST" : [2, 'linear'],"LDRC_COST" : [3, 'logarithmic'], "AREA" : [4, 'linear'], "LEAKAGE" : [5, 'linear'], "ELAPSE" : [6, 'linear']},	
+    "NPO_POPT":
+		{"Line": [0, 'linear'], "RSETUP" : [1, 'logarithmic'], "SETUP_COST" : [2, 'logarithmic'], "RHOLD" : [3, 'logarithmic'], "HOLD_COST" : [4, 'linear'], "RLDRC_MT" : [5, 'logarithmic'],
+	    "RLDRC_MC" : [6, 'logarithmic'], "LDRC_COST" : [7, 'logarithmic'], "AREA" : [8, 'linear'], "LEAKAGE" : [9, 'linear'], "ELAPSE" : [10, 'linear']},
+	"DF_NPO_POPT":
+		{"Line": [0, 'linear'], "SETUP_COST" : [1, 'logarithmic'],"HOLD_COST" : [2, 'linear'],"LDRC_COST" : [3, 'logarithmic'], "AREA" : [4, 'linear'], "LEAKAGE" : [5, 'linear'], "ELAPSE" : [6, 'linear']},	
+	"FULL_FLOW_PPA":
+		{"FREQUENCY_GHz": [1, 'linear'], "WNS": [2, 'linear'], "AREA": [2, 'linear'], "LEAKAGE": [2, 'linear'], "DYNAMIC": [3, 'linear'], "ELAPSE": [4, 'linear'], "MEM": [5, 'linear']},
+	"FUNC_DIST":
+		{"ELAPSE": [1, 'linear'], "MEM_PEAK": [2, 'linear']},
+	"ELAPSE_MEM":
+		{"ELAPSE": [1, 'linear'], "MEM_PEAK": [2, 'linear']},
 }
 
 METRICS_ORDER_DICT = {
-	"PREROUTE": ["WNS", "TNS", "MAXTRAN", 'MAXCAP', "BUFFCNT", "INVCNT", "AREA", "MEM", "ELAPSE_TIME", "LVTCNT", "LVTPCNT", "LEAKPWR", "WHNS"],
-	"PREROUTE_STG": ["WNS", "TNS", "MAXTRAN", 'MAXCAP', "BUFFCNT", "INVCNT", "AREA", "MEM", "ELAPSE_TIME", "LVTCNT", "LVTPCNT", "LEAKPWR", "WHNS"],
+	"APS": ["Line", "WNS", "TNS", "MAXTRAN", 'MAXCAP', "BUFFCNT", "INVCNT", "AREA", "MEM", "ELAPSE_TIME", "LVTCNT", "LVTPCNT", "LEAKPWR", "WHNS"],
+	"QOR": ["Line", "TNS", "LDRC", "AREA", "LEAKAGE", "ELAPSE"],
+	"QOR_STG": ["Line", "TNS", "LDRC", "AREA", "LEAKAGE", "ELAPSE"],
+	# "QOR_STG": ["WNS", "TNS", "MAXTRAN", 'MAXCAP', "BUFFCNT", "INVCNT", "AREA", "MEM", "ELAPSE_TIME", "LVTCNT", "LVTPCNT", "LEAKPWR", "WHNS"],
 	"ROPT": ["RSETUP","SETUP_COST","RHOLD","HOLD_COST","RLDRC_MT","RLDRC_MC","LDRC_COST","AREA","LEAKAGE","ELAPSE"],
+	"DF_ROPT":["SETUP_COST","HOLD_COST","LDRC_COST","AREA","LEAKAGE","ELAPSE"],
 	"GROPT": ["RSETUP","SETUP_COST","RHOLD","HOLD_COST","RLDRC_MT","RLDRC_MC","LDRC_COST","AREA","LEAKAGE","ELAPSE"],
-	"NPO": ["RSETUP","SETUP_COST","RHOLD","HOLD_COST","RLDRC_MT","RLDRC_MC","LDRC_COST","AREA","LEAKAGE","ELAPSE"],
+	"DF_GROPT":["SETUP_COST","HOLD_COST","LDRC_COST","AREA","LEAKAGE","ELAPSE"],
+	"NPO_POPT": ["Line", "RSETUP","SETUP_COST","RHOLD","HOLD_COST","RLDRC_MT","RLDRC_MC","LDRC_COST","AREA","LEAKAGE","ELAPSE"],
+	"DF_NPO_POPT":["SETUP_COST","HOLD_COST","LDRC_COST","AREA","LEAKAGE","ELAPSE"],
+	"NPO_COPT": ["Line", "RSETUP","SETUP_COST","RHOLD","HOLD_COST","RLDRC_MT","RLDRC_MC","LDRC_COST","AREA","LEAKAGE","ELAPSE"],
+	"DF_NPO_COPT":["SETUP_COST","HOLD_COST","LDRC_COST","AREA","LEAKAGE","ELAPSE"],
+	"FULL_FLOW_PPA": ["FREQUENCY_GHz", "WNS", "AREA", "LEAKAGE", "DYNAMIC", "ELAPSE", "MEM"],
+	"FUNC_DIST": ['ELAPSE', 'MEM_PEAK'],
+	"ELAPSE_MEM": ['ELAPSE', 'MEM_PEAK'],
 }
 
 PRS_STAGE = ['icpopt', 'iccopt']
@@ -78,7 +116,7 @@ input_num = 0
 @app.route('/index/')
 def index():
 	#username = request.remote_user 
-	username = "phyan" #for debug use
+	username = "phyan"
 	usr_info = os.popen("ph email=" + username)
 	f = usr_info.readlines()
 	active_duo = True
@@ -102,9 +140,14 @@ def index():
 
 	return render_template('index.html', user=request.remote_user, active_duo=active_duo, mode=mode, compress=compress, input_num=input_num, input_list=input_list, script_num=script_num, script_list=script_list)
 
+@app.route('/about')
+@app.route('/about/')
+def about():
+	record_usage(mode='about', username=request.remote_user)
+	return render_template('about.html', user=request.remote_user)
+
 @app.route('/analysis_tricks')
 def qor_analysis_tricks():
-	#username = "phyan" #for debug use
 	return render_template('analysis_tricks.html', user=request.remote_user)
 
 @app.route('/analysis_sqb', methods=['POST'])
@@ -115,20 +158,26 @@ def step_qor_benefit_analysis():
 	design_chart_dict = {}
 	step_name = request.form['step_name']
 	flow_dir = request.form['flow_dir']
+	second_dir = request.form['second_dir']
 	stage = request.form['stage']
 	pattern = request.form['pattern']
+	""" for design filter """
+	tech_nodes = json.loads(request.form['tech_nodes'])
+	customers = json.loads(request.form['customers'])
+	# print "sqb ",tech_nodes, customers
 	cmd = stage[-4:].strip().lower()
 	dir_list = [flow_dir]
+	dir_list2 = [second_dir]
 	mode = "flow"
 	compress = True
-	step_qor_info = {}
+	# step_qor_info = {}
 	list_mode = False
-	record_usage(mode='sqb')
+	record_usage(mode='sqb', username=request.remote_user)
 
 	if step_name == "":
 		list_mode = True
 
-	for dir in dir_list:
+	for dir in dir_list+dir_list2:
 		if not os.path.isdir(dir):
 			error_msg = "'%s' is not a vaild path!!" % dir
 			return jsonify({
@@ -137,43 +186,48 @@ def step_qor_benefit_analysis():
 			})
 
 	if list_mode:
-		steps_list_dict = defaultdict(list)
-		design_flow_dict = design_flow_extract(dir_list, cmd=cmd)
-		for design, log_list in design_flow_dict.items():
-			qp = QorProfiler(log_list=log_list, compress=compress)
-			qp.generate_profile()
+		steps_list_dict = generate_step_dict(pattern, dir_list, cmd, compress, tech_nodes, customers)
 
-			for pattern in qp.qor_metrics_dict.keys():
-				step_list = qp.steps_dict[pattern][0]
-				steps_list_dict[pattern].extend(remove_step_prefix(step_list))
-			
-		for pattern, step_list in steps_list_dict.items():
-			steps_list_dict[pattern] = list(set(step_list))
 		return jsonify({
 			'result': "success",
 			'steps_list_dict': json.dumps(steps_list_dict),
 		})
 
 	else:
-		if pattern == "PREROUTE":
+		mgr = MyManager()
+		mgr.start()
+		step_qor_info = mgr.defaultdict(list)
+		threads = []
+		# print "display mode"
+		if pattern == "APS" or pattern == "QOR_STG":
 			default_metrics = "WNS"
+		elif pattern == "FULL_FLOW_PPA":
+			default_metrics = "FREQUENCY_GHz"
 		else: 
 			default_metrics = "RSETUP"
 			
-		design_flow_dict = design_flow_extract(dir_list, cmd=cmd)
-		for design, log_list in design_flow_dict.items():
-			qp = QorProfiler(log_list=log_list, compress=compress)
-			if pattern == "PREROUTE":
-				log_hb = qp.preroute_profiler(log_list[0])
-			elif pattern == "GROPT":
-				log_hb = qp.gropt_profiler(log_list[0])
-			elif pattern == "ROPT":
-				log_hb = qp.ropt_profiler(log_list[0])
-			elif pattern == "NPO":
-				log_hb = qp.npo_profiler(log_list[0])
+		if pattern == "FULL_FLOW_PPA":
+			design_list, tech_node_dict, customer_dict = design_flow_extract(dir_list=dir_list, cmd='full_flow', tech_nodes=tech_nodes, customers=customers)
+			for design in design_list:
+				# print "Process ", design
+				input_list = [dir+'/'+design for dir in dir_list]
+				log_list = input_list
+				p = Process(target=generate_sqb_step_pair1, args=(design, log_list, pattern, dir_list, dir_list2, step_name, step_qor_info))
+				threads.append(p)
 
-			step_qor_info[design] = step_qor_analysis(design, log_hb, step_name)
+		else:
+			design_flow_dict, tech_node_dict, customer_dict = design_flow_extract(dir_list=dir_list, cmd=cmd, tech_nodes=tech_nodes, customers=customers)
+			for design, log_list in design_flow_dict.items():
+				p = Process(target=generate_sqb_step_pair, args=(design, log_list, pattern, cmd, compress, dir_list, dir_list2, step_name, step_qor_info))
+				threads.append(p)
 
+		nloops = range(len(threads))
+		for i in nloops:
+			threads[i].start()
+		for i in nloops:
+			threads[i].join()
+
+		step_qor_info = dict(step_qor_info)
 		step_qor_info = pd.DataFrame(step_qor_info)
 		step_qor_info = step_qor_info.fillna(value="null").to_dict(orient="index")
 
@@ -184,48 +238,6 @@ def step_qor_benefit_analysis():
 			#'step_qor_info': {"Daedalus_TS16FFP": [["(27P)SIZE3", 0.346, "(28P)SIZE4", 0.346, "0.00%"]], "Icarus": [["(27P)SIZE3", 0.051, "(28P)SIZE4", 0.049, "-4.08%"], ["(36P)SIZE3", 0.053, "(37P)SIZE4", 0.053, "0.00%"]]},
 	        #'step_qor_result': step_qor_result.to_dict(orient="index")["WNS"]
 		})
-
-def step_qor_analysis(design_name, log_hb, base_step):
-	step_qor_info = defaultdict(list)
-	step_found = False
-	log_hb = log_hb.dropna(axis=0, how="all")
-	for ele in log_hb.columns:
-		m = re.match(r'\(.*\)(\S+)',ele)
-		if m:
-			col_step = m.group(1)
-			if base_step.lower() == col_step.lower():
-				step_found = True
-				step_index = log_hb.columns.tolist().index(ele)
-				compare_qor_array = log_hb.iloc[:,step_index]
-				base_qor_array = log_hb.iloc[:,step_index-1]
-				step_qor_array = []
-				#Leo to refactoring
-				for index in compare_qor_array.index:				
-					base_val = float(base_qor_array[index])
-					comp_val = float(compare_qor_array[index])
-
-					if base_val == 0 and comp_val == 0:
-						change_pct = format(0,".2f")
-					elif base_val == 0:
-						change_pct = format(100,".2f")
-					elif comp_val == 0:
-						change_pct = format(-100,".2f")
-					else:
-						change_pct = format((comp_val-base_val)*100/comp_val, ".2f")
-
-					step_qor_info[index].append([base_qor_array.name, base_val, compare_qor_array.name, comp_val, change_pct])
-					step_qor_array.append(change_pct)
-
-	return step_qor_info
-	
-def remove_step_prefix(step_list):
-	pure_step_list = []
-	for step in step_list:
-		m = re.match(r'\(.*\)(\S+)',step)
-		if m:
-			pure_step = m.group(1)
-			pure_step_list.append(pure_step)
-	return pure_step_list
 
 @app.route('/analysis_sqc', methods=['POST'])
 def step_qor_compare_analysis():
@@ -238,13 +250,16 @@ def step_qor_compare_analysis():
 	flow_dir = request.form['flow_dir']
 	stage = request.form['stage']
 	pattern = request.form['pattern']
+	""" for design filter """
+	tech_nodes = json.loads(request.form['tech_nodes'])
+	customers = json.loads(request.form['customers'])
 	cmd = stage[-4:].strip().lower()
 	dir_list = [flow_dir]
 	mode = "flow"
 	compress = True
 	step_qor_info = {}
 	list_mode = False
-	record_usage(mode='sqc')
+	record_usage(mode='sqc', username=request.remote_user)
 
 	if base_name == "" and step_name == "":
 		list_mode = True
@@ -258,99 +273,57 @@ def step_qor_compare_analysis():
 			})
 
 	if list_mode:
-		steps_list_dict = defaultdict(list)
-		design_flow_dict = design_flow_extract(dir_list, cmd=cmd)
-		for design, log_list in design_flow_dict.items():
-			qp = QorProfiler(log_list=log_list, compress=compress)
-			qp.generate_profile()
+		steps_list_dict = generate_step_dict(pattern, dir_list, cmd, compress)
 
-			for pattern in qp.qor_metrics_dict.keys():
-				step_list = qp.steps_dict[pattern][0]
-				steps_list_dict[pattern].extend(remove_step_prefix(step_list))
-			
-		for pattern, step_list in steps_list_dict.items():
-			steps_list_dict[pattern] = list(set(step_list))
 		return jsonify({
 			'result': "success",
 			'steps_list_dict': json.dumps(steps_list_dict),
 		})
 
 	else:
-		if pattern == "PREROUTE":
+		mgr = MyManager()
+		mgr.start()
+		step_qor_info = mgr.defaultdict(list)
+		threads = []
+
+		if pattern == "APS"  or pattern == "QOR_STG":
 			default_metrics = "WNS"
+		elif pattern == "FULL_FLOW_PPA":
+			default_metrics = "FREQUENCY_GHz"
 		else: 
 			default_metrics = "RSETUP"
-		design_flow_dict = design_flow_extract(dir_list, cmd=cmd)
-		for design, log_list in design_flow_dict.items():
-			qp = QorProfiler(log_list=log_list, compress=compress)
-			if pattern == "PREROUTE":
-				log_hb = qp.preroute_profiler(log_list[0])
-			elif pattern == "GROPT":
-				log_hb = qp.gropt_profiler(log_list[0])
-			elif pattern == "ROPT":
-				log_hb = qp.ropt_profiler(log_list[0])
-			elif pattern == "NPO":
-				log_hb = qp.npo_profiler(log_list[0])
-			step_qor_info[design] = step_qor_compare(design, log_hb, base_name,step_name)
 
-		step_qor_info=pd.DataFrame(step_qor_info)
-		step_qor_info=step_qor_info.fillna(value="null").to_dict(orient="index")
+		if pattern == "FULL_FLOW_PPA":
+			design_list, tech_node_dict, customer_dict = design_flow_extract(dir_list=dir_list, cmd='full_flow', tech_nodes=tech_nodes, customers=customers)
+			for design in design_list:
+				# print design
+				input_list = [dir_list[0] +'/'+design]
+				log_list = input_list
+				p = Process(target=generate_sqc_step_pair, args=(design, log_list, pattern, compress, base_name, step_name, step_qor_info))
+				threads.append(p)
+				# print step_qor_info[design]
+		else:
+			design_flow_dict, tech_node_dict, customer_dict = design_flow_extract(dir_list=dir_list, cmd=cmd, tech_nodes=tech_nodes, customers=customers)
+			for design, log_list in design_flow_dict.items():
+				# print "Process ", design
+				p = Process(target=generate_sqc_step_pair, args=(design, log_list, pattern, compress, base_name, step_name, step_qor_info))
+				threads.append(p)
+
+		nloops = range(len(threads))
+		for i in nloops:
+			threads[i].start()
+		for i in nloops:
+			threads[i].join()
+
+		step_qor_info = dict(step_qor_info)
+		step_qor_info = pd.DataFrame(step_qor_info)
+		step_qor_info = step_qor_info.fillna(value="null").to_dict(orient="index")
 
 		return	jsonify({
-		'result':	"success",
-		'step_qor_info':	json.dumps(step_qor_info),
-		'default_metrics':	default_metrics,
+			'result':	"success",
+			'step_qor_info':	json.dumps(step_qor_info),
+			'default_metrics':	default_metrics,
 		})
-
-def compare_list(design_name, log_hb, base_name,step_name):
-	find_list = []
-	s = []
-	base_index = 0
-	step_index = 0
-	log_hb = log_hb.dropna(axis=0, how="all")
-	for ele in log_hb.columns:
-		m = re.match(r'\(.*\)(\S+)',ele)
-		if m:
-			col_step = m.group(1)
-			if base_name.lower() == col_step.lower():
-				if(len(s)==0):
-					s.append(base_name)
-				else:
-					s.pop()
-				base_index = log_hb.columns.tolist().index(ele)
-			if step_name.lower() == col_step.lower():
-				step_index = log_hb.columns.tolist().index(ele)
-				if(len(s)!=0):
-					find_list.append([base_index,step_index])
-					s.pop()
-	return find_list
-
-def step_qor_compare(design_name, log_hb, base_name,step_name):
-	step_qor_info = defaultdict(list)
-	step_found = False
-	log_hb = log_hb.dropna(axis=0, how="all")
-	compare_find_list = compare_list(design_name, log_hb, base_name,step_name)
-	for cfl in compare_find_list:
-		compare_qor_array = log_hb.iloc[:,cfl[1]]
-		base_qor_array = log_hb.iloc[:,cfl[0]]
-		step_qor_array = []
-		for index in compare_qor_array.index:				
-			base_val = float(base_qor_array[index])
-			comp_val = float(compare_qor_array[index])
-
-			if base_val == 0 and comp_val == 0:
-				change_pct = format(0,".2f")
-			elif base_val == 0:
-				change_pct = format(100,".2f")
-			elif comp_val == 0:
-				change_pct = format(-100,".2f")
-			else:
-				change_pct = format((comp_val-base_val)*100/comp_val, ".2f")
-
-			step_qor_info[index].append([base_qor_array.name, base_val, compare_qor_array.name, comp_val, change_pct])
-			step_qor_array.append(change_pct)
-
-	return step_qor_info
 
 @app.route('/analysis_sqt', methods=['POST'])
 def step_trajectory_analysis():
@@ -368,8 +341,8 @@ def step_trajectory_analysis():
 	compress = True
 	step_qor_info = {}
 	list_mode = False
-	record_usage(mode='sqt')
-
+	record_usage(mode='sqt', username=request.remote_user)
+    
 	if bound == "":
 		list_mode = True
 
@@ -380,45 +353,55 @@ def step_trajectory_analysis():
 				'result': "fail",
 				'msg': error_msg,
 			})
-
+	# print "list mode is",list_mode
 	if list_mode:
-		steps_list_dict = defaultdict(list)
-		design_flow_dict = design_flow_extract(dir_list, cmd=cmd)
-		for design, log_list in design_flow_dict.items():
-			qp = QorProfiler(log_list=log_list, compress=compress)
-			qp.generate_profile()
+		steps_list_dict = generate_step_dict(pattern, dir_list, cmd, compress)
 
-			for pattern in qp.qor_metrics_dict.keys():
-				step_list = qp.steps_dict[pattern][0]
-				steps_list_dict[pattern].extend(remove_step_prefix(step_list))
-			
-		for pattern, step_list in steps_list_dict.items():
-			steps_list_dict[pattern] = list(set(step_list))
+		# print steps_list_dict
 		return jsonify({
 			'result': "success",
 			'steps_list_dict': json.dumps(steps_list_dict),
 		})
 
 	else:
-		if pattern == "PREROUTE":
+		mgr = MyManager()
+		mgr.start()
+		step_qor_info = mgr.defaultdict(list)
+		threads = []
+
+		if pattern == "APS" or pattern == "QOR_STG":
 			default_metrics = "WNS"
+		elif pattern == "FULL_FLOW_PPA":
+			default_metrics = "FREQUENCY_GHz"
 		else: 
 			default_metrics = "RSETUP"
 			
-		design_flow_dict = design_flow_extract(dir_list, cmd=cmd)
-		for design, log_list in design_flow_dict.items():
-			qp = QorProfiler(log_list=log_list, compress=compress)
-			if pattern == "PREROUTE":
-				log_hb = qp.preroute_profiler(log_list[0])
-			elif pattern == "GROPT":
-				log_hb = qp.gropt_profiler(log_list[0])
-			elif pattern == "ROPT":
-				log_hb = qp.ropt_profiler(log_list[0])
-			elif pattern == "NPO":
-				log_hb = qp.npo_profiler(log_list[0])
+		if pattern == "FULL_FLOW_PPA":
+			# design_list = []
+			# for dir in dir_list:
+			# 	design_list.extend(os.listdir(dir))
+			# print cmd
+			design_list, tech_node_dict, customer_dict = design_flow_extract(dir_list, cmd='full_flow')
+			for design in design_list:
+				# print design
+				input_list = [dir_list[0] +'/'+design]
+				log_list = input_list
+				p = Process(target=generate_sqt_step_pair, args=(design, log_list, pattern, compress, bound, step_qor_info))
+				threads.append(p)
+				# print step_qor_info[design]
+		else:
+			design_flow_dict, tech_node_dict, customer_dict = design_flow_extract(dir_list, cmd=cmd)
+			for design, log_list in design_flow_dict.items():
+				p = Process(target=generate_sqt_step_pair, args=(design, log_list, pattern, compress, bound, step_qor_info))
+				threads.append(p)
 
-			step_qor_info[design] = step_qor_trajectory(design, log_hb, float(bound))
+		nloops = range(len(threads))
+		for i in nloops:
+			threads[i].start()
+		for i in nloops:
+			threads[i].join()
 
+		step_qor_info = dict(step_qor_info)
 		step_qor_info = pd.DataFrame(step_qor_info)
 		step_qor_info = step_qor_info.fillna(value="null").to_dict(orient="index")
 
@@ -430,59 +413,12 @@ def step_trajectory_analysis():
 	        #'step_qor_result': step_qor_result.to_dict(orient="index")["WNS"]
 		})
 
-def trajectory_list(design_name, log_hb):
-	find_list = []
-	s = []
-	base_index = 0
-	step_index = 0
-	log_hb = log_hb.dropna(axis=0, how="all")
-	for ele in log_hb.columns:
-		m = re.match(r'\(.*\)(\S+)',ele)
-		if m:
-			col_step = m.group(1)
-			# if step_name.lower() == col_step.lower():
-			step_index = log_hb.columns.tolist().index(ele)
-			base_index = step_index-1
-			if(base_index>=0):
-				find_list.append([step_index-1,step_index])
-	return find_list
-
-def step_qor_trajectory(design_name, log_hb, bound):
-	step_qor_info = defaultdict(list)
-	step_found = False
-	log_hb = log_hb.dropna(axis=0, how="all")
-	compare_find_list = trajectory_list(design_name, log_hb)
-	for cfl in compare_find_list:
-		compare_qor_array = log_hb.iloc[:,cfl[1]]
-		base_qor_array = log_hb.iloc[:,cfl[0]]
-		step_qor_array = []
-		for index in compare_qor_array.index:				
-			base_val = float(base_qor_array[index])
-			comp_val = float(compare_qor_array[index])
-
-			if base_val == 0 and comp_val == 0:
-				change_pct = format(0,".2f")
-			elif base_val == 0:
-				change_pct = format(100,".2f")
-			elif comp_val == 0:
-				change_pct = format(-100,".2f")
-			else:
-				change_pct = format((comp_val-base_val)*100/comp_val, ".2f")
-
-			if float(change_pct)>bound:
-				step_qor_info[index].append([base_qor_array.name, base_val, compare_qor_array.name, comp_val, change_pct])
-				step_qor_array.append(change_pct)
-		
-	# print "design name is ",design_name
-	# print "step_qor_info is",step_qor_info
-	return step_qor_info
-
 @app.route('/analysis_sqa', methods=['POST'])
 def stage_based_qor_analysis():
 	base_dir = request.form['flowb_dir']
 	compare_dir = request.form['flowc_dir']
 	dir_list = [base_dir,compare_dir]
-	design_flow_dict = design_flow_extract(dir_list)
+	design_flow_dict, tech_node_dict, customer_dict = design_flow_extract(dir_list)
 	mean_qor = calc_qor_mean_by_stage(design_flow_dict)
 
 	return render_template('index.html', user="phyan", active_duo=False)
@@ -492,7 +428,7 @@ def stage_based_qor_analysis():
 	    'step_qor_result': step_qor_result.to_dict(orient="index")["WNS"]
 	})
 
-@app.route('/profile', methods=['POST','GET'])
+@app.route('/qor_profile', methods=['POST','GET'])
 def qor_profile():
 	base_url = request.base_url
 	if request.method == 'POST':		
@@ -546,13 +482,13 @@ def qor_profile():
 				input_list.append(str(path))
 			
 			#record usage after user provides correct inputs
-			record_usage(mode=mode+'_'+str(compress))
+			record_usage(mode=mode+'_'+str(compress), username=request.remote_user)
 			return qor_profile_main(base_url=base_url, mode=mode, compress=compress, input_list=input_list, point_dict=point_dict, pattern=pattern, script_list=script_list)
 		elif mode == "checkpoint":
-			record_usage(mode=mode)
+			record_usage(mode=mode, username=request.remote_user)
 			dir_path = request.form['param-2']
 
-			return duo_analysis_main(mode=mode, dir_path=dir_path)
+			return duo_analysis_main(base_url=base_url, mode=mode, dir_path=dir_path)
 
 	elif request.method == 'GET':
 		point_dict = copy.copy(POINT_DICT_DEFAULT)
@@ -562,9 +498,9 @@ def qor_profile():
 			if mode == "checkpoint":
 				dir_path = mutable_dict.get('dir_path')
 				active_design = mutable_dict.get('active_design')
-				record_usage(mode=mode)
+				record_usage(mode=mode, username=request.remote_user)
 
-				return duo_analysis_main(mode=mode, dir_path=dir_path, active_duo=active_design)
+				return duo_analysis_main(base_url=base_url, mode=mode, dir_path=dir_path, active_duo=active_design)
 			else:
 				input_list = mutable_dict.getlist('input_list')
 				input_list = [str(inp) for inp in input_list]
@@ -581,7 +517,7 @@ def qor_profile():
 				point_dict["prev_p"] = mutable_dict.get('prev_p')
 				point_dict["crnt_d"] = mutable_dict.get('crnt_d')
 				point_dict["crnt_p"] = mutable_dict.get('crnt_p')
-				record_usage(mode=mode+'_'+str(compress))
+				record_usage(mode=mode+'_'+str(compress), username=request.remote_user)
 				return qor_profile_main(base_url=base_url, mode=mode, compress=compress, input_list=input_list, cmd=cmd, active_pattern=active_pattern, active_design=active_design,active_metrics=active_metrics, point_dict=point_dict, pattern=pattern, script_list=script_list)
 		else:
 			return render_template('index.html')	
@@ -590,12 +526,28 @@ def qor_profile():
 def jump_profile():
 	first_name = request.form.get('first_name')
 	first_dir = request.form.get('first_dir')
+	second_dir = request.form.get('second_dir')
 	first_pattern = request.form.get('first_pattern')
 	first_stage = request.form.get('first_stage')
 	second_name = request.form.get('second_name')
 	single_name = request.form.get('single_name')
+	number = request.form.get('number')
 	mode = request.form.get('mode')
-	return render_template('analysis_tricks.html', mode = mode, single_name = single_name, step_name = first_name, comp_name=second_name, flow_dir = first_dir, stage = first_stage, pattern = first_pattern)
+	tech_nodes = str(request.form.get('tech_nodes'))
+	customers = str(request.form.get('customers'))
+	# print "jump ", tech_nodes, customers
+
+	if tech_nodes == "":
+		tech_nodes = []
+	else:
+		tech_nodes = tech_nodes.split(',')
+
+	if customers == "":
+		customers = []
+	else:	
+		customers = customers.split(',')
+
+	return render_template('analysis_tricks.html', second_dir=second_dir, number = number, mode = mode, single_name = single_name, step_name = first_name, comp_name=second_name, flow_dir = first_dir, stage = first_stage, pattern = first_pattern, tech_nodes=tech_nodes, customers=customers)
 
 @app.route('/display_design_chart', methods=['POST'])
 def qor_profile_by_design():
@@ -603,7 +555,6 @@ def qor_profile_by_design():
 	mode = "flow"
 	active_design = mutable_dict.get("active_design")
 	pattern = str(mutable_dict.get("pattern"))
-	#print pattern
 	script_list = mutable_dict.getlist("script_list[]")
 	dir_list = mutable_dict.getlist("dir_list[]")
 	flow_list = []
@@ -614,13 +565,24 @@ def qor_profile_by_design():
 			flow_list.append(dir.split('/')[-2])
 
 	cmd = mutable_dict.get("cmd")
-	compress = bool(int(mutable_dict.get("compress")))
-	design_flow_dict = design_flow_extract(dir_list=dir_list, cmd=cmd, active_design=active_design)
-	log_list = design_flow_dict[active_design]
-	log_name_list = [log.split('/')[-1] for log in log_list]
+	if cmd == "full_flow":
+		design_list = [dir+'/'+active_design for dir in dir_list]
+		log_list = design_list
+		qp = QorProfiler(input_list=design_list, pattern=cmd.upper())
 
-	qp = QorProfiler(log_list=log_list, compress=compress, pattern=pattern, script_list=script_list)
+	else:
+		compress = bool(int(mutable_dict.get("compress")))
+		design_flow_dict, tech_node_dict, customer_dict = design_flow_extract(dir_list=dir_list, cmd=cmd, active_design=active_design)
+		log_list = design_flow_dict[active_design]
+		qp = QorProfiler(input_list=log_list, compress=compress, pattern=pattern, script_list=script_list)
+
 	qp.generate_profile()
+
+	for log in qp.empty_profile:
+		log_list.remove(log)
+		flow = log.split('/')[-3]
+		flow_list.remove(flow)
+	log_name_list = [log.split('/')[-1] for log in log_list]
 
 	metrics_order_dict = copy.copy(METRICS_ORDER_DICT)
 	metrics_property_dict = copy.copy(METRICS_PROPERTY_DICT)
@@ -641,7 +603,6 @@ def qor_profile_by_design():
 		'step_qor_dict': qp.step_qor_dict, 
 		'auto_skip_dict': qp.auto_skip_dict, 
 		'step_match_dict': qp.step_match_dict, 
-		#'log_list': log_list, 
 		'metrics_order_dict': metrics_order_dict, 
 		'metrics_property_dict': metrics_property_dict,
 		#'url': url, 
@@ -651,6 +612,7 @@ def qor_profile_by_design():
 		'log_name_list': log_name_list,
 		'flow_list': flow_list,
 		'color_list': COLOR_LIST,
+		'color_list1': COLOR_LIST1,
 	})
 
 @app.route('/display_metrics_chart', methods=['POST'])
@@ -670,20 +632,44 @@ def qor_profile_by_metrics():
 			flow_list.append(dir.split('/')[-2])
 
 	cmd = mutable_dict.get("cmd")
-	compress = bool(int(mutable_dict.get("compress")))
-	design_flow_dict = design_flow_extract(dir_list=dir_list, cmd=cmd)
-	design_qor = defaultdict(dict)
-	for design in design_flow_dict:
-		log_list = design_flow_dict[design]
-		log_name_list = [log.split('/')[-1] for log in log_list]
+	mgr = MyManager()
+	mgr.start()
+	design_qor = mgr.defaultdict(dict)
 
-		qp = QorProfiler(log_list=log_list, compress=compress, pattern=pattern, script_list=script_list)
-		qp.generate_profile()
-		design_qor[design]['qor_metrics_dict'], design_qor[design]['step_qor_dict'], design_qor[design]['auto_skip_dict'], design_qor[design]['step_match_dict'], design_qor[design]['steps_dict'] = \
-		qp.qor_metrics_dict, qp.step_qor_dict, qp.auto_skip_dict, qp.step_match_dict, qp.steps_dict
-		design_qor[design]['log_list'], design_qor[design]['log_name_list']= log_list, log_name_list
-		#print design
+	threads = []
+	if selected_pattern == "FULL_FLOW_PPA":
+		# print cmd
+		design_list, tech_node_dict, customer_dict = design_flow_extract(dir_list, cmd=cmd)
+		for design in design_list:
+			# print "Process ", design
+			input_list = [dir+'/'+design for dir in dir_list]
+			log_list = input_list
+			log_name_list = [log.split('/')[-1] for log in log_list]
+			pattern = selected_pattern.upper()
+			compress = True
+			p = Process(target=sub_qp_process, args=(design, log_list, compress, pattern, script_list, log_name_list, design_qor))
+			threads.append(p)
+
+	else:
+		compress = bool(int(mutable_dict.get("compress")))
+		design_flow_dict, tech_node_dict, customer_dict = design_flow_extract(dir_list=dir_list, cmd=cmd)		
+		for design in design_flow_dict:
+			# print "Process ", design
+			log_list = design_flow_dict[design]
+			log_name_list = [log.split('/')[-1] for log in log_list]
+			p = Process(target=sub_qp_process, args=(design, log_list, compress, pattern, script_list, log_name_list, design_qor))
+			threads.append(p)
+
+	nloops = range(len(threads))
+	for i in nloops:
+		threads[i].start()
+	for i in nloops:
+		threads[i].join()
+        # print "All done!"
 		#print qp.qor_metrics_dict.keys()
+	# redundant generate aiming to get patterns
+	qp = QorProfiler(input_list=log_list, compress=compress, pattern=pattern, script_list=script_list)
+	qp.generate_profile()
 	metrics_order_dict = copy.copy(METRICS_ORDER_DICT)
 	metrics_property_dict = copy.copy(METRICS_PROPERTY_DICT)
 	for pattern_name in qp.qor_metrics_dict.keys():
@@ -697,7 +683,7 @@ def qor_profile_by_metrics():
 			metrics_property_dict[pattern_name] = dict(metrics_property_dict[pattern_name])
 	#print metrics_order_dict, metrics_property_dict
 	return jsonify({
-		'design_qor': design_qor,
+		'design_qor': dict(design_qor),
 		'metrics': active_metrics,
 		'metrics_order_dict': metrics_order_dict, 
 		'metrics_property_dict': metrics_property_dict,
@@ -706,8 +692,11 @@ def qor_profile_by_metrics():
 		'selected_pattern': selected_pattern,
 	})
 
-@app.route('/profile_popt', methods=['POST','GET'])
-def qor_profile_popt():
+@app.route('/profile_flow', methods=['POST','GET'])
+def profile_flow():
+	# print request.method
+	cmd = request.args.get('cmd')
+	# print cmd
 	base_url = request.base_url
 	mode = request.args.get('mode')
 	active_design = request.args.get('active_design')
@@ -723,184 +712,27 @@ def qor_profile_popt():
 	point_dict["crnt_d"] = mutable_dict.get('crnt_d')
 	point_dict["crnt_p"] = mutable_dict.get('crnt_p')
 	compress = int(request.args.get('compress'))
+	tech_nodes = [str(tech_node) for tech_node in mutable_dict.getlist('tech_nodes')]
+	customers = [str(customer) for customer in mutable_dict.getlist('customers')]
+	# print tech_nodes, customers
+	# input list from url get 
 	input_list = mutable_dict.getlist('input_list')
+	# input list from flaskURL get
+	input_list2 = mutable_dict.getlist('input_list')[0].split(',')
+	if len(input_list2) > len(input_list): input_list = input_list2
+	#print input_list
 	input_list = [str(input) for input in input_list]
 	script_list = mutable_dict.getlist('script_list')
 	script_list = [str(script) for script in script_list]
-	return qor_profile_main(base_url=base_url, mode=mode, compress=compress, input_list=input_list, point_dict=point_dict, active_design=active_design, active_pattern=active_pattern, active_metrics=active_metrics, pattern=pattern, script_list=script_list)
+	return qor_profile_main(base_url=base_url, mode=mode, compress=compress, input_list=input_list, cmd=cmd, point_dict=point_dict, active_design=active_design, active_pattern=active_pattern, active_metrics=active_metrics, pattern=pattern, script_list=script_list,tech_nodes=tech_nodes, customers=customers)
 
-@app.route('/profile_copt', methods=['POST','GET'])
-def qor_profile_copt():
-	base_url = request.base_url
-	mode = request.args.get('mode')
-	pattern = str(request.args.get('pattern'))
-	script = str(request.args.get('script'))
-	active_design = request.args.get('active_design')
-	active_metrics = request.args.get('active_metrics')
-	active_pattern = request.args.get('active_pattern')
-	#get point
-	mutable_dict = request.args.copy()
-	point_dict = copy.copy(POINT_DICT_DEFAULT)
-	point_dict["prev_d"] = mutable_dict.get('prev_d')
-	point_dict["prev_p"] = mutable_dict.get('prev_p')
-	point_dict["crnt_d"] = mutable_dict.get('crnt_d')
-	point_dict["crnt_p"] = mutable_dict.get('crnt_p')
-	compress = int(request.args.get('compress'))
-	input_list = mutable_dict.getlist('input_list')
-	input_list = [str(input) for input in input_list]
-	script_list = mutable_dict.getlist('script_list')
-	script_list = [str(script) for script in script_list]
-
-	return qor_profile_main(base_url=base_url, mode=mode, compress=compress, input_list=input_list,cmd="copt", point_dict=point_dict, active_design=active_design, active_pattern=active_pattern, active_metrics=active_metrics, pattern=pattern, script_list=script_list)
-
-@app.route('/profile_ropt', methods=['POST','GET'])
-def qor_profile_ropt():
-	base_url = request.base_url
-	mode = request.args.get('mode')
-	pattern = str(request.args.get('pattern'))
-	script = str(request.args.get('script'))
-	active_design = request.args.get('active_design')
-	active_metrics = request.args.get('active_metrics')
-	active_pattern = request.args.get('active_pattern')
-	#get point
-	mutable_dict = request.args.copy()
-	point_dict = copy.copy(POINT_DICT_DEFAULT)
-	point_dict["prev_d"] = mutable_dict.get('prev_d')
-	point_dict["prev_p"] = mutable_dict.get('prev_p')
-	point_dict["crnt_d"] = mutable_dict.get('crnt_d')
-	point_dict["crnt_p"] = mutable_dict.get('crnt_p')
-	compress = int(request.args.get('compress'))
-	input_list = mutable_dict.getlist('input_list')
-	input_list = [str(input) for input in input_list]
-	script_list = mutable_dict.getlist('script_list')
-	script_list = [str(script) for script in script_list]
-
-	return qor_profile_main(base_url=base_url, mode=mode, compress=compress, input_list=input_list,cmd="ropt", point_dict=point_dict, active_design=active_design, active_pattern=active_pattern, active_metrics=active_metrics, pattern=pattern, script_list=script_list)
-
-@app.route('/profile_fopt', methods=['POST','GET'])
-def qor_profile_fopt():
-	base_url = request.base_url
-	mode = request.args.get('mode')
-	pattern = str(request.args.get('pattern'))
-	script = str(request.args.get('script'))
-	active_design = request.args.get('active_design')
-	active_metrics = request.args.get('active_metrics')
-	active_pattern = request.args.get('active_pattern')
-	#get point
-	mutable_dict = request.args.copy()
-	point_dict = copy.copy(POINT_DICT_DEFAULT)
-	point_dict["prev_d"] = mutable_dict.get('prev_d')
-	point_dict["prev_p"] = mutable_dict.get('prev_p')
-	point_dict["crnt_d"] = mutable_dict.get('crnt_d')
-	point_dict["crnt_p"] = mutable_dict.get('crnt_p')
-	compress = int(request.args.get('compress'))
-	input_list = mutable_dict.getlist('input_list')
-	input_list = [str(input) for input in input_list]
-	script_list = mutable_dict.getlist('script_list')
-	script_list = [str(script) for script in script_list]
-
-	return qor_profile_main(base_url=base_url, mode=mode, compress=compress, input_list=input_list,cmd="fopt", point_dict=point_dict, active_design=active_design, active_pattern=active_pattern, active_metrics=active_metrics, pattern=pattern, script_list=script_list)
-
-#==========================
-# function definition
-#==========================
-def path_translate(path):
-	path_split = path.split('/')
-	if len(path_split) == 1: # empty input
-		return path
-	if path_split[0] == "~": # ~/xxx/xxx
-		#username = request.remote_user
-		username = "phyan"
-	elif "~" in path_split[0]: # ~phyan/xxx/xxx
-		username = path_split[0][1:]
-	else: # normal path
-		return path
-
-	path_split.remove(path_split[0])
-	path_split.insert(0, username)
-	path_split.insert(0,'u')
-	path_split.insert(0,'')
-
-	return '/'.join(path_split)
-
-def record_usage(mode):
-	conn = MySQLdb.connect(host="pvicc015",user="user",db="preroute_random")
-	cursor = conn.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-	time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-	#username = request.remote_user
-	username = "phyan"
-	if username != "phyan":
-		source = "web"
-		sql = "insert into qor_analyzer(username,source,mode,date) values(%s,%s,%s,%s)"
-		param = (username,source,mode,time,)
-		n = cursor.execute(sql,param)
-
-def design_flow_extract(dir_list, cmd="popt", active_design=None):
-	design_flow_dict = defaultdict(list) # key:design value:flow/log list table
-
-	for flow_dir in dir_list:		
-		try:
-			#absolute path mode
-			search_path = flow_dir
-			designs = os.listdir(search_path)
-		except:
-			#relative path mode
-			search_path = os.getcwd() + "/" + flow_dir
-			designs = os.listdir(search_path)
-		if active_design is not None:
-			designs = [active_design]
-
-		for design in designs:
-			if os.path.isdir(search_path + "/" + design):
-				#fatal precheck
-				fatal_path = flow_dir + "/" + design + "/" + design + ".nw" + cmd + ".out.gz.fatal"
-				fatal_path_1 = flow_dir + "/" + design + "/" + design + ".nw" + cmd + ".out.fatal"
-				if os.path.exists(fatal_path) or os.path.exists(fatal_path_1): continue
-				if os.path.exists(search_path + "/" + design + "/" + design + ".nw" + cmd + ".out.gz"):
-					log_path = search_path + "/" + design + "/" + design + ".nw" + cmd + ".out.gz"
-					design_flow_dict[design].append(log_path)
-				elif os.path.exists(search_path + "/" + design + "/" + design + ".nw" + cmd + ".out"):
-					log_path = search_path + "/" + design + "/" + design + ".nw" + cmd + ".out"
-					design_flow_dict[design].append(log_path)
-
-	return design_flow_dict
-
-"""
-def flow_design_extract(flow_dir):
-	cmd = "popt"
-
-	if not os.path.isdir(flow_dir):
-		error_msg = "'%s' is not a path!!" % flow_dir
-		return error_found(msg=error_msg)
-
-	flow_design_dict = {}
-
-	try:
-		#relative path mode
-		search_path = os.getcwd() + "/" + flow_dir
-		designs = os.listdir(search_path)
-	except:
-		#absolute path mode
-		search_path = flow_dir
-		designs = os.listdir(search_path)
-
-	for design in designs:
-		if os.path.isdir(search_path + "/" + design):
-			if os.path.exists(search_path + "/" + design + "/" + design + ".nw" + cmd + ".out.gz"):
-				log_path = search_path + "/" + design + "/" + design + ".nw" + cmd + ".out.gz"
-				flow_design_dict[design].append(log_path)
-			elif os.path.exists(search_path + "/" + design + "/" + design + ".nw" + cmd + ".out"):
-				log_path = search_path + "/" + design + "/" + design + ".nw" + cmd + ".out"
-				flow_design_dict[design].append(log_path)
-
-	return flow_design_dict
-"""
-def duo_analysis_main(mode, dir_path, active_duo=None):
+def duo_analysis_main(base_url, mode, dir_path, active_duo=None):
 	url_data = []
 	url_data.append(('mode', mode))
 	url_data.append(('dir_path', dir_path))
 	#url = "http://pvicc004:8087/analysis?"+urlencode(url_data)
-	url = "http://pv/util/opt/qor_analyzer_web/profile?"+urlencode(url_data)
+	# url = "http://pv/util/opt/qor_analyzer_web/profile?"+urlencode(url_data)
+	url = str(base_url)+"?"+urlencode(url_data)
 	#get all duo_work dirs
 	duo_work_list = {}
 	duo_list = []
@@ -922,6 +754,10 @@ def duo_analysis_main(mode, dir_path, active_duo=None):
 				step_name = line.strip()
 				duo_work_list[str(d)]["seq"].append(step_name)
 				file_list = os.listdir(dir_path+"/"+d+"/"+step_name+".design")
+				if not len(file_list): 
+					duo_work_list[str(d)]["step"][step_name] = {}
+					duo_work_list[str(d)]["step"][step_name]["info"] = ""
+					continue
 				match = re.match("(\w+)\.nlib",file_list[0])
 				nlib_name = match.group(1)
 				f = open(dir_path+"/"+d+"/"+step_name+".design/"+nlib_name+".nlib."+step_name+".design.info")
@@ -936,7 +772,7 @@ def duo_analysis_main(mode, dir_path, active_duo=None):
 
 	return display_duo_analysis(cp_list=duo_work_list, url=url, active_design=active_duo)
 
-def qor_profile_main(base_url, mode,compress,input_list,point_dict,pattern="all", script_list=None, active_pattern=None,cmd="popt",active_design=None,active_metrics=None):
+def qor_profile_main(base_url, mode,compress,input_list,point_dict,pattern="all", script_list=None, active_pattern=None,cmd="full_flow",active_design=None,active_metrics=None, tech_nodes=[], customers=[]):
 	#get url
 	url_data = []
 	url_data.append(('mode',mode))
@@ -966,8 +802,8 @@ def qor_profile_main(base_url, mode,compress,input_list,point_dict,pattern="all"
 				error_msg = "'%s' is not a vaild file!!" % log
 				return error_found(msg=error_msg)
 
-		qp = QorProfiler(log_list=log_list, compress=compress, pattern=pattern, script_list=script_list)
-		qp.generate_profile()
+		qp = QorProfiler(input_list=log_list, compress=compress, pattern=pattern, script_list=script_list)
+		qp.generate_profile()		
 
 		for pattern in qp.qor_metrics_dict.keys():
 			if "USER" in pattern:
@@ -989,12 +825,17 @@ def qor_profile_main(base_url, mode,compress,input_list,point_dict,pattern="all"
 		dir_list = input_list
 
 		for dir in dir_list:
-			if not os.path.isdir(dir):
+			# print dir
+			if not os.path.isdir(dir):			
 				error_msg = "'%s' is not a vaild path!!" % dir
 				return error_found(msg=error_msg)
 
-		design_flow_dict = design_flow_extract(dir_list=dir_list, cmd=cmd)
-		design_list = sorted(design_flow_dict.keys())
+		if cmd == "full_flow":
+			design_list, tech_node_dict, customer_dict = design_flow_extract(dir_list=dir_list, cmd=cmd)
+			# print design_list
+		else:
+			design_flow_dict, tech_node_dict, customer_dict = design_flow_extract(dir_list=dir_list, cmd=cmd)
+			design_list = sorted(design_flow_dict.keys())
 
 		metrics_order_dict = copy.copy(METRICS_ORDER_DICT)
 		if pattern == "USER":
@@ -1006,26 +847,26 @@ def qor_profile_main(base_url, mode,compress,input_list,point_dict,pattern="all"
 				i += 1
 
 		#print METRICS_ORDER_DICT
-		return display_qor_profile_flow(mode=mode, design_list=design_list, compress=compress, dir_list=dir_list, url=url, cmd=cmd, active_design=active_design, active_metrics=active_metrics, active_pattern=active_pattern, point_dict=point_dict, pattern=pattern, script_list=script_list, metrics_order_dict=metrics_order_dict)
+		return display_qor_profile_flow(mode=mode, design_list=design_list, compress=compress, dir_list=dir_list, url=url, cmd=cmd, active_design=active_design, active_metrics=active_metrics, active_pattern=active_pattern, point_dict=point_dict, pattern=pattern, script_list=script_list, metrics_order_dict=metrics_order_dict, tech_node_dict=tech_node_dict, customer_dict=customer_dict, tech_nodes=tech_nodes, customers=customers)
 		#return display_qor_profile_flow1(flow_qor_metrics=flow_qor_metrics, step_qor_dict=step_qor_dict, flow_metrics=flow_metrics, 
 			#argv_list=input_list, compress=compress, design_chart_dict=design_chart_dict, mode=mode, cmd=cmd, url=url, active_design=active_design, active_metrics=active_metrics, point_dict=point_dict)
 
 def calc_qor_mean_by_stage(design_flow_dict):
 	compress = True
 	stages = [("initial_drc", "\(.*P2\)"), ("initial_opto", "\(.*P3\)"), ("final_place", "\(.*P4\)"), ("final_opto", "\(.*P5\)")]
-	hb_result = pd.DataFrame(index=METRICS_ORDER_DICT["PREROUTE"]) #final qor change pct between base and compare for each stage
+	hb_result = pd.DataFrame(index=METRICS_ORDER_DICT["APS"]) #final qor change pct between base and compare for each stage
 	hb  = {} #qor data by stage for each design
 	hb_pct = {} #qor data change pct by stage between base and compare of each design
 	for stage, reg in stages:
-		hb_pct[stage] = pd.DataFrame(index=METRICS_ORDER_DICT["PREROUTE"])
-		hb[stage] = pd.DataFrame(index=METRICS_ORDER_DICT["PREROUTE"])
+		hb_pct[stage] = pd.DataFrame(index=METRICS_ORDER_DICT["APS"])
+		hb[stage] = pd.DataFrame(index=METRICS_ORDER_DICT["APS"])
 	#for stage, symbol in stages:
 	for design,log_list in design_flow_dict.items():
 		if len(log_list) != 2: continue #only compare valid logs in both flows
-		qp = QorProfiler(log_list=log_list, compress=compress)
+		qp = QorProfiler(input_list=log_list, compress=compress)
 
 		for log in log_list:
-			pr_hb = qp.preroute_profiler(log)
+			pr_hb = qp.aps_profiler(log)
 			steps_order = pr_hb.columns.tolist()
 			steps_order.reverse()
 
@@ -1043,7 +884,7 @@ def calc_qor_mean_by_stage(design_flow_dict):
 
 			hb[stage][log_list] = hb[stage][log_list].astype(float)
 
-			for index in METRICS_ORDER_DICT["PREROUTE"]:
+			for index in METRICS_ORDER_DICT["APS"]:
 				base = hb[stage][log_list[0]][index]
 				comp = hb[stage][log_list[1]][index]
 				if np.isnan(base) and np.isnan(comp):
@@ -1096,6 +937,7 @@ def display_qor_profile_log(mode, compress, qor_metrics_dict, step_qor_dict, aut
 		metrics_order_dict = metrics_order_dict,
 		metrics_property_dict = metrics_property_dict, 
 		color_list = COLOR_LIST, 
+		color_list1 = COLOR_LIST1,
 		mode = mode, 
 		compress = compress,
 		auto_skip_dict = auto_skip_dict, 
@@ -1107,7 +949,7 @@ def display_qor_profile_log(mode, compress, qor_metrics_dict, step_qor_dict, aut
 		script_list=script_list,
 	)
 
-def display_qor_profile_flow(mode, design_list, compress, dir_list, url, active_design, active_pattern, active_metrics, point_dict, pattern, script_list, metrics_order_dict, cmd="popt"):
+def display_qor_profile_flow(mode, design_list, compress, dir_list, url, active_design, active_pattern, active_metrics, point_dict, pattern, script_list, metrics_order_dict, tech_node_dict, customer_dict, tech_nodes, customers, cmd="popt"):
 	return render_template('dir_mode_web.html',
 		mode=mode,
 		design_list=design_list,
@@ -1123,6 +965,10 @@ def display_qor_profile_flow(mode, design_list, compress, dir_list, url, active_
 		metrics_order_dict=metrics_order_dict,
 		pattern=pattern, 
 		script_list=script_list,
+		tech_node_dict=dict(tech_node_dict), 
+		customer_dict=dict(customer_dict),
+		tech_nodes=tech_nodes,
+		customers=customers,
 	)
 
 def error_found(msg):

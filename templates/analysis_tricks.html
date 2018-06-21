@@ -1,42 +1,42 @@
 <html>
 <head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<script src="{{ url_for('static', filename='jquery/1.11.1/jquery.min.js') }}"></script>
-	<script src="{{ url_for('static', filename='libs/jqueryui/jquery.ui-1.9.0.min.js') }}"></script>
-	<!-- 引入 Bootstrap -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="{{ url_for('static', filename='jquery/1.11.1/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='libs/jqueryui/jquery.ui-1.9.0.min.js') }}"></script>
+    <!-- 引入 Bootstrap -->
 
-	<!--
+    <!--
         <link href="/u/phyan/workspace/python/qor_analyzer/libs/bootstrap/2.3.2/css/bootstrap.min.css" rel="stylesheet">
         -->
-	<script type="text/javascript" src="{{ url_for('static', filename='bootstrap/js/bootstrap.js') }}"></script>
-	<script type="text/javascript" src="{{ url_for('static', filename='bootstrap/js/Chart_v2.6.js') }}"></script>
-	<!-- <script type="text/javascript" src="{{ url_for('static', filename='bootstrap/js/analysis.js') }}"></script> -->
+    <script type="text/javascript" src="{{ url_for('static', filename='bootstrap/js/bootstrap.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='bootstrap/js/Chart_v2.6.js') }}"></script>
+    <!-- <script type="text/javascript" src="{{ url_for('static', filename='bootstrap/js/analysis.js') }}"></script> -->
 
-	<style type="text/css" src="{{ url_for('static', filename='bootstrap/css/bootstrap.css') }}"></style>
+    <style type="text/css" src="{{ url_for('static', filename='bootstrap/css/bootstrap.css') }}"></style>
 
 
 
-	<meta name="description" content="">
-	<meta name="author" content="">
+    <meta name="description" content="">
+    <meta name="author" content="">
 
-	<title>QoR Analyzer Web ^_^</title>
+    <title>QoR Analyzer Web ^_^</title>
 
-	<!-- Bootstrap core CSS -->
-	<link href="{{ url_for('static', filename='bootstrap/3.3.5/css/bootstrap.min.css') }}" rel="stylesheet">
-	<!-- Bootstrap theme -->
-	<!--<link href="{{ url_for('static', filename='bootstrap/css/bootstrap-theme.min.css') }}" rel="stylesheet">-->
-	<!-- Custom styles for this template -->
-	<link href="{{ url_for('static', filename='bootstrap/css/theme.css') }}" rel="stylesheet">
+    <!-- Bootstrap core CSS -->
+    <link href="{{ url_for('static', filename='bootstrap/3.3.5/css/bootstrap.min.css') }}" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <!--<link href="{{ url_for('static', filename='bootstrap/css/bootstrap-theme.min.css') }}" rel="stylesheet">-->
+    <!-- Custom styles for this template -->
+    <link href="{{ url_for('static', filename='bootstrap/css/theme.css') }}" rel="stylesheet">
     
-	<link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/bootstrap-table-master/src/bootstrap-table.css') }}">
-	<script type="text/javascript" src="{{ url_for('static', filename='bootstrap/bootstrap-table-master/src/bootstrap-table.js') }}"></script>
-	<link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/ladda-bootstrap-master/dist/ladda-themeless.min.css') }}">
-	<script src="{{ url_for('static', filename='bootstrap/ladda-bootstrap-master/dist/spin.min.js') }}"></script>
-	<script src="{{ url_for('static', filename='bootstrap/ladda-bootstrap-master/dist/ladda.min.js') }}"></script>
-	<script type="text/javascript" src="{{ url_for('static', filename='bootstrap/bootstrap-table-master/src/bootstrap-table-export.js') }}"></script>
-	<script type="text/javascript" src="{{ url_for('static', filename='bootstrap/bootstrap-table-master/src/tableExport.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/bootstrap-table-master/src/bootstrap-table.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='bootstrap/bootstrap-table-master/src/bootstrap-table.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/ladda-bootstrap-master/dist/ladda-themeless.min.css') }}">
+    <script src="{{ url_for('static', filename='bootstrap/ladda-bootstrap-master/dist/spin.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='bootstrap/ladda-bootstrap-master/dist/ladda.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='bootstrap/bootstrap-table-master/src/bootstrap-table-export.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='bootstrap/bootstrap-table-master/src/tableExport.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='bootstrap/bootstrap-multiselect-master/js/bootstrap-multiselect.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/bootstrap-multiselect-master/css/bootstrap-multiselect.css') }}" type="text/css"/>
 
@@ -46,13 +46,13 @@
 <!--<body role="document" style="background-color: #efefef;">-->
 <body role="document" style="background-image: url('{{ url_for('static', filename='bootstrap/images/qor_analyzer.jpg') }}'); background-size:100% 100%;">
 <style>
-	.navbar .nav>li>a{padding: 15px 10px 15px 10px}
-	.gain-loss-display {display: none;}
-	.btn-default {width:52px; height:34px}
-	.panel-heading{background-color: #54c7ce; color: white; font-weight: bold}
+    .navbar .nav>li>a{padding: 15px 10px 15px 10px}
+    .gain-loss-display {display: none;}
+    .btn-default {width:52px; height:34px}
+    .panel-heading{background-color: #54c7ce; color: white; font-weight: bold}
 </style>
 <script type="text/javascript">
-	/**
+    /**
  * Created by qingzhuo on 6/20/2017.
  */
     function switchMetrics(e) {
@@ -71,11 +71,15 @@
                 //console.log(qor_data_list[0])
                 var dir = encodeURIComponent($("#sqb1-flow-dir").val());
                 var pattern = $("#pattern").text().trim();
-                var stage = $("#stage").text().trim().toLowerCase().substring(2, 6);
+                console.log("stage is"+stage);
+                // var stage = $("#stage").text().trim().toLowerCase().substring(2, 6);
+                var stage = "{{stage|safe}}";
                 var reg = /\d+/;
                 var prevp = qor_data_list[0].match(reg);
                 var crntp = qor_data_list[2].match(reg);
-                var mt = "http://"+window.location.host+"/profile_"+ stage + "?mode=flow&compress=1&input_list=" + dir +"&cmd=" + stage +"&active_design=" + design_name
+                var url = window.location.pathname.split('/')
+                url =url.slice(0,url.length-1).join('/')
+                var mt = "http://"+window.location.host+url+"/profile_flow" + "?mode=flow&pattern=all&compress=1&input_list=" + dir +"&cmd=" + stage +"&active_design=" + design_name
                     +"&active_metrics=undefined&active_pattern=" + pattern + "&prev_d=0&prev_p=" + prevp + "&crnt_d=0&crnt_p="+ crntp ;
                 var data_ele = {
                     "design_name": design_name,
@@ -123,21 +127,21 @@
                 field: 'design_name',
                 title: 'Design Name',
                 sortable: true
-            }, {
-                field: 'step_name',
-                title: 'Step Name',
-                sortable: true
-            }, {
-                field: 'step_val',
-                title: 'Step Value',
-                sortable: true
-            }, {
+            },{
                 field: 'base_name',
                 title: 'Base Step',
                 sortable: true
             }, {
                 field: 'base_val',
                 title: 'Base Value',
+                sortable: true
+            },  {
+                field: 'step_name',
+                title: 'Step Name',
+                sortable: true
+            }, {
+                field: 'step_val',
+                title: 'Step Value',
                 sortable: true
             }, {
                 field: 'pct',
@@ -179,7 +183,6 @@
             //console.log(distri_list);
             summary_data.push(distri_list);
         });
-        debugger;
         $(".sqb-summary").empty();
         $.each(summary,function(index,svalue){
             var newdiv = "<div class='col-md-3' style='padding:5px;'> <div class='panel' style='border-color: #54c7ce;'>"
@@ -235,13 +238,10 @@
                 type: 'bar',
                 data: data3,
                 options: {
+                    showAllTooltips: true,
                     legend: {
                         display: false,
-                        generateLabels: [{
-                            hidden: true
-                        }]
                     },
-                    showAllTooltips: true,
                     tooltips: {
                                 callbacks: {
                                     label: function(tooltipItem, data) {
@@ -256,7 +256,7 @@
                                                 total += allData[i];
                                             }
                                             var tooltipPercentage = Math.round((tooltipData / total) * 100);
-                                            return tooltipData + ' (' + tooltipPercentage + '%)';
+                                            // return tooltipData + ' (' + tooltipPercentage + '%)';
                                         }
                                     },
                                 }                         
@@ -422,11 +422,14 @@
                 //console.log(qor_data_list[0])
                 var dir = encodeURIComponent($("#sqc-flow-dir").val());
                 var pattern = $("#cpattern").text().trim();
-                var stage = $("#cstage").text().trim().toLowerCase().substring(2, 6);
+                // var stage = $("#cstage").text().trim().toLowerCase().substring(2, 6);
+                var stage = "{{stage|safe}}";
                 var reg = /\d+/;
                 var prevp = qor_data_list[0].match(reg);
                 var crntp = qor_data_list[2].match(reg);
-                var mt = "http://"+window.location.host+"/profile_"+ stage + "?mode=flow&compress=1&input_list=" + dir +"&cmd=" + stage +"&active_design=" + design_name
+                var url = window.location.pathname.split('/')
+                url =url.slice(0,url.length-1).join('/')
+                var mt = "http://"+window.location.host+url+"/profile_"+ stage + "?mode=flow&pattern=all&compress=1&input_list=" + dir +"&cmd=" + stage +"&active_design=" + design_name
                     +"&active_metrics=undefined&active_pattern=" + pattern + "&prev_d=0&prev_p=" + prevp + "&crnt_d=0&crnt_p="+ crntp ;
                 var data_ele = {
                     "design_name": design_name,
@@ -474,21 +477,21 @@
                 field: 'design_name',
                 title: 'Design Name',
                 sortable: true
-            }, {
-                field: 'step_name',
-                title: 'Compare Name',
-                sortable: true
-            }, {
-                field: 'step_val',
-                title: 'Step Value',
-                sortable: true
-            }, {
+            },{
                 field: 'base_name',
                 title: 'Base Step',
                 sortable: true
             }, {
                 field: 'base_val',
                 title: 'Base Value',
+                sortable: true
+            },  {
+                field: 'step_name',
+                title: 'Compare Name',
+                sortable: true
+            }, {
+                field: 'step_val',
+                title: 'Step Value',
                 sortable: true
             }, {
                 field: 'pct',
@@ -649,11 +652,14 @@
                 //console.log(qor_data_list[0])
                 var dir = encodeURIComponent($("#sqt1-flow-dir").val());
                 var pattern = $("#tpattern").text().trim();
-                var stage = $("#tstage").text().trim().toLowerCase().substring(2, 6);
+                // var stage = $("#tstage").text().trim().toLowerCase().substring(2, 6);
+                var stage = "{{stage|safe}}";
                 var reg = /\d+/;
                 var prevp = qor_data_list[0].match(reg);
                 var crntp = qor_data_list[2].match(reg);
-                var mt = "http://"+window.location.host+"/profile_"+ stage + "?mode=flow&compress=1&input_list=" + dir +"&cmd=" + stage +"&active_design=" + design_name
+                var url = window.location.pathname.split('/')
+                url =url.slice(0,url.length-1).join('/')
+                var mt = "http://"+window.location.host+url+"/profile_"+ stage + "?mode=flow&pattern=all&compress=1&input_list=" + dir +"&cmd=" + stage +"&active_design=" + design_name
                     +"&active_metrics=undefined&active_pattern=" + pattern + "&prev_d=0&prev_p=" + prevp + "&crnt_d=0&crnt_p="+ crntp ;
                 var data_ele = {
                     "design_name": design_name,
@@ -701,21 +707,21 @@
                 field: 'design_name',
                 title: 'Design Name',
                 sortable: true
-            }, {
-                field: 'step_name',
-                title: 'Step Name',
-                sortable: true
-            }, {
-                field: 'step_val',
-                title: 'Step Value',
-                sortable: true
-            }, {
+            },{
                 field: 'base_name',
                 title: 'Base Step',
                 sortable: true
             }, {
                 field: 'base_val',
                 title: 'Base Value',
+                sortable: true
+            },  {
+                field: 'step_name',
+                title: 'Step Name',
+                sortable: true
+            }, {
+                field: 'step_val',
+                title: 'Step Value',
                 sortable: true
             }, {
                 field: 'pct',
@@ -1016,7 +1022,7 @@
         $(".analysis_area").css("display", "none");
         $("."+method).css("display", "table");
         //console.log($("#compress-mode").val());
-	}
+    }
 
     function activeMode(e) {
         var mode = $(e).text();
@@ -1028,14 +1034,14 @@
     function activeStage(e) {
         var stage = $(e).text();
         //console.log(mode)
-        $("#stage").html(stage+" <span class=\"caret\"></span>");
+        $("#stage").html(stage);
         //console.log($("#compress-mode").val());
     }
 
     function activePattern(e) {
         var pattern = $(e).text();
         //console.log(mode);
-        $("#pattern").html(pattern+" <span class=\"caret\"></span>");
+        $("#pattern").html(pattern);
         var stepname = window.steps_list_dict[$("#pattern").text().trim()][0];
         $("#sqbstep-name-switch").html(stepname);
         $("#sqb1-step-name").val(stepname);
@@ -1054,13 +1060,13 @@
     function activeSqcStage(e) {
         var stage = $(e).text();
         //console.log(mode);
-        $("#cstage").html(stage+" <span class=\"caret\"></span>");
+        $("#cstage").html(stage);
         //console.log($("#compress-mode").val());
     }
 
     function activeSqcPattern(e) {
         var pattern = $(e).text();
-        $("#cpattern").html(pattern+" <span class=\"caret\"></span>");
+        $("#cpattern").html(pattern);
         var stepname = window.steps_list_dict[$("#cpattern").text().trim()][0];
         $("#sqcstep-name-switch").html(stepname);
         $("#sqc-base-name").val(stepname);
@@ -1085,14 +1091,14 @@
     function activeSqtStage(e) {
         var stage = $(e).text();
         //console.log(mode)
-        $("#tstage").html(stage+" <span class=\"caret\"></span>");
+        $("#tstage").html(stage);
         //console.log($("#compress-mode").val());
     }
 
     function activeSqtPattern(e) {
         var pattern = $(e).text();
         //console.log(mode);
-        $("#tpattern").html(pattern+" <span class=\"caret\"></span>");
+        $("#tpattern").html(pattern);
     }
 
     function isEmptyObject(e) {
@@ -1102,68 +1108,16 @@
         return !0;
     }
 
-    $(function() {
-        window.display_designs = new Array();
-        window.selected_designs = new Array();
-        window.selected_metrics = [];
-        //jump to step benefit analysis
-
-            first_pattern = "{{pattern|safe}}";
-            stage = "{{stage|safe}}";
-            first_name = "{{step_name|safe}}";
-            first_stage = stage.toUpperCase();
-            first_dir = "{{flow_dir|safe}}";
-            mode = "{{mode|safe}}";
-            single_name = "{{single_name|safe}}";
-            second_name = "{{comp_name|safe}}";
-
-
-        $('#sqb_btn').click(function(e){
-            
-            // $("#sqb-hide").css("display","none");
-            $(".sqb-chart").css("display","none");
-            $(".sqb-switch").css("display","none");
-            $(".sqc-chart").css("display","none");
-            $(".sqc-switch").css("display","none");
-            $(".sqc-summary").css("display","none");
-            $(".sqb-summary").css("display","none");
-
-            $("#error-warning").css("display","none");
-            var warn = $("#error-warning");
+    function sqbClick1(data){
+        var warn = $("#error-warning");
             warn.text("");
-            $("#pattern").html("Pattern"+" <span class=\"caret\"></span>");
-            $("#sqbstep-name-switch").text("Step name");
-            if( $("#sqb1-flow-dir").val()==""){
-                warn.css("display","block");
-                warn.attr("class","alert alert-warning");
-                warn.append("<strong>flow_dir</strong> should not be empty!");
-                return false;
-            }
-            if($("#stage").text().trim()=="Stage"){
-                warn.css("display","block");
-                warn.attr("class","alert alert-warning");
-                warn.append("<strong>Stage</strong> Warn! Please choose the right stage! ");
-                return false;
-            }
-            var l = Ladda.create(this);
-            l.start();
-            $.post('analysis_sqb', {
-                step_name: "",
-                flow_dir: $("#sqb1-flow-dir").val(),
-                pattern: $("#pattern").text().trim(),
-                stage: $("#stage").text().trim()
-            }, function () {
-                console.log("sending post...")
-            })
-                .done(function(data) {
-                    // window.steps_list_dict = ["NWPOPT","NWCOPT","NWFOPT"];
                     if(data["result"]=="success"){
                         judgeEmpty = jQuery.parseJSON(data["steps_list_dict"]);
                         if(isEmptyObject(judgeEmpty)){
                             warn.css("display","block");
                             warn.attr("class","alert alert-warning");
                             warn.append("<strong>Data</strong> do not exist");
-                            l.stop();
+                            // l.stop();
                             return false;
                         }
                     }
@@ -1171,7 +1125,7 @@
                         warn.css("display","block");
                         warn.attr("class","alert alert-danger");
                         warn.append(data["msg"]);
-                        l.stop();
+                        // l.stop();
                         return false;
                     }
                     window.steps_list_dict = jQuery.parseJSON(data["steps_list_dict"]);
@@ -1194,66 +1148,19 @@
                         }
                     })
                     }
-                  
-                    console.log("first start success!");
-                    l.stop();
-                })
-                .fail(function() {
-                    //$(destId).text("Error: Could not contact server.");
-                    l.stop();
-                    console.log("fail!")
-                });
+    }
 
-        })
-
-        $('#sqb_btn1').click(function(e) {
-            //console.log($("#sqb1-step-name").val())
-
-            $(".sqb-chart").css("display","none");
-            $(".sqb-switch").css("display","none");
-            $(".sqc-chart").css("display","none");
-            $(".sqc-switch").css("display","none");
-            $("#error-warning").css("display","none");
-            $(".sqb-summary").css("display","none");
-            var warn = $("#error-warning");
+    function sqbClick2(data){
+        var warn = $("#error-warning");
             warn.text("");
-            if($("#pattern").text().trim()=="Pattern"){
-                warn.css("display","block");
-                warn.attr("class","alert alert-warning");
-                warn.append("<strong>Pattern</strong> Warn! Please choose the right pattern! ");
-                return false;
-            }
-            if($("#sqb1-step-name").val()==""){
-                warn.css("display","block");
-                warn.attr("class","alert alert-warning");
-                warn.append("<strong>Step name</strong> should not be empty!");
-                return false;
-            }
-            var l = Ladda.create(this);
-            l.start();
-            $.post('analysis_sqb', {
-                step_name: $("#sqb1-step-name").val(),
-                flow_dir: $("#sqb1-flow-dir").val(),
-                pattern: $("#pattern").text().trim(),
-                stage: $("#stage").text().trim()
-            }, function () {
-                console.log("sending post...")
-            })
-                .done(function(data) {
-                    //var thHTML='<thead><tr><th data-sortable="true" data-field="design_name"> design_name </th>
-                    // <th data-sortable="true" data-field="step_name"> step_name </th><th data-sortable="true" data-field="step_val">
-                    // step_val</th><th data-sortable="true" data-field="base_step"> base_step </th><th data-sortable="true" data-field="base_val">
-                    // base_val</th><th data-sortable="true" data-field="Gain-Loss"> Gain/Loss Pct.</th></tr></thead>'
-                    //$("#sqb_bs_table").append(thHTML)\
-                    // window.steps_list_dict = ["NWPOPT","NWCOPT","NWFOPT"];
-                    window.bs_data = [];
+         window.bs_data = [];
                     if(data["result"]=="success"){
                         judgeEmpty = jQuery.parseJSON(data["step_qor_info"]);
                         if(isEmptyObject(judgeEmpty)){
                             warn.css("display","block");
                             warn.attr("class","alert alert-warning");
                             warn.append("<strong>Data</strong> do not exist");
-                            l.stop();
+                            // l.stop();
                             return false;
                         }
                     }
@@ -1261,10 +1168,9 @@
                         warn.css("display","block");
                         warn.attr("class","alert alert-danger");
                         warn.append(data["msg"]);
-                        l.stop();
+                        // l.stop();
                         return false;
                     }
-
                     window.step_qor_info = jQuery.parseJSON(data["step_qor_info"]);
                     metrics = data['default_metrics'];
                     console.log(window.step_qor_info);
@@ -1280,11 +1186,14 @@
                             //console.log(qor_data_list[0])
                             var dir = encodeURIComponent($("#sqb1-flow-dir").val());
                             var pattern = $("#pattern").text().trim();
-                            var stage = $("#stage").text().trim().toLowerCase().substring(2, 6);
+                            // var stage = $("#stage").text().trim().toLowerCase().substring(2, 6);
+                            var stage = "{{stage|safe}}";
                             var reg = /\d+/;
                             var prevp = qor_data_list[0].match(reg);
                             var crntp = qor_data_list[2].match(reg);
-                            var mt = "http://"+window.location.host+"/profile_"+ stage + "?mode=flow&compress=1&input_list=" + dir +"&cmd=" + stage +"&active_design=" + design_name+"&active_metrics=undefined&active_pattern=" + pattern + "&prev_d=0&prev_p=" + prevp + "&crnt_d=0&crnt_p="+ crntp ;
+                            var url = window.location.pathname.split('/')
+                            url =url.slice(0,url.length-1).join('/')
+                            var mt = "http://"+window.location.host+url+"/profile_"+ stage + "?mode=flow&pattern=all&compress=1&input_list=" + dir +"&cmd=" + stage +"&active_design=" + design_name+"&active_metrics=undefined&active_pattern=" + pattern + "&prev_d=0&prev_p=" + prevp + "&crnt_d=0&crnt_p="+ crntp ;
                             var data_ele = {
                                 "design_name": design_name,
                                 "step_name": qor_data_list[2],
@@ -1335,11 +1244,10 @@
                         onChange: function(option, checked, select) {
                             design_name = $(option).val();
                             if (checked == true) {
-                                window.selected_designs.push(design_name)
-                                
+                                window.selected_designs.push(design_name);
+
                                 if($("#sqb-switch").text()=="SUMMARY"){
                                     $.each(window.step_qor_info,function(index){
-                                        debugger;
                                         window.selected_metrics = index;
                                         window[index].update();
                                     });
@@ -1374,7 +1282,6 @@
                     var li = "<li><a href='#' id='summary' onclick='switchNewMetrics(this);'>"+"SUMMARY"+"</a></li>"
                     $("#sqb-switch-li").append(li);
                     var distri_list = getDistriCount(window.bs_data);
-//                      console.log(distri_list)
 
                     myBarChart.config.data.datasets[0].data = distri_list;
                     myBarChart.update();
@@ -1395,32 +1302,26 @@
                         showExport: true,                    //是否显示导出
                         exportDataType: "all",
                         showColumns: true,
-//                            showPaginationSwitch:true,
-                        //strictSearch: true,
-                        //clickToSelect: true,                //是否启用点击选中行
-                        //height: 460,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
-                        //uniqueId: "id",                     //每一行的唯一标识，一般为主键列
-                        //cardView: false,                    //是否显示详细视图
-                        //detailView: false,                   //是否显示父子表
+
                         columns: [{
                             field: 'design_name',
                             title: 'Design Name',
                             sortable: true
-                        }, {
-                            field: 'step_name',
-                            title: 'Step Name',
-                            sortable: true
-                        }, {
-                            field: 'step_val',
-                            title: 'Step Value',
-                            sortable: true
-                        }, {
+                        },{
                             field: 'base_name',
                             title: 'Base Step',
                             sortable: true
                         }, {
                             field: 'base_val',
                             title: 'Base Value',
+                            sortable: true
+                        },  {
+                            field: 'step_name',
+                            title: 'Step Name',
+                            sortable: true
+                        }, {
+                            field: 'step_val',
+                            title: 'Step Value',
                             sortable: true
                         }, {
                             field: 'pct',
@@ -1438,88 +1339,18 @@
                     $("#sqb-hide").css("display","block");
                     $(".sqb-chart").css("display","block");
                     $(".sqb-switch").css("display", "table");
-                    console.log("success!");
-                    l.stop();
-                })
-                .fail(function() {
-                    //$(destId).text("Error: Could not contact server.");
-                    l.stop();
-                    console.log("fail!")
-                });
-        })
-        if(mode=="1"){
+    }
 
-            $(".sqb").css("display", "table");
-            $("#sqb1-flow-dir").val(first_dir);
-            $("#stage").text(first_stage);        
-            $('#sqb_btn').click();
-            content = $("#sqb").text();
-        
-            $("#method").text(content);
-            $("#pattern").text(first_pattern);
-            $("#sqb1-step-name").val(single_name);
-            $("#sqbstep-name-switch").text(single_name);
-
-            $('#sqb_btn1').click();
-        }
-
-
-
-
-        //$(".gain-loss-display").css("display","none");
-        
-        $('#sqc_btn').click(function(e){
-            $(".sqc-summary").css("display","none");
-            $(".sqb-summary").css("display","none");
-            $("#sqc-hide").css("display","none");
-            $(".sqb-chart").css("display","none");
-            $(".sqb-switch").css("display","none");
-            $(".sqc-chart").css("display","none");
-            $(".sqc-switch").css("display","none");
-            $("#error-warning").css("display","none");
-            var warn = $("#error-warning");
+    function sqcClick1(data){
+        var warn = $("#error-warning");
             warn.text("");
-            $("#sqccmp-name-switch").val("");
-            $("#sqcstep-name-switch").val("");
-            $("#sqccmp-name-switch-li").empty();
-            $("#sqcstep-name-switch-li").empty();
-            $("#cpattern").html("Pattern"+" <span class=\"caret\"></span>");
-            $("#sqcstep-name-switch").text("Base");
-            $("#sqccmp-name-switch").text("Compare");
-            $("#sqc-comp-name").val("");
-
-            if( $("#sqc-flow-dir").val()==""){
-                warn.css("display","block");
-                warn.attr("class","alert alert-warning");
-                warn.append("<strong>flow_dir</strong> should not be empty!");
-                return false;
-            }
-            if($("#cstage").text().trim()=="Stage"){
-                warn.css("display","block");
-                warn.attr("class","alert alert-warning");
-                warn.append("<strong>Stage</strong> Warn! Please choose the right stage! ");
-                return false;
-            }
-            var l = Ladda.create(this);
-            l.start();
-            $.post('analysis_sqc', {
-                step_name: "",
-                base_name: "",
-                flow_dir: $("#sqc-flow-dir").val(),
-                pattern: $("#cpattern").text().trim(),
-                stage: $("#cstage").text().trim()
-            }, function () {
-                console.log("sending post...")
-            })
-                .done(function(data) {
-                    // window.steps_list_dict = ["NWPOPT","NWCOPT","NWFOPT"];
-                    if(data["result"]=="success"){
+            if(data["result"]=="success"){
                         judgeEmpty = jQuery.parseJSON(data["steps_list_dict"]);
                         if(isEmptyObject(judgeEmpty)){
                             warn.css("display","block");
                             warn.attr("class","alert alert-warning");
                             warn.append("<strong>Data</strong> do not exist");
-                            l.stop();
+                            // l.stop();
                             return false;
                         }
                     }
@@ -1527,7 +1358,7 @@
                         warn.css("display","block");
                         warn.attr("class","alert alert-danger");
                         warn.append(data["msg"]);
-                        l.stop();
+                        // l.stop();
                         return false;
                     }
                     window.steps_list_dict = jQuery.parseJSON(data["steps_list_dict"]);
@@ -1557,63 +1388,19 @@
                     }
         })
                     }
-                    console.log("first start success!");
-                    l.stop();
-                })
-                .fail(function() {
-                    //$(destId).text("Error: Could not contact server.");
-                    l.stop();
-                    console.log("fail!")
-                });
+    }
 
-        })
-        $('#sqc_btn1').click(function(e) {
-            $(".sqb-chart").css("display","none");
-            $(".sqb-switch").css("display","none");
-            $(".sqc-chart").css("display","none");
-            $(".sqc-switch").css("display","none");
-            $(".sqc-summary").css("display","none");
-            $("#error-warning").css("display","none");
-            var warn = $("#error-warning");
+    function sqcClick2(data){
+        var warn = $("#error-warning");
             warn.text("");
-            if( $("#sqc-base-name").val()==""){
-                warn.css("display","block");
-                warn.attr("class","alert alert-warning");
-                warn.append("<strong>Base name</strong> should not be empty!");
-                return false;
-            }
-            if( $("#sqc-comp-name").val()==""){
-                warn.css("display","block");
-                warn.attr("class","alert alert-warning");
-                warn.append("<strong>Compare name</strong> should not be empty!");
-                return false;
-            }
-            if($("#cpattern").text().trim()=="Pattern"){
-                warn.css("display","block");
-                warn.attr("class","alert alert-warning");
-                warn.append("<strong>Pattern </strong> Warn! Please choose the right Pattern! ");
-                return false;
-            }
-            var l = Ladda.create(this);
-            l.start();
-            $.post('analysis_sqc', {
-                base_name: $("#sqc-base-name").val(),
-                step_name: $("#sqc-comp-name").val(),
-                flow_dir: $("#sqc-flow-dir").val(),
-                pattern: $("#cpattern").text().trim(),
-                stage: $("#cstage").text().trim()
-            }, function () {
-                console.log("sending analysis compare post...")
-            })
-                .done(function(data) {
-                    window.bs_data = [];
+         window.bs_data = [];
                     if(data["result"]=="success"){
                         judgeEmpty = jQuery.parseJSON(data["step_qor_info"]);
                         if(isEmptyObject(judgeEmpty)){
                             warn.css("display","block");
                             warn.attr("class","alert alert-warning");
                             warn.append("<strong>Data</strong> do not exist");
-                            l.stop();
+                            // l.stop();
                             return false;
                         }
                     }
@@ -1621,7 +1408,7 @@
                         warn.css("display","block");
                         warn.attr("class","alert alert-danger");
                         warn.append(data["msg"]);
-                        l.stop();
+                        // l.stop();
                         return false;
                     }
                     window.step_qor_info = jQuery.parseJSON(data["step_qor_info"]);
@@ -1639,11 +1426,14 @@
                             //console.log(qor_data_list[0])
                             var dir = encodeURIComponent($("#sqc-flow-dir").val());
                             var pattern = $("#cpattern").text().trim();
-                            var stage = $("#cstage").text().trim().toLowerCase().substring(2, 6);
+                            // var stage = $("#cstage").text().trim().toLowerCase().substring(2, 6);
+                            var stage = "{{stage|safe}}";
                             var reg = /\d+/;
                             var prevp = qor_data_list[0].match(reg);
                             var crntp = qor_data_list[2].match(reg);
-                            var mt = "http://"+window.location.host+"/profile_"+ stage + "?mode=flow&compress=1&input_list=" + dir +"&cmd=" + stage +"&active_design=" + design_name
+                            var url = window.location.pathname.split('/')
+                            url =url.slice(0,url.length-1).join('/')
+                            var mt = "http://"+window.location.host+url+"/profile_"+ stage + "?mode=flow&pattern=all&compress=1&input_list=" + dir +"&cmd=" + stage +"&active_design=" + design_name
                                 +"&active_metrics=undefined&active_pattern=" + pattern + "&prev_d=0&prev_p=" + prevp + "&crnt_d=0&crnt_p="+ crntp ;
                             var data_ele = {
                                 "design_name": design_name,
@@ -1696,7 +1486,6 @@
                             design_name = $(option).val();
                             if (checked == true) {
                                 window.selected_designs.push(design_name)
-                                debugger;
                                 if($("#sqc-switch").text()=="SUMMARY"){
                                     $.each(window.step_qor_info,function(index){
                                         window.selected_metrics = index;
@@ -1765,21 +1554,21 @@
                             field: 'design_name',
                             title: 'Design Name',
                             sortable: true
-                        }, {
-                            field: 'step_name',
-                            title: 'Compare Name',
-                            sortable: true
-                        }, {
-                            field: 'step_val',
-                            title: 'Step Value',
-                            sortable: true
-                        }, {
+                        },{
                             field: 'base_name',
                             title: 'Base Step',
                             sortable: true
                         }, {
                             field: 'base_val',
                             title: 'Base Value',
+                            sortable: true
+                        },  {
+                            field: 'step_name',
+                            title: 'Compare Name',
+                            sortable: true
+                        }, {
+                            field: 'step_val',
+                            title: 'Step Value',
                             sortable: true
                         }, {
                             field: 'pct',
@@ -1798,79 +1587,19 @@
 
                     $(".sqc-chart").css("display","block");
                     $(".sqc-switch").css("display", "table");
-                    console.log("compare_analysis success!");
-                    l.stop();
-                })
-                .fail(function() {
-                    //$(destId).text("Error: Could not contact server.");
-                    l.stop();
-                    console.log("fail!")
-                });
-        })
+    }
 
-        if(mode=="2"){
-            $(".sqc").css("display", "table");
-            $("#sqc-flow-dir").val(first_dir);
-            $("#cstage").text(first_stage);        
-            $('#sqc_btn').click();
-            content = $("#sqc").text();
-        
-            $("#method").text(content);
-            $("#cpattern").text(first_pattern);
-            $("#sqc-base-name").val(first_name);
-            $("#sqc-comp-name").val(second_name);
-            $("#sqcstep-name-switch").text(first_name);
-            $("#sqccmp-name-switch").text(second_name);
-            $('#sqc_btn1').click();
-        }
-
-        $('#sqt_btn').click(function(e){
-            $("#sqt-hide").css("display","none");
-            $(".sqb-chart").css("display","none");
-            $(".sqb-switch").css("display","none");
-            $(".sqc-chart").css("display","none");
-            $(".sqc-switch").css("display","none");
-            $(".sqc-summary").css("display","none");
-            $(".sqb-summary").css("display","none");
-            $(".sqt-chart").css("display","none");
-            $(".sqt-switch").css("display","none");
-            $(".sqt-summary").css("display","none");
-
-            $("#error-warning").css("display","none");
-            var warn = $("#error-warning");
+    function sqtClick1(data){
+        var warn = $("#error-warning");
             warn.text("");
-            $("#tpattern").html("Pattern"+" <span class=\"caret\"></span>");
-            if( $("#sqt1-flow-dir").val()==""){
-                warn.css("display","block");
-                warn.attr("class","alert alert-warning");
-                warn.append("<strong>flow_dir</strong> should not be empty!");
-                return false;
-            }
-            if($("#tstage").text().trim()=="Stage"){
-                warn.css("display","block");
-                warn.attr("class","alert alert-warning");
-                warn.append("<strong>Stage</strong> Warn! Please choose the right stage! ");
-                return false;
-            }
-            var l = Ladda.create(this);
-            l.start();
-            $.post('analysis_sqt', {
-                flow_dir: $("#sqt1-flow-dir").val(),
-                pattern: $("#tpattern").text().trim(),
-                stage: $("#tstage").text().trim(),
-                bound: $("#sqt-bound").val(),
-            }, function () {
-                console.log("sending post...")
-            })
-                .done(function(data) {
-                    // window.steps_list_dict = ["NWPOPT","NWCOPT","NWFOPT"];
+         // window.steps_list_dict = ["NWPOPT","NWCOPT","NWFOPT"];
                     if(data["result"]=="success"){
                         judgeEmpty = jQuery.parseJSON(data["steps_list_dict"]);
                         if(isEmptyObject(judgeEmpty)){
                             warn.css("display","block");
                             warn.attr("class","alert alert-warning");
                             warn.append("<strong>Data</strong> do not exist");
-                            l.stop();
+                            // l.stop();
                             return false;
                         }
                     }
@@ -1878,7 +1607,7 @@
                         warn.css("display","block");
                         warn.attr("class","alert alert-danger");
                         warn.append(data["msg"]);
-                        l.stop();
+                        // l.stop();
                         return false;
                     }
                     window.steps_list_dict = jQuery.parseJSON(data["steps_list_dict"]);
@@ -1889,64 +1618,19 @@
                         var li = "<li><a href='#' id='"+name_list+"'onclick='activeSqtPattern(this);'>"+name_list+"</a></li>"
                         $("#tpattern-switch-li").append(li);
                     })
-                    console.log("first start success!");
-                    l.stop();
-                })
-                .fail(function() {
-                    //$(destId).text("Error: Could not contact server.");
-                    l.stop();
-                    console.log("fail!")
-                });
+    }
 
-        })
-        $('#sqt_btn1').click(function(e) {
-            //console.log($("#sqb1-step-name").val())
-            $(".sqb-chart").css("display","none");
-            $(".sqb-switch").css("display","none");
-            $(".sqc-chart").css("display","none");
-            $(".sqc-switch").css("display","none");
-            $(".sqt-summary").css("display","none");
-            $("#error-warning").css("display","none");
-
-            var warn = $("#error-warning");
+    function sqtClick2(data){
+        var warn = $("#error-warning");
             warn.text("");
-            if($("#tpattern").text().trim()=="Pattern"){
-                warn.css("display","block");
-                warn.attr("class","alert alert-warning");
-                warn.append("<strong>Pattern</strong> Warn! Please choose the right pattern! ");
-                return false;
-            }
-            if($("#sqt-bound").val()==""){
-                warn.css("display","block");
-                warn.attr("class","alert alert-warning");
-                warn.append("<strong>Bound number</strong> should not be empty!");
-                return false;
-            }
-            var l = Ladda.create(this);
-            l.start();
-            $.post('analysis_sqt', {
-                flow_dir: $("#sqt1-flow-dir").val(),
-                pattern: $("#tpattern").text().trim(),
-                stage: $("#tstage").text().trim(),
-                bound: $("#sqt-bound").val(),
-            }, function () {
-                console.log("sending post...")
-            })
-                .done(function(data) {
-                    //var thHTML='<thead><tr><th data-sortable="true" data-field="design_name"> design_name </th>
-                    // <th data-sortable="true" data-field="step_name"> step_name </th><th data-sortable="true" data-field="step_val">
-                    // step_val</th><th data-sortable="true" data-field="base_step"> base_step </th><th data-sortable="true" data-field="base_val">
-                    // base_val</th><th data-sortable="true" data-field="Gain-Loss"> Gain/Loss Pct.</th></tr></thead>'
-                    //$("#sqb_bs_table").append(thHTML)\
-                    // window.steps_list_dict = ["NWPOPT","NWCOPT","NWFOPT"];
-                    window.bs_data = [];
+         window.bs_data = [];
                     if(data["result"]=="success"){
                         judgeEmpty = jQuery.parseJSON(data["step_qor_info"]);
                         if(isEmptyObject(judgeEmpty)){
                             warn.css("display","block");
                             warn.attr("class","alert alert-warning");
                             warn.append("<strong>Data</strong> do not exist");
-                            l.stop();
+                            // l.stop();
                             return false;
                         }
                     }
@@ -1954,7 +1638,7 @@
                         warn.css("display","block");
                         warn.attr("class","alert alert-danger");
                         warn.append(data["msg"]);
-                        l.stop();
+                        // l.stop();
                         return false;
                     }
 
@@ -1965,26 +1649,33 @@
                     //     info_index.push(value)
                     // })
                     // metrics = info_index[0]
+                    $('#sqt-design-select').empty();
+                    window.all_select = [];
                     console.log(window.step_qor_info);
                     $.each(window.step_qor_info[metrics], function(design_name, value) {
                         if (value == "null") {
                             return true;
                         }
+                        window.all_select.push(design_name);
+                        $('#sqt-design-select').append('<option value="' + design_name + '"> ' + design_name + '</option>');
                         $.each(value, function(index, qor_data_list) {
                             //console.log(qor_data_list[0])
                             var dir = encodeURIComponent($("#sqt1-flow-dir").val());
                             var pattern = $("#tpattern").text().trim();
-                            var stage = $("#tstage").text().trim().toLowerCase().substring(2, 6);
+                            // var stage = $("#tstage").text().trim().toLowerCase().substring(2, 6);
+                            var stage = "{{stage|safe}}";
                             var reg = /\d+/;
                             var prevp = qor_data_list[0].match(reg);
                             var crntp = qor_data_list[2].match(reg);
-                            var mt = "http://"+window.location.host+"/profile_"+ stage + "?mode=flow&compress=1&input_list=" + dir +"&cmd=" + stage +"&active_design=" + design_name+"&active_metrics=undefined&active_pattern=" + pattern + "&prev_d=0&prev_p=" + prevp + "&crnt_d=0&crnt_p="+ crntp ;
+                            var url = window.location.pathname.split('/')
+                            url =url.slice(0,url.length-1).join('/')
+                            var mt = "http://"+window.location.host+url+"/profile_"+ stage + "?mode=flow&pattern=all&compress=1&input_list=" + dir +"&cmd=" + stage +"&active_design=" + design_name+"&active_metrics=undefined&active_pattern=" + pattern + "&prev_d=0&prev_p=" + prevp + "&crnt_d=0&crnt_p="+ crntp ;
                             var data_ele = {
-                                "design_name": design_name,
-                                "step_name": qor_data_list[2],
-                                "step_val": qor_data_list[3],
+                                "design_name": design_name,                               
                                 "base_name": qor_data_list[0],
                                 "base_val": qor_data_list[1],
+                                "step_name": qor_data_list[2],
+                                "step_val": qor_data_list[3],
                                 "pct": qor_data_list[4],
                                 "link": "<a href='"+ mt +"'>View</a>"
                             }
@@ -1994,6 +1685,69 @@
                         //console.log(design_name)
                         //console.log(value)
                     })
+                    window.selected_metrics = metrics;
+                    $('#sqt-design-select').multiselect("destroy").multiselect({
+                        includeSelectAllOption: true,
+                        buttonWidth: '200px',
+                        onSelectAll: function() {
+                            $.each(window.all_select,function(index,value){
+                                window.selected_designs.push(value);
+                            });
+
+                            if($("#sqt-switch").text()=="SUMMARY"){
+                                $.each(window.step_qor_info,function(index){
+                                    window.selected_metrics = index;
+                                    window[index].update();
+                                });
+                            }
+                            else{
+                                myBarChart3.update();
+                            }
+                        
+                        },
+                        onDeselectAll:function(){
+                            window.selected_designs = [];
+                            if($("#sqt-switch").text()=="SUMMARY"){
+                                $.each(window.step_qor_info,function(index){
+                                    window.selected_metrics = index;
+                                    window[index].update();
+                                });
+                            }
+                            else{
+                                 myBarChart3.update();
+                            }
+                        },
+                        onChange: function(option, checked, select) {
+                            design_name = $(option).val();
+                            if (checked == true) {
+                                window.selected_designs.push(design_name)
+                                if($("#sqt-switch").text()=="SUMMARY"){
+                                    $.each(window.step_qor_info,function(index){
+                                        window.selected_metrics = index;
+                                        window[index].update();
+                                    });
+                                }
+                                else{
+                                    myBarChart3.update();
+                                }
+                            }
+
+                            if (checked == false) {
+                                pos = jQuery.inArray(design_name, window.selected_designs);
+                                window.selected_designs.splice(pos,1)
+                                if($("#sqt-switch").text()=="SUMMARY"){
+                                    $.each(window.step_qor_info,function(index){
+                                        window.selected_metrics = index;
+                                        window[index].update();
+                                    });
+                                }
+                                else{
+                                    myBarChart3.update();
+                                }
+                            }                           
+                            //console.log($(option).val() + $(option).selected());
+                        }
+                    });
                     $("#sqt-switch").text(metrics);
                     $("#sqt-switch-li").empty();
                     $.each(window.step_qor_info, function(metrics, dict) {
@@ -2035,21 +1789,21 @@
                             field: 'design_name',
                             title: 'Design Name',
                             sortable: true
-                        }, {
-                            field: 'step_name',
-                            title: 'Step Name',
-                            sortable: true
-                        }, {
-                            field: 'step_val',
-                            title: 'Step Value',
-                            sortable: true
-                        }, {
+                        },{
                             field: 'base_name',
                             title: 'Base Step',
                             sortable: true
                         }, {
                             field: 'base_val',
                             title: 'Base Value',
+                            sortable: true
+                        },  {
+                            field: 'step_name',
+                            title: 'Step Name',
+                            sortable: true
+                        }, {
+                            field: 'step_val',
+                            title: 'Step Value',
                             sortable: true
                         }, {
                             field: 'pct',
@@ -2070,6 +1824,181 @@
                     $("#sqt-hide").css("display","block");
                     $(".sqt-chart").css("display","block");
                     $(".sqt-switch").css("display", "table");
+    }
+
+    $(function() {
+        window.display_designs = new Array();
+        window.selected_designs = new Array();
+        window.selected_metrics = [];
+        //jump to step benefit analysis
+
+        first_pattern = "{{pattern|safe}}";
+        stage = "{{stage|safe}}";
+        first_name = "{{step_name|safe}}";
+        first_stage = stage.toUpperCase();
+        first_dir = "{{flow_dir|safe}}";
+        second_dir = "{{second_dir|safe}}";
+        mode = "{{mode|safe}}";
+        single_name = "{{single_name|safe}}";
+        second_name = "{{comp_name|safe}}";
+        window.tech_nodes = {{tech_nodes|safe}};
+        window.customers = {{customers|safe}};
+
+        console.log(tech_nodes, customers);
+
+        if(second_dir==""){
+            second_dir = first_dir;
+        }
+        number = "{{number|safe}}";
+
+
+        $('#sqb_btn').click(function(e){
+            
+            // $("#sqb-hide").css("display","none");
+            $(".sqb-chart").css("display","none");
+            $(".sqb-switch").css("display","none");
+            $(".sqc-chart").css("display","none");
+            $(".sqc-switch").css("display","none");
+            $(".sqc-summary").css("display","none");
+            $(".sqb-summary").css("display","none");
+
+            $("#error-warning").css("display","none");
+            var warn = $("#error-warning");
+            warn.text("");
+            $("#pattern").html("Pattern");
+            $("#sqbstep-name-switch").text("Step name");
+            if( $("#sqb1-flow-dir").val()==""){
+                warn.css("display","block");
+                warn.attr("class","alert alert-warning");
+                warn.append("<strong>flow_dir</strong> should not be empty!");
+                return false;
+            }
+            if($("#stage").text().trim()=="Stage"){
+                warn.css("display","block");
+                warn.attr("class","alert alert-warning");
+                warn.append("<strong>Stage</sstrong> Warn! Please choose the right stage! ");
+                return false;
+            }
+            var l = Ladda.create(this);
+            l.start();
+            key_stage = $("#stage").text().trim();
+            keydir1 = $("#sqb1-flow-dir").val();
+            keydir2 = $("#sqb1-second-dir").val();
+            var keyinfo = key_stage+"sqb1info";
+            if(sessionStorage.getItem(keyinfo)&&(sessionStorage.getItem('dirlist1')==keydir1)&&(sessionStorage.getItem('dirlist2')==keydir2)){
+                    strdata = sessionStorage.getItem(keyinfo);
+                    inputdata = JSON.parse(strdata);
+                    // lists = sessionStorage.getItem('dirlists');
+                    sqbClick1(inputdata);
+                    l.stop();
+                    // inputdata.selected_pattern = active_pattern;
+            }
+            else{
+            $.post('analysis_sqb', {
+                step_name: "",
+                flow_dir: $("#sqb1-flow-dir").val(),
+                second_dir: $("#sqb1-second-dir").val(),
+                pattern: first_pattern,
+                stage: $("#stage").text().trim(),
+                tech_nodes: JSON.stringify(window.tech_nodes),
+                customers: JSON.stringify(window.customers),
+            }, function () {
+                console.log("sending post...")
+            })
+                .done(function(data) {
+                    // window.steps_list_dict = ["NWPOPT","NWCOPT","NWFOPT"];
+                    var keydata = JSON.stringify(data); 
+                    key_stage = $("#stage").text().trim();
+                    var keyvalue = key_stage+"sqb1info";
+                    keydir1 = $("#sqb1-flow-dir").val();
+                    keydir2 = $("#sqb1-second-dir").val();
+                    sessionStorage.setItem(keyvalue,keydata);
+                    sessionStorage.setItem("dirlist1",keydir1);
+                    sessionStorage.setItem("dirlist2",keydir2);
+                    sqbClick1(data);
+                    console.log("first start success!");
+                    l.stop();
+                })
+                .fail(function() {
+                    //$(destId).text("Error: Could not contact server.");
+                    l.stop();
+                    console.log("fail!")
+                });
+            }
+        })
+
+        $('#sqb_btn1').click(function(e) {
+            //console.log($("#sqb1-step-name").val())
+
+            $(".sqb-chart").css("display","none");
+            $(".sqb-switch").css("display","none");
+            $(".sqc-chart").css("display","none");
+            $(".sqc-switch").css("display","none");
+            $("#error-warning").css("display","none");
+            $(".sqb-summary").css("display","none");
+            var warn = $("#error-warning");
+            warn.text("");
+            if($("#pattern").text().trim()=="Pattern"){
+                warn.css("display","block");
+                warn.attr("class","alert alert-warning");
+                warn.append("<strong>Pattern</strong> Warn! Please choose the right pattern! ");
+                return false;
+            }
+            if($("#sqb1-step-name").val()==""){
+                warn.css("display","block");
+                warn.attr("class","alert alert-warning");
+                warn.append("<strong>Step name</strong> should not be empty!");
+                return false;
+            }
+            var l = Ladda.create(this);
+            l.start();
+            key_stage = $("#stage").text().trim();
+            key_pattern = $("#pattern").text().trim();
+            key_name = $("#sqb1-step-name").val();
+            keydir1 = $("#sqb1-flow-dir").val();
+            keydir2 = $("#sqb1-second-dir").val();
+            var keyinfo = key_stage+key_pattern+key_name+"sqb2info";
+            if(sessionStorage.getItem(keyinfo)&&(sessionStorage.getItem('dirlist1')==keydir1)&&(sessionStorage.getItem('dirlist2')==keydir2)){
+                    strdata = sessionStorage.getItem(keyinfo);
+                    inputdata = JSON.parse(strdata);
+                    // lists = sessionStorage.getItem('dirlists');
+                    sqbClick2(inputdata);
+                    l.stop();
+                    // inputdata.selected_pattern = active_pattern;
+            }
+            else{
+            if($("#sqb1-second-dir").val()==""){
+                $("#sqb1-second-dir").val($("#sqb1-flow-dir").val());
+            }
+            $.post('analysis_sqb', {
+                step_name: $("#sqb1-step-name").val(),
+                flow_dir: $("#sqb1-flow-dir").val(),
+                second_dir: $("#sqb1-second-dir").val(),
+                pattern: $("#pattern").text().trim(),
+                stage: $("#stage").text().trim(),
+                tech_nodes: JSON.stringify(window.tech_nodes),
+                customers: JSON.stringify(window.customers),
+            }, function () {
+                console.log("sending post...")
+            })
+                .done(function(data) {
+                    //var thHTML='<thead><tr><th data-sortable="true" data-field="design_name"> design_name </th>
+                    // <th data-sortable="true" data-field="step_name"> step_name </th><th data-sortable="true" data-field="step_val">
+                    // step_val</th><th data-sortable="true" data-field="base_step"> base_step </th><th data-sortable="true" data-field="base_val">
+                    // base_val</th><th data-sortable="true" data-field="Gain-Loss"> Gain/Loss Pct.</th></tr></thead>'
+                    //$("#sqb_bs_table").append(thHTML)\
+                    // window.steps_list_dict = ["NWPOPT","NWCOPT","NWFOPT"];
+                    var keydata = JSON.stringify(data); 
+                    key_stage = $("#stage").text().trim();
+                    key_pattern = $("#pattern").text().trim();
+                    key_name = $("#sqb1-step-name").val();
+                    keydir1 = $("#sqb1-flow-dir").val();
+                    keydir2 = $("#sqb1-second-dir").val();
+                    var keyvalue = key_stage+key_pattern+key_name+"sqb2info";
+                    sessionStorage.setItem(keyvalue,keydata);
+                    sessionStorage.setItem("dirlist1",keydir1);
+                    sessionStorage.setItem("dirlist2",keydir2);
+                    sqbClick2(data);
                     console.log("success!");
                     l.stop();
                 })
@@ -2078,7 +2007,390 @@
                     l.stop();
                     console.log("fail!")
                 });
+            }
         })
+        if(mode=="1"){
+
+            $(".sqb").css("display", "table");
+            $("#sqb1-flow-dir").val(first_dir);
+            $("#sqb1-second-dir").val(second_dir);
+            if(first_dir!=second_dir){
+                $("#sqb-two-flow").css("display","table");
+            }
+            if(first_pattern=="APS")
+            {
+                $("#sqb-two-flow").css("display","none");
+            }
+            $("#stage").text("NW"+first_stage);  
+            if(first_stage=="FULL_FLOW"){
+                $("#stage").text(first_stage+"_PPA");    
+            }       
+            $('#sqb_btn').click();
+            content = $("#sqb").text();
+        
+            $("#method").text(content);
+            $("#pattern").text(first_pattern);
+            $("#sqb1-step-name").val(single_name);
+            $("#sqbstep-name-switch").text(single_name);
+
+            $('#sqb_btn1').click();
+        }
+
+        if(mode=="4"){
+
+            $(".sqb").css("display", "table");
+            $("#sqb1-flow-dir").val(first_dir);
+            $("#sqb1-second-dir").val(first_dir);       
+            $("#stage").text("NW"+first_stage);    
+            if(first_stage=="FULL_FLOW"){
+                $("#stage").text(first_stage+"_PPA");    
+            }    
+            $('#sqb_btn').click();
+            content = $("#sqb").text();
+        
+            $("#method").text(content);
+            $("#pattern").text(first_pattern);
+            $("#sqb1-step-name").val(single_name);
+            $("#sqbstep-name-switch").text(single_name);
+
+            $('#sqb_btn1').click();
+        }
+
+
+
+
+        //$(".gain-loss-display").css("display","none");
+        
+        $('#sqc_btn').click(function(e){
+            $(".sqc-summary").css("display","none");
+            $(".sqb-summary").css("display","none");
+            $("#sqc-hide").css("display","none");
+            $(".sqb-chart").css("display","none");
+            $(".sqb-switch").css("display","none");
+            $(".sqc-chart").css("display","none");
+            $(".sqc-switch").css("display","none");
+            $("#error-warning").css("display","none");
+            var warn = $("#error-warning");
+            warn.text("");
+            $("#sqccmp-name-switch").val("");
+            $("#sqcstep-name-switch").val("");
+            $("#sqccmp-name-switch-li").empty();
+            $("#sqcstep-name-switch-li").empty();
+            $("#cpattern").html("Pattern");
+            $("#sqcstep-name-switch").text("Base");
+            $("#sqccmp-name-switch").text("Compare");
+            $("#sqc-comp-name").val("");
+
+            if( $("#sqc-flow-dir").val()==""){
+                warn.css("display","block");
+                warn.attr("class","alert alert-warning");
+                warn.append("<strong>flow_dir</strong> should not be empty!");
+                return false;
+            }
+            if($("#cstage").text().trim()=="Stage"){
+                warn.css("display","block");
+                warn.attr("class","alert alert-warning");
+                warn.append("<strong>Stage</strong> Warn! Please choose the right stage! ");
+                return false;
+            }
+            var l = Ladda.create(this);
+            l.start();
+            key_stage = $("#cstage").text().trim();
+            keydir = $("#sqc-flow-dir").val();
+            var keyinfo = key_stage+"sqc1info";
+            if(sessionStorage.getItem(keyinfo)&&(sessionStorage.getItem('dirlist1')==keydir)){
+                    strdata = sessionStorage.getItem(keyinfo);
+                    inputdata = JSON.parse(strdata);
+                    // lists = sessionStorage.getItem('dirlists');
+                    sqcClick1(inputdata);
+                    l.stop();
+                    // inputdata.selected_pattern = active_pattern;
+            }
+            else{
+            $.post('analysis_sqc', {
+                step_name: "",
+                base_name: "",
+                flow_dir: $("#sqc-flow-dir").val(),
+                pattern: first_pattern,
+                stage: $("#cstage").text().trim(),
+                tech_nodes: JSON.stringify(window.tech_nodes),
+                customers: JSON.stringify(window.customers),
+            }, function () {
+                console.log("sending post...")
+            })
+                .done(function(data) {
+                    // window.steps_list_dict = ["NWPOPT","NWCOPT","NWFOPT"];
+                    var keydata = JSON.stringify(data); 
+                    key_stage = $("#cstage").text().trim();
+                    var keyvalue = key_stage+"sqc1info";
+                    keydir = $("#sqc-flow-dir").val()
+                    sessionStorage.setItem(keyvalue,keydata);
+                    sessionStorage.setItem("dirlist1",keydir);
+                    sqcClick1(data);
+                    console.log("first start success!");
+                    l.stop();
+                })
+                .fail(function() {
+                    //$(destId).text("Error: Could not contact server.");
+                    l.stop();
+                    console.log("fail!")
+                });
+            }
+        })
+        $('#sqc_btn1').click(function(e) {
+            $(".sqb-chart").css("display","none");
+            $(".sqb-switch").css("display","none");
+            $(".sqc-chart").css("display","none");
+            $(".sqc-switch").css("display","none");
+            $(".sqc-summary").css("display","none");
+            $("#error-warning").css("display","none");
+            var warn = $("#error-warning");
+            warn.text("");
+            if( $("#sqc-base-name").val()==""){
+                warn.css("display","block");
+                warn.attr("class","alert alert-warning");
+                warn.append("<strong>Base name</strong> should not be empty!");
+                return false;
+            }
+            if( $("#sqc-comp-name").val()==""){
+                warn.css("display","block");
+                warn.attr("class","alert alert-warning");
+                warn.append("<strong>Compare name</strong> should not be empty!");
+                return false;
+            }
+            if($("#cpattern").text().trim()=="Pattern"){
+                warn.css("display","block");
+                warn.attr("class","alert alert-warning");
+                warn.append("<strong>Pattern </strong> Warn! Please choose the right Pattern! ");
+                return false;
+            }
+            var l = Ladda.create(this);
+            l.start();
+            key_stage = $("#cstage").text().trim();
+            key_pattern = $("#cpattern").text().trim();
+            key_name1 = $("#sqc-base-name").val();
+            key_name2 = $("#sqc-comp-name").val();
+            keydir = $("#sqc-flow-dir").val();
+            var keyinfo = key_stage+key_pattern+key_name1+key_name2+"sqc2info";
+            if(sessionStorage.getItem(keyinfo)&&(sessionStorage.getItem('dirlist1')==keydir)){
+                    strdata = sessionStorage.getItem(keyinfo);
+                    inputdata = JSON.parse(strdata);
+                    // lists = sessionStorage.getItem('dirlists');
+                    sqcClick2(inputdata);
+                    l.stop();
+                    // inputdata.selected_pattern = active_pattern;
+            }
+            else{
+            $.post('analysis_sqc', {
+                base_name: $("#sqc-base-name").val(),
+                step_name: $("#sqc-comp-name").val(),
+                flow_dir: $("#sqc-flow-dir").val(),
+                pattern: $("#cpattern").text().trim(),
+                stage: $("#cstage").text().trim(),
+                tech_nodes: JSON.stringify(window.tech_nodes),
+                customers: JSON.stringify(window.customers),
+            }, function () {
+                console.log("sending analysis compare post...")
+            })
+                .done(function(data) {
+                    var keydata = JSON.stringify(data); 
+                    key_stage = $("#cstage").text().trim();
+                    key_pattern = $("#cpattern").text().trim();
+                    key_name1 = $("#sqc-base-name").val();
+                    key_name2 = $("#sqc-comp-name").val();
+                    keydir = $("#sqc-flow-dir").val();
+                    var keyvalue = key_stage+key_pattern+key_name1+key_name2+"sqc2info";
+                    sessionStorage.setItem(keyvalue,keydata);
+                    sessionStorage.setItem("dirlist1",keydir);
+                    sqcClick2(data);
+                    console.log("compare_analysis success!");
+                    l.stop();
+                })
+                .fail(function() {
+                    //$(destId).text("Error: Could not contact server.");
+                    l.stop();
+                    console.log("fail!")
+                });
+            }
+        })
+
+        if(mode=="2"){
+            $(".sqc").css("display", "table");
+            $("#sqc-flow-dir").val(first_dir);
+            $("#cstage").text("NW"+first_stage);
+            if(first_stage=="FULL_FLOW"){
+                $("#cstage").text(first_stage+"_PPA");    
+            }          
+            $('#sqc_btn').click();
+            content = $("#sqc").text();
+        
+            $("#method").text(content);
+            $("#cpattern").text(first_pattern);
+            $("#sqc-base-name").val(first_name);
+            $("#sqc-comp-name").val(second_name);
+            $("#sqcstep-name-switch").text(first_name);
+            $("#sqccmp-name-switch").text(second_name);
+            $('#sqc_btn1').click();
+        }
+
+
+        $('#sqt_btn').click(function(e){
+            $("#sqt-hide").css("display","none");
+            $(".sqb-chart").css("display","none");
+            $(".sqb-switch").css("display","none");
+            $(".sqc-chart").css("display","none");
+            $(".sqc-switch").css("display","none");
+            $(".sqc-summary").css("display","none");
+            $(".sqb-summary").css("display","none");
+            $(".sqt-chart").css("display","none");
+            $(".sqt-switch").css("display","none");
+            $(".sqt-summary").css("display","none");
+
+            $("#error-warning").css("display","none");
+            var warn = $("#error-warning");
+            warn.text("");
+            $("#tpattern").html("Pattern");
+            if( $("#sqt1-flow-dir").val()==""){
+                warn.css("display","block");
+                warn.attr("class","alert alert-warning");
+                warn.append("<strong>flow_dir</strong> should not be empty!");
+                return false;
+            }
+            if($("#tstage").text().trim()=="Stage"){
+                warn.css("display","block");
+                warn.attr("class","alert alert-warning");
+                warn.append("<strong>Stage</strong> Warn! Please choose the right stage! ");
+                return false;
+            }
+            var l = Ladda.create(this);
+            l.start();
+            key_stage = $("#tstage").text().trim();
+            keydir = $("#sqt1-flow-dir").val();
+            var keyinfo = key_stage+"sqt1info";
+            if(sessionStorage.getItem(keyinfo)&&(sessionStorage.getItem('dirlist1')==keydir)){
+                    strdata = sessionStorage.getItem(keyinfo);
+                    inputdata = JSON.parse(strdata);
+                    // lists = sessionStorage.getItem('dirlists');
+                    sqtClick1(inputdata);
+                    l.stop();
+                    // inputdata.selected_pattern = active_pattern;
+            }
+            else{
+            $.post('analysis_sqt', {
+                flow_dir: $("#sqt1-flow-dir").val(),
+                pattern: first_pattern,
+                stage: $("#tstage").text().trim(),
+                bound: $("#sqt-bound").val(),
+            }, function () {
+                console.log("sending post...")
+            })
+                .done(function(data) {
+                    var keydata = JSON.stringify(data); 
+                    key_stage = $("#tstage").text().trim();
+                    keydir = $("#sqt1-flow-dir").val()
+                    var keyvalue = key_stage+"sqt1info";
+                    sessionStorage.setItem(keyvalue,keydata);
+                    sessionStorage.setItem("dirlist1",keydir);
+                    sqtClick1(data);
+                    console.log("first start success!");
+                    l.stop();
+                })
+                .fail(function() {
+                    //$(destId).text("Error: Could not contact server.");
+                    l.stop();
+                    console.log("fail!")
+                });
+            }
+        })
+        $('#sqt_btn1').click(function(e) {
+            //console.log($("#sqb1-step-name").val())
+            $(".sqb-chart").css("display","none");
+            $(".sqb-switch").css("display","none");
+            $(".sqc-chart").css("display","none");
+            $(".sqc-switch").css("display","none");
+            $(".sqt-summary").css("display","none");
+            $("#error-warning").css("display","none");
+
+            var warn = $("#error-warning");
+            warn.text("");
+            if($("#tpattern").text().trim()=="Pattern"){
+                warn.css("display","block");
+                warn.attr("class","alert alert-warning");
+                warn.append("<strong>Pattern</strong> Warn! Please choose the right pattern! ");
+                return false;
+            }
+            if($("#sqt-bound").val()==""){
+                warn.css("display","block");
+                warn.attr("class","alert alert-warning");
+                warn.append("<strong>Bound number</strong> should not be empty!");
+                return false;
+            }
+            var l = Ladda.create(this);
+            l.start();
+            key_stage = $("#tstage").text().trim();
+            key_pattern = $("#tpattern").text().trim();
+            key_number = $("#sqt-bound").val();
+            keydir = $("#sqt1-flow-dir").val();
+            var keyinfo = key_stage+key_pattern+key_number+"sqt2info";
+            if(sessionStorage.getItem(keyinfo)&&(sessionStorage.getItem('dirlist1')==keydir)){
+                    strdata = sessionStorage.getItem(keyinfo);
+                    inputdata = JSON.parse(strdata);
+                    // lists = sessionStorage.getItem('dirlists');
+                    sqtClick2(inputdata);
+                    l.stop();
+                    // inputdata.selected_pattern = active_pattern;
+            }
+            else{
+            $.post('analysis_sqt', {
+                flow_dir: $("#sqt1-flow-dir").val(),
+                pattern: $("#tpattern").text().trim(),
+                stage: $("#tstage").text().trim(),
+                bound: $("#sqt-bound").val(),
+            }, function () {
+                console.log("sending post...")
+            })
+                .done(function(data) {
+                    //var thHTML='<thead><tr><th data-sortable="true" data-field="design_name"> design_name </th>
+                    // <th data-sortable="true" data-field="step_name"> step_name </th><th data-sortable="true" data-field="step_val">
+                    // step_val</th><th data-sortable="true" data-field="base_step"> base_step </th><th data-sortable="true" data-field="base_val">
+                    // base_val</th><th data-sortable="true" data-field="Gain-Loss"> Gain/Loss Pct.</th></tr></thead>'
+                    //$("#sqb_bs_table").append(thHTML)\
+                    // window.steps_list_dict = ["NWPOPT","NWCOPT","NWFOPT"];
+                    var keydata = JSON.stringify(data); 
+                    key_stage = $("#tstage").text().trim();
+                    key_pattern = $("#tpattern").text().trim();
+                    key_number = $("#sqt-bound").val();
+                    keydir = $("#sqt1-flow-dir").val();
+                    var keyvalue = key_stage+key_pattern+key_number+"sqt2info";
+                    sessionStorage.setItem(keyvalue,keydata);
+                    sessionStorage.setItem("dirlist1",keydir);
+                    sqtClick2(data);
+                    console.log("success!");
+                    l.stop();
+                })
+                .fail(function() {
+                    //$(destId).text("Error: Could not contact server.");
+                    l.stop();
+                    console.log("fail!")
+                });
+            }
+        })
+
+        if(mode=="3"){
+            $(".sqt").css("display", "table");
+            $("#sqt1-flow-dir").val(first_dir);
+            $("#tstage").text("NW"+first_stage);
+            if(first_stage=="FULL_FLOW"){
+                $("#tstage").text(first_stage+"_PPA");    
+            }  
+            $('#sqt_btn').click();        
+            content = $("#sqt").text();
+            
+            $("#method").text(content);
+            $("#tpattern").text(first_pattern);
+            $("#sqt-bound").val(number);
+            $('#sqt_btn1').click();
+        }
 
         $('#sqa_btn').click(function(e) {
             //$(".gain-loss-display").css("display","none");
@@ -2274,20 +2586,20 @@
                 title: 'Design Name',
                 sortable: true
             }, {
-                field: 'step_name',
-                title: 'Step Name',
-                sortable: true
-            }, {
-                field: 'step_val',
-                title: 'Step Value',
-                sortable: true
-            }, {
                 field: 'base_name',
                 title: 'Base Step',
                 sortable: true
             }, {
                 field: 'base_val',
                 title: 'Base Value',
+                sortable: true
+            }, {
+                field: 'step_name',
+                title: 'Step Name',
+                sortable: true
+            }, {
+                field: 'step_val',
+                title: 'Step Value',
                 sortable: true
             }, {
                 field: 'pct',
@@ -2306,162 +2618,198 @@
 </script>
 <nav class="navbar navbar-inverse navbar-fixed-top">
 
-	<div class="container">
-		<div class="navbar-header">
-			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-				<span class="sr-only">Toggle navigation</span>
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-			</button>
-			<a class="navbar-brand" href="#" style="color:#fff;">QoR Analyzer Web</a>
-		</div>
-		<div id="navbar" class="navbar-collapse collapse">
-			<ul class="nav navbar-nav">
-				<li><a href="{{ url_for('index') }}">Home</a></li>
-				<li class="active"><a href="{{ url_for('qor_analysis_tricks') }}">Analysis</a></li>
-				<li><a href="#">About</a></li>
-			</ul>
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#" style="color:#fff;">QoR Analyzer Web</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="{{ url_for('index') }}"><small><span class="glyphicon glyphicon-home"></span></small>&nbsp;&nbsp;Home</a></li>
+                <li class="active"><a href="{{ url_for('qor_analysis_tricks') }}"><small><span class="glyphicon glyphicon-stats"></span></small>&nbsp;&nbsp;Analysis</a></li>
+                <li><a href="{{ url_for('about') }}"><small><span class="glyphicon glyphicon-info-sign"></span></small>&nbsp;&nbsp;About</a></li>
+            </ul>
 
-		</div><!--/.nav-collapse -->
-	</div>
+        </div><!--/.nav-collapse -->
+    </div>
 </nav>
 
 <div class="container bs-docs-container" role="main">
-	<!-- Main jumbotron for a primary marketing message or call to action -->
-	<div class="row" style="margin-left: -100px;margin-right: -100px">
-		<div class="col-md-12" role="main">
+    <!-- Main jumbotron for a primary marketing message or call to action -->
+    <div class="row" style="margin-left: -100px;margin-right: -100px">
+        <div class="col-md-12" role="main">
         <!--
-			<div class="alert alert-info alert-dismissible" role="alert">
-				<button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-				New analysis functions are ready now:</br>
-				2017-02-27: <strong>Step QoR Benefit Analysis</strong> for flow"</br>
-			</div>
+            <div class="alert alert-info alert-dismissible" role="alert">
+                <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                New analysis functions are ready now:</br>
+                2017-02-27: <strong>Step QoR Benefit Analysis</strong> for flow"</br>
+            </div>
             -->
-			<!-- Split button -->
-			<div class="row" style="margin-left:0px;">
-				<div class="btn-group" style="margin-bottom: 18px;">
-					<button id="method" type="button" class="btn btn-info">Select a Trick</button>
-					<button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height:34px;">
-						<span class="caret" style="margin-top: 4px"></span>
-						<span class="sr-only">Toggle Dropdown</span>
-					</button>
-					<ul class="dropdown-menu">
-						<li><a href="#" id="sqb" onclick="activeSQBMethod(this);">Step QoR Benefit Analysis</a></li>
-						<li><a href="#" id="sqc" onclick="activeSQCMethod(this);">Steps QoR Compare</a></li>
-						<li><a href="#" id="sqt" onclick="activeSQAMethod(this);">QoR Trajectory Analysis</a></li>
-						<li><a href="#" id="sqa" onclick="activeSQCMethod(this);">Stage QoR Analysis</a></li>
-						<!--<li><a href="#" onclick="activeMode(this);">trend</a></li>-->
-					</ul>
-				</div>
-				<div class="input-group analysis_area sqb" style="display:none;width:800px;margin-bottom:20px;">
-					<span class="input-group-addon" style="display:table-cell;border-right: 0">Flow Dir</span>
-					<input style="width:640px;display:table-cell;" id="sqb1-flow-dir" type="text" class="form-control" placeholder="Flow direcroty">
-					<div class="input-group-btn" >
-						<button id="stage" type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="border-radius:0px;width: 100px">Stage <span class="caret"></span></button>
-						<ul class="dropdown-menu">
-							<li><a href="#" onclick="activeStage(this);">NWPOPT</a></li>
-							<li><a href="#" onclick="activeStage(this);">NWCOPT</a></li>
-							<li><a href="#" onclick="activeStage(this);">NWFOPT</a></li>
-						</ul>
-					</div><!-- /btn-group -->
-					<span class="input-group-btn" style="display:table-cell;"><button id="sqb_btn" class="btn btn-primary ladda-button" data-style="expand-right">Start!</button></span>
-				</div>
-				<div id="sqb-hide" class="input-group analysis_area" style="display:none;width:800px;">
-					<div class="input-group-btn" style="display:table-cell;border-right: 0;float: left;width: 70px" >
-						<button type="button" class="btn btn-warn" style="width:70px;">Pattern</button>
-					</div>
-					<div class="input-group-btn" style="width: 14%;float: left">
-						<button id="pattern" type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="border-radius:0px;width: 113px">Pattern <span class="caret"></span></button>
-						<ul id="pattern-switch-li" class="dropdown-menu">
-						</ul>
-					</div><!-- /btn-group -->
-					<div class="input-group-btn" style="display:table-cell;border-radius:0px;border-right: 0;float: left;width: 100px" >
-						<button type="button" class="btn btn-warn" style="width:100px;border-radius:0px;">Step Name</button>
-					</div>
-					<div id="sqb1-step-name" class="btn-group" style="margin-bottom: 18px;border-radius:0px;float: left">
-						<button id="sqbstep-name-switch" type="button" class="btn btn-info" style="border-radius:0px;">Step Name</button>
-						<button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height:34px;border-radius:0px;">
-							<span class="caret" style="margin-top: 4px"></span>
-							<span class="sr-only">Toggle Dropdown</span>
-						</button>
-						<ul id="sqbstep-name-switch-li" class="dropdown-menu">
-						</ul>
-					</div>
-					<div class="input-group-btn" style="display:table-cell;border-left:0px;float: left"><button id="sqb_btn1" class="btn btn-primary ladda-button" data-style="expand-right" style="border-radius:0px;">Start!</button></div>
-					<div style="clear: both;"></div>
-				</div>
-				<div class="btn-group analysis_area sqb-switch" style="display:none;margin-bottom: 18px;">
-					<button id="sqb-switch" type="button" class="btn btn-warning">Select a Metrics</button>
-					<button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height:34px;">
-						<span class="caret" style="margin-top: 4px"></span>
-						<span class="sr-only">Toggle Dropdown</span>
-					</button>
-					<ul id="sqb-switch-li" class="dropdown-menu">
-					</ul>
+            <!-- Split button -->
+            <div class="row" style="margin-left:0px;">
+                <div class="btn-group" style="margin-bottom: 18px;">
+                    <button id="method" type="button" class="btn btn-info">Select a Trick</button>
+                    <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height:34px;">
+                        <span class="caret" style="margin-top: 4px"></span>
+                        <span class="sr-only">Toggle Dropdown</span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" id="sqb" onclick="activeSQBMethod(this);">Step QoR Benefit Analysis</a></li>
+                        <li><a href="#" id="sqc" onclick="activeSQCMethod(this);">Steps QoR Compare</a></li>
+                        <li><a href="#" id="sqt" onclick="activeSQAMethod(this);">QoR Trajectory Analysis</a></li>
+                        <li><a href="#" id="sqa" onclick="activeSQCMethod(this);">Stage QoR Analysis</a></li>
+                        <!--<li><a href="#" onclick="activeMode(this);">trend</a></li>-->
+                    </ul>
+                </div>
+                <div id="sqb-two-flow" class="input-group analysis_area" style="display:none;width:800px;margin-bottom:10px;">
+                    <span class="input-group-addon" style="display:table-cell;">Compare Dir</span>
+                    <input style="width:640px;display:table-cell;" id="sqb1-second-dir" type="text" class=" form-control" placeholder="Flow2 direcroty">
+                </div>
+                <div class="input-group analysis_area sqb" style="display:none;width:800px;margin-bottom:20px;">
+
+                    <span class="input-group-addon" style="display:table-cell;border-right: 0">Base Dir</span>
+                    <input style="width:640px;display:table-cell;" id="sqb1-flow-dir" type="text" class="form-control" placeholder="Flow direcroty">
+             <!--        <input style="width:640px;display:none;" id="sqb1-second-dir" type="text" class="form-control" placeholder="Flow2 direcroty"> -->
+                    <div class="input-group-btn" >
+                        <button id="stage" type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="border-radius:0px;">Stage </button>
+                        <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height:34px;border-radius:0px;">
+                            <span class="caret" style="margin-top: 4px"></span>
+                            <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a href="#" onclick="activeStage(this);">NWPOPT</a></li>
+                            <li><a href="#" onclick="activeStage(this);">NWCOPT</a></li>
+                            <li><a href="#" onclick="activeStage(this);">NWFOPT</a></li>
+                            <li><a href="#" onclick="activeStage(this);">FULL_FLOW_PPA</a></li>
+                        </ul>
+                    </div><!-- /btn-group -->
+                    <span class="input-group-btn" style="display:table-cell;"><button id="sqb_btn" class="btn btn-primary ladda-button" data-style="expand-right">Start!</button></span>
+                </div>
+
+                <div id="sqb-hide" class="input-group analysis_area" style="display:none;width:800px;">
+                    <div class="input-group-btn" style="display:table-cell;border-right: 0;float: left;width: 70px" >
+                        <button type="button" class="btn btn-warn" style="width:70px;">Pattern</button>
+                    </div>
+                    <div class="input-group-btn" style="width: 20%;float: left">
+                        <button id="pattern" type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="border-radius:0px;width: 133px">Pattern </button>
+                        <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height:34px;border-radius:0px;">
+                            <span class="caret" style="margin-top: 4px"></span>
+                            <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <ul id="pattern-switch-li" class="dropdown-menu">
+                        </ul>
+                    </div><!-- /btn-group -->
+                    <div class="input-group-btn" style="display:table-cell;border-radius:0px;border-right: 0;float: left;width: 100px" >
+                        <button type="button" class="btn btn-warn" style="width:100px;border-radius:0px;">Step Name</button>
+                    </div>
+                    <div id="sqb1-step-name" class="btn-group" style="margin-bottom: 18px;border-radius:0px;float: left">
+                        <button id="sqbstep-name-switch" type="button" class="btn btn-info" style="border-radius:0px;">Step Name</button>
+                        <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height:34px;border-radius:0px;">
+                            <span class="caret" style="margin-top: 4px"></span>
+                            <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <ul id="sqbstep-name-switch-li" class="dropdown-menu">
+                        </ul>
+                    </div>
+                    <div class="input-group-btn" style="display:table-cell;border-left:0px;float: left"><button id="sqb_btn1" class="btn btn-primary ladda-button" data-style="expand-right" style="border-radius:0px;">Start!</button></div>
+                    <div style="clear: both;"></div>
+                </div>
+                <div class="analysis_area sqb-switch" style="display:none;margin-bottom: 18px;">
+                    <div class="btn-group" style="padding-right:10px;display:table-cell;">
+                    <button id="sqb-switch" type="button" class="btn btn-warning">Select a Metrics</button>
+                    <button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height:34px;">
+                        <span class="caret" style="margin-top: 4px"></span>
+                        <span class="sr-only">Toggle Dropdown</span>
+                    </button>
+                    <ul id="sqb-switch-li" class="dropdown-menu">
+                    </ul>
+                    </div>
+                    <div style="border-style: solid; border-width: 1px;border-radius:4px;border-color:white;padding-left: 10px;padding-right:10px;display:table-cell;">
+                    <div class="btn-group " style="padding-left: 10px;padding-right:10px;display:table-cell;">
+                    <h4 >
+                    <span class="label label-primary">Design filter</span>
+                    </h4>
+                    </div>                  
+                    <div class="btn-group" style="display:table-cell;">
                     <select id="sqb-design-select" multiple="multiple" style="margin-left: 15px;padding-left: 15px;">
                     </select>
-				</div>
-				<div class="input-group analysis_area sqa" style="display:none;margin-bottom:20px;">
-					<div style="display:table;margin-bottom:5px;">
-						<span class="input-group-addon" style="width:120px;display:table-cell;border-right: 0">Base Dir</span>
-						<input style="width:550px;display:table-cell;" id="sqa1-flowb-dir" type="text" class="form-control" placeholder="Base flow direcroty">
-					</div>
-					<div style="display:table;margin-bottom:5px;">
-						<span class="input-group-addon" style="width:120px;display:table-cell;border-right: 0">Compare Dir</span>
-						<input style="width:550px;display:table-cell;" id="sqa1-flowc-dir" type="text" class="form-control" placeholder="Compare flow direcroty">
-						<span class="input-group-btn" style="display:table-cell;"><button id="sqa_btn" class="btn btn-primary ladda-button" data-style="expand-right" style="border-radius:0 4px 4px 0;">Start!</button></span>
-					</div>
-				</div>
-				<div class="input-group analysis_area sqc" style="width:800px;display:none;margin-bottom:20px;">
-					<span class="input-group-addon" style="width:100px;display:table-cell;border-right: 0">Flow Dir</span>
-					<input style="width:640px;display:table-cell;" id="sqc-flow-dir" type="text" class="form-control" placeholder="Flow direcroty">
-					<div class="input-group-btn">
-						<button id="cstage" type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="border-radius:0px;">Stage <span class="caret"></span></button>
-						<ul class="dropdown-menu">
-							<li><a href="#" onclick="activeSqcStage(this);">NWPOPT</a></li>
-							<li><a href="#" onclick="activeSqcStage(this);">NWCOPT</a></li>
-							<li><a href="#" onclick="activeSqcStage(this);">NWFOPT</a></li>
-						</ul>
-					</div><!-- /btn-group -->
-					<span class="input-group-btn" style="display:table-cell;"><button id="sqc_btn" class="btn btn-primary ladda-button" data-style="expand-right">Start!</button></span>
-				</div>
-				<div id="sqc-hide" class="input-group analysis_area" style="width:800px;display:none;">
-					<div class="input-group-btn" style="display:table-cell;border-right: 0;float: left;width: 70px" >
-						<button type="button" class="btn btn-warn" style="width:70px;">Pattern</button>
-					</div>
-					<div class="input-group-btn" style="float: left;width: 14%;border-radius: 4px;border-right: 0px">
-						<button id="cpattern" type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="border-radius:0px;width: 113px">Pattern <span class="caret"></span></button>
-						<ul id="cpattern-switch-li" class="dropdown-menu">
-						</ul>
-					</div><!-- /btn-group -->
-					<div class="input-group-btn" style="display:table-cell;border-right: 0;float: left;width: 70px" >
-						<button type="button" class="btn btn-warn" style="width:70px;border-radius:0px;">Base</button>
-					</div>
-					<div id="sqc-base-name" class="btn-group" style="margin-bottom: 18px;float: left;border-radius:0px;">
-						<button id="sqcstep-name-switch" type="button" class="btn btn-info" style="border-radius:0px;">Base</button>
-						<button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height:34px;border-radius:0px;">
-							<span class="caret" style="margin-top: 4px"></span>
-							<span class="sr-only">Toggle Dropdown</span>
-						</button>
-						<ul id="sqcstep-name-switch-li" class="dropdown-menu">
-						</ul>
-					</div>
-					<div class="input-group-btn" style="display:table-cell;border-radius:0px;float: left;width: 80px" >
-						<button type="button" class="btn btn-warn" style="width:80px;border-radius:0px;">Compare</button>
-					</div>
-					<div id="sqc-comp-name" class="btn-group" style="margin-bottom: 18px;float: left;border-radius:0px;">
-						<button id="sqccmp-name-switch" type="button" class="btn btn-info" style="border-radius:0px;">Compare</button>
-						<button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height:34px;border-radius:0px;">
-							<span class="caret" style="margin-top: 4px"></span>
-							<span class="sr-only">Toggle Dropdown</span>
-						</button>
-						<ul id="sqccmp-name-switch-li" class="dropdown-menu">
-						</ul>
-					</div>
-					<div class="input-group-btn" style="display:table-cell;float: left;border-left:0px;"><button id="sqc_btn1" class="btn btn-primary ladda-button" data-style="expand-right" style="border-left:0px;">Start!</button></div>
-					<div style="clear: both"></div>
-				</div>
+                    </div>
+                    </div>
+                </div>
+                <div class="input-group analysis_area sqa" style="display:none;margin-bottom:20px;">
+                    <div style="display:table;margin-bottom:5px;">
+                        <span class="input-group-addon" style="width:120px;display:table-cell;border-right: 0">Base Dir</span>
+                        <input style="width:550px;display:table-cell;" id="sqa1-flowb-dir" type="text" class="form-control" placeholder="Base flow direcroty">
+                    </div>
+                    <div style="display:table;margin-bottom:5px;">
+                        <span class="input-group-addon" style="width:120px;display:table-cell;border-right: 0">Compare Dir</span>
+                        <input style="width:550px;display:table-cell;" id="sqa1-flowc-dir" type="text" class="form-control" placeholder="Compare flow direcroty">
+                        <span class="input-group-btn" style="display:table-cell;"><button id="sqa_btn" class="btn btn-primary ladda-button" data-style="expand-right" style="border-radius:0 4px 4px 0;">Start!</button></span>
+                    </div>
+                </div>
+                <div class="input-group analysis_area sqc" style="width:800px;display:none;margin-bottom:20px;">
+                    <span class="input-group-addon" style="width:100px;display:table-cell;border-right: 0">Flow Dir</span>
+                    <input style="width:640px;display:table-cell;" id="sqc-flow-dir" type="text" class="form-control" placeholder="Flow direcroty">
+                    <div class="input-group-btn">
+                        <button id="cstage" type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="border-radius:0px;">Stage </button>
+                        <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height:34px;border-radius:0px;">
+                            <span class="caret" style="margin-top: 4px"></span>
+                            <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a href="#" onclick="activeSqcStage(this);">NWPOPT</a></li>
+                            <li><a href="#" onclick="activeSqcStage(this);">NWCOPT</a></li>
+                            <li><a href="#" onclick="activeSqcStage(this);">NWFOPT</a></li>
+                            <li><a href="#" onclick="activeSqcStage(this);">FULL_FLOW_PPA</a></li>
+                        </ul>
+                    </div><!-- /btn-group -->
+                    <span class="input-group-btn" style="display:table-cell;"><button id="sqc_btn" class="btn btn-primary ladda-button" data-style="expand-right">Start!</button></span>
+                </div>
+                <div id="sqc-hide" class="input-group analysis_area" style="width:800px;display:none;">
+                    <div class="input-group-btn" style="display:table-cell;border-right: 0;float: left;width: 70px" >
+                        <button type="button" class="btn btn-warn" style="width:70px;">Pattern</button>
+                    </div>
+                    <div class="input-group-btn" style="float: left;width: 20%;border-radius: 4px;border-right: 0px">
+                        <button id="cpattern" type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="border-radius:0px;width: 133px">Pattern</button>
+                        <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height:34px;border-radius:0px;">
+                            <span class="caret" style="margin-top: 4px"></span>
+                            <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <ul id="cpattern-switch-li" class="dropdown-menu">
+                        </ul>
+                    </div><!-- /btn-group -->
+                    <div class="input-group-btn" style="display:table-cell;border-right: 0;float: left;width: 70px" >
+                        <button type="button" class="btn btn-warn" style="width:70px;border-radius:0px;">Base</button>
+                    </div>
+                    <div id="sqc-base-name" class="btn-group" style="margin-bottom: 18px;float: left;border-radius:0px;">
+                        <button id="sqcstep-name-switch" type="button" class="btn btn-info" style="border-radius:0px;">Base</button>
+                        <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height:34px;border-radius:0px;">
+                            <span class="caret" style="margin-top: 4px"></span>
+                            <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <ul id="sqcstep-name-switch-li" class="dropdown-menu">
+                        </ul>
+                    </div>
+                    <div class="input-group-btn" style="display:table-cell;border-radius:0px;float: left;width: 80px" >
+                        <button type="button" class="btn btn-warn" style="width:80px;border-radius:0px;">Compare</button>
+                    </div>
+                    <div id="sqc-comp-name" class="btn-group" style="margin-bottom: 18px;float: left;border-radius:0px;">
+                        <button id="sqccmp-name-switch" type="button" class="btn btn-info" style="border-radius:0px;">Compare</button>
+                        <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height:34px;border-radius:0px;">
+                            <span class="caret" style="margin-top: 4px"></span>
+                            <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <ul id="sqccmp-name-switch-li" class="dropdown-menu">
+                        </ul>
+                    </div>
+                    <div class="input-group-btn" style="display:table-cell;float: left;border-left:0px;"><button id="sqc_btn1" class="btn btn-primary ladda-button" data-style="expand-right" style="border-left:0px;">Start!</button></div>
+                    <div style="clear: both"></div>
+                </div>
                 <div class="btn-group analysis_area sqc-switch" style="display:none;margin-bottom: 18px;">
                     <button id="sqc-switch" type="button" class="btn btn-warning">Select a Metrics</button>
                     <button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height:34px;">
@@ -2473,50 +2821,61 @@
                     <select id="sqc-design-select" multiple="multiple" style="margin-left: 15px;padding-left: 15px;">
                     </select>
                 </div>
-				<div class="input-group analysis_area sqt" style="display:none;width:800px;margin-bottom:20px;">
-					<span class="input-group-addon" style="display:table-cell;border-right: 0">Flow Dir</span>
-					<input style="width:640px;display:table-cell;" id="sqt1-flow-dir" type="text" class="form-control" placeholder="Flow direcroty">
-					<div class="input-group-btn" >
-						<button id="tstage" type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="border-radius:0px;width: 100px">Stage <span class="caret"></span></button>
-						<ul class="dropdown-menu">
-							<li><a href="#" onclick="activeSqtStage(this);">NWPOPT</a></li>
-							<li><a href="#" onclick="activeSqtStage(this);">NWCOPT</a></li>
-							<li><a href="#" onclick="activeSqtStage(this);">NWFOPT</a></li>
-						</ul>
-					</div><!-- /btn-group -->
-					<span class="input-group-btn" style="display:table-cell;"><button id="sqt_btn" class="btn btn-primary ladda-button" data-style="expand-right">Start!</button></span>
-				</div>
-				<div id="sqt-hide" class="input-group analysis_area" style="display:none;width:800px;margin-bottom: 20px">
-					<div class="input-group-btn" style="display:table-cell;border-right: 0;float: left;width: 70px" >
-						<button type="button" class="btn btn-warn" style="width:70px;">Pattern</button>
-					</div>
-					<div class="input-group-btn" style="width: 14%;float: left">
-						<button id="tpattern" type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="border-radius:0px;width: 113px">Pattern <span class="caret"></span></button>
-						<ul id="tpattern-switch-li" class="dropdown-menu">
-						</ul>
-					</div><!-- /btn-group -->
+                <div class="input-group analysis_area sqt" style="display:none;width:800px;margin-bottom:20px;">
+                    <span class="input-group-addon" style="display:table-cell;border-right: 0">Flow Dir</span>
+                    <input style="width:640px;display:table-cell;" id="sqt1-flow-dir" type="text" class="form-control" placeholder="Flow direcroty">
+                    <div class="input-group-btn" >
+                        <button id="tstage" type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="border-radius:0px;">Stage</button>
+                        <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height:34px;border-radius:0px;">
+                            <span class="caret" style="margin-top: 4px"></span>
+                            <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a href="#" onclick="activeSqtStage(this);">NWPOPT</a></li>
+                            <li><a href="#" onclick="activeSqtStage(this);">NWCOPT</a></li>
+                            <li><a href="#" onclick="activeSqtStage(this);">NWFOPT</a></li>
+                            <li><a href="#" onclick="activeSqtStage(this);">FULL_FLOW_PPA</a></li>
+                        </ul>
+                    </div><!-- /btn-group -->
+                    <span class="input-group-btn" style="display:table-cell;"><button id="sqt_btn" class="btn btn-primary ladda-button" data-style="expand-right">Start!</button></span>
+                </div>
+                <div id="sqt-hide" class="input-group analysis_area" style="display:none;width:800px;margin-bottom: 20px">
+                    <div class="input-group-btn" style="display:table-cell;border-right: 0;float: left;width: 70px" >
+                        <button type="button" class="btn btn-warn" style="width:70px;">Pattern</button>
+                    </div>
+                    <div class="input-group-btn" style="width: 20%;float: left">
+                        <button id="tpattern" type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="border-radius:0px;width: 133px">Pattern</button>
+                        <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height:34px;border-radius:0px;">
+                            <span class="caret" style="margin-top: 4px"></span>
+                            <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <ul id="tpattern-switch-li" class="dropdown-menu">
+                        </ul>
+                    </div><!-- /btn-group -->
                     <div class="input-group-btn" style="display:table-cell;border-radius:0px;float: left;width: 70px" >
                         <button type="button" class="btn btn-warn" style="width:70px;border-radius:0px;">Number</button>
                     </div>
                     <div class="input-group-btn" style="display:table-cell;border-radius:0px;border-right: 0;float: left;width: 75px">
                         <input style="width:75px;display:table-cell;" id="sqt-bound" type="text" class="form-control" placeholder="number">
                     </div>
-					<div class="input-group-btn" style="display:table-cell;border-left:0px;float: left"><button id="sqt_btn1" class="btn btn-primary ladda-button" data-style="expand-right" style="border-radius:0px;">Start!</button></div>
-					<div style="clear: both;"></div>
-				</div>
-				<div class="btn-group analysis_area sqt-switch" style="display:none;margin-bottom: 18px;">
-					<button id="sqt-switch" type="button" class="btn btn-warning">Select a Metrics</button>
-					<button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height:34px;">
-						<span class="caret" style="margin-top: 4px"></span>
-						<span class="sr-only">Toggle Dropdown</span>
-					</button>
-					<ul id="sqt-switch-li" class="dropdown-menu">
-					</ul>
-				</div>
-				<div id="error-warning" class="alert alert-danger" role="alert" style="display:none;margin-right: 18px"></div>
+                    <div class="input-group-btn" style="display:table-cell;border-left:0px;float: left"><button id="sqt_btn1" class="btn btn-primary ladda-button" data-style="expand-right" style="border-radius:0px;">Start!</button></div>
+                    <div style="clear: both;"></div>
+                </div>
+                <div class="btn-group analysis_area sqt-switch" style="display:none;margin-bottom: 18px;">
+                    <button id="sqt-switch" type="button" class="btn btn-warning">Select a Metrics</button>
+                    <button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height:34px;">
+                        <span class="caret" style="margin-top: 4px"></span>
+                        <span class="sr-only">Toggle Dropdown</span>
+                    </button>
+                    <ul id="sqt-switch-li" class="dropdown-menu">
+                    </ul>
+                    <select id="sqt-design-select" multiple="multiple" style="margin-left: 15px;padding-left: 15px;">
+                    </select>
+                </div>
+                <div id="error-warning" class="alert alert-danger" role="alert" style="display:none;margin-right: 18px"></div>
 
 
-			</div>
+            </div>
 
             <div id ="gain-loss-display1" class="row gain-loss-display sqc-chart">
                 <div class="col-md-12 metrics" id="metrics">
@@ -2653,21 +3012,21 @@
                                 field: 'design_name',
                                 title: 'Design Name',
                                 sortable: true
-                            }, {
-                                field: 'step_name',
-                                title: 'Compare Name',
-                                sortable: true
-                            }, {
-                                field: 'step_val',
-                                title: 'Step Value',
-                                sortable: true
-                            }, {
+                            },{
                                 field: 'base_name',
                                 title: 'Base Step',
                                 sortable: true
                             }, {
                                 field: 'base_val',
                                 title: 'Base Value',
+                                sortable: true
+                            },  {
+                                field: 'step_name',
+                                title: 'Compare Name',
+                                sortable: true
+                            }, {
+                                field: 'step_val',
+                                title: 'Step Value',
                                 sortable: true
                             }, {
                                 field: 'pct',
@@ -2704,16 +3063,16 @@
                 </div>
             </div>
 
-			<div id ="gain-loss-display" class="row gain-loss-display sqb-chart">
-				<div class="col-md-12 metrics" id="metrics">
-					<div class="panel" style="border-color: #54c7ce;">
-						<!-- Default panel contents -->
-						<div class="panel-heading" style="background-color: #54c7ce; color: white; font-weight: bold">Improve/Degrade Distribution</div>
-						<canvas class="qor_chart" id="myChart" width="350"></canvas>
+            <div id ="gain-loss-display" class="row gain-loss-display sqb-chart">
+                <div class="col-md-12 metrics" id="metrics">
+                    <div class="panel" style="border-color: #54c7ce;">
+                        <!-- Default panel contents -->
+                        <div class="panel-heading" style="background-color: #54c7ce; color: white; font-weight: bold">Improve/Degrade Distribution</div>
+                        <canvas class="qor_chart" id="myChart" width="350"></canvas>
 
-					</div>
-				</div>
-				<script type="text/javascript">
+                    </div>
+                </div>
+                <script type="text/javascript">
                     //cmd stats
                     var ctx = $("#myChart").get(0).getContext("2d");
                     // This will get the first returned node in the jQuery collection.
@@ -2773,44 +3132,42 @@
                         ],
                     };
 
-					Chart.pluginService.register({
-						beforeRender: function (chart) {
-							if (chart.config.options.showAllTooltips) {
-								// create an array of tooltips
-								// we can't use the chart tooltip because there is only one tooltip per chart
-								chart.pluginTooltips = [];
-								chart.config.data.datasets.forEach(function (dataset, i) {
-									chart.getDatasetMeta(i).data.forEach(function (sector, j) {
-										chart.pluginTooltips.push(new Chart.Tooltip({
-											_chart: chart.chart,
-											_chartInstance: chart,
-											_data: chart.data,
-											_options: chart.options.tooltips,
-											_active: [sector]
-										}, chart));
-									});
-								});
+                    Chart.pluginService.register({
+                        beforeRender: function (chart) {
+                            if (chart.config.options.showAllTooltips) {
+                                // create an array of tooltips
+                                // we can't use the chart tooltip because there is only one tooltip per chart
+                                chart.pluginTooltips = [];
+                                chart.config.data.datasets.forEach(function (dataset, i) {
+                                    chart.getDatasetMeta(i).data.forEach(function (sector, j) {
+                                        chart.pluginTooltips.push(new Chart.Tooltip({
+                                            _chart: chart.chart,
+                                            _chartInstance: chart,
+                                            _data: chart.data,
+                                            _options: chart.options.tooltips,
+                                            _active: [sector]
+                                        }, chart));
+                                    });
+                                });
 
-								// turn off normal tooltips
-								chart.options.tooltips.enabled = false;
-							}
-						},
-						afterDraw: function (chart, easing) {
-							if (chart.config.options.showAllTooltips) {
-								// we don't want the permanent tooltips to animate, so don't do anything till the animation runs atleast once
-								if (!chart.allTooltipsOnce) {
-									if (easing !== 1)
-										return;
-									chart.allTooltipsOnce = true;
-								}
+                                // turn off normal tooltips
+                                chart.options.tooltips.enabled = false;
+                            }
+                        },
+                        afterDraw: function (chart, easing) {
+                            if (chart.config.options.showAllTooltips) {
+                                // we don't want the permanent tooltips to animate, so don't do anything till the animation runs atleast once
+                                if (!chart.allTooltipsOnce) {
+                                    if (easing !== 1)
+                                        return;
+                                    chart.allTooltipsOnce = true;
+                                }
 
                                 var i = 0;
                                 if (window.selected_designs.length > 0) {
                                     design_qor_dict = window.step_qor_info[window.selected_metrics];
-    								// turn on tooltips
-    								chart.options.tooltips.enabled = true;
-    								Chart.helpers.each(chart.pluginTooltips, function (tooltip) {
-                                        debugger;
+                                    chart.options.tooltips.enabled = true;
+                                    Chart.helpers.each(chart.pluginTooltips, function (tooltip) {
                                         window.display_designs = new Array();
                                         $.each(window.selected_designs, function(j, design_name) {
                                             $.each(design_qor_dict[design_name], function(index, qor_data_list) {
@@ -2881,54 +3238,54 @@
                                                 }
                                             })
                                         })
-    									//console.log(window.selected_designs);
+                                        //console.log(window.selected_designs);
                                         if (window.display_designs.length>0) {
-        									tooltip.initialize();
-        									tooltip.update();
-        									// we don't actually need this since we are not animating tooltips
-        									tooltip.pivot();
-        									tooltip.transition(easing).draw();
+                                            tooltip.initialize();
+                                            tooltip.update();
+                                            // we don't actually need this since we are not animating tooltips
+                                            tooltip.pivot();
+                                            tooltip.transition(easing).draw();
                                         }
                                         i += 1;
-    								});
-								    chart.options.tooltips.enabled = false;
+                                    });
+                                    chart.options.tooltips.enabled = false;
                                 } else {
                                     chart.options.tooltips.enabled = true;
                                     Chart.helpers.each(chart.pluginTooltips, function (tooltip) {
                                         //console.log(window.selected_designs);
                                     });
                                 }
-							}
-						}
-					})
+                            }
+                        }
+                    })
 
                     var myBarChart = new Chart(ctx, {
                         type: 'bar',
                         data: data1,
                         options: {
-                        	showAllTooltips: true,
+                            showAllTooltips: true,
                             legend: {
                                 display: false,
                             },
-		                	tooltips: {
-								callbacks: {
-					                label: function(tooltipItem, data) {
+                            tooltips: {
+                                callbacks: {
+                                    label: function(tooltipItem, data) {
                                         if (window.display_designs.length > 0) {
                                             return window.display_designs;
                                         } else {
-    					                    var allData = data.datasets[tooltipItem.datasetIndex].data;
-    					                    var tooltipLabel = data.labels[tooltipItem.index];
-    					                    var tooltipData = allData[tooltipItem.index];
-    					                    var total = 0;
-    					                    for (var i in allData) {
-    					                        total += allData[i];
-    					                    }
-    					                    var tooltipPercentage = Math.round((tooltipData / total) * 100);
-    					                    return tooltipData + ' (' + tooltipPercentage + '%)';
+                                            var allData = data.datasets[tooltipItem.datasetIndex].data;
+                                            var tooltipLabel = data.labels[tooltipItem.index];
+                                            var tooltipData = allData[tooltipItem.index];
+                                            var total = 0;
+                                            for (var i in allData) {
+                                                total += allData[i];
+                                            }
+                                            var tooltipPercentage = Math.round((tooltipData / total) * 100);
+                                            return tooltipData + ' (' + tooltipPercentage + '%)';
                                         }
-					                },
-					            }					      
-		                    },
+                                    },
+                                }                         
+                            },
                             scales: {
                                 xAxes: [{
                                     stacked: true
@@ -2949,10 +3306,10 @@
                             index_data = filterDistriCount(window.bs_data);
                             filter_data = index_data[distri_index];
                             //console.log(distri_index);
-						}
+                        }
                         else{
                             filter_data = window.bs_data;
-						}
+                        }
                         $('#sqb_bs_table').bootstrapTable('destroy').bootstrapTable({
                             //toolbar: '#toolbar',                //工具按钮用哪个容器
                             striped: true,                      //是否显示行间隔色
@@ -2970,21 +3327,21 @@
                                 field: 'design_name',
                                 title: 'Design Name',
                                 sortable: true
-                            }, {
-                                field: 'step_name',
-                                title: 'Step Name',
-                                sortable: true
-                            }, {
-                                field: 'step_val',
-                                title: 'Step Value',
-                                sortable: true
-                            }, {
+                            },{
                                 field: 'base_name',
                                 title: 'Base Step',
                                 sortable: true
                             }, {
                                 field: 'base_val',
                                 title: 'Base Value',
+                                sortable: true
+                            },  {
+                                field: 'step_name',
+                                title: 'Step Name',
+                                sortable: true
+                            }, {
+                                field: 'step_val',
+                                title: 'Step Value',
                                 sortable: true
                             }, {
                                 field: 'pct',
@@ -2999,38 +3356,38 @@
                             data: filter_data
                         })
                     });
-				</script>
-			</div>
+                </script>
+            </div>
 
-			<div class="row gain-loss-display sqb-chart">
-				<div class="col-md-12 metrics" id="metrics">
-					<div class="panel" style="border-color: #54c7ce;">
-						<!-- Default panel contents -->
-						<div class="panel-heading" style="background-color: #54c7ce; color: white; font-weight: bold">Step QoR Improve/Degrade Details</div>
-						<div style="padding-left: 5px; padding-right: 5px">
-							<table id="sqb_bs_table"  data-toolbar="#toolbar"
-								   data-show-refresh="true"
-								   data-show-pagination-switch="true"
-								   data-pagination="true"
-								   data-show-toggle="true" style="font-size: 14px">
+            <div class="row gain-loss-display sqb-chart">
+                <div class="col-md-12 metrics" id="metrics">
+                    <div class="panel" style="border-color: #54c7ce;">
+                        <!-- Default panel contents -->
+                        <div class="panel-heading" style="background-color: #54c7ce; color: white; font-weight: bold">Step QoR Improve/Degrade Details</div>
+                        <div style="padding-left: 5px; padding-right: 5px">
+                            <table id="sqb_bs_table"  data-toolbar="#toolbar"
+                                   data-show-refresh="true"
+                                   data-show-pagination-switch="true"
+                                   data-pagination="true"
+                                   data-show-toggle="true" style="font-size: 14px">
 
-							</table>
-						</div>
-					</div>
+                            </table>
+                        </div>
+                    </div>
 
-				</div>
-			</div>
+                </div>
+            </div>
 
-			<div id ="gain-loss-display" class="row gain-loss-display sqt-chart">
-				<div class="col-md-12 metrics" id="metrics">
-					<div class="panel" style="border-color: #54c7ce;">
-						<!-- Default panel contents -->
-						<div class="panel-heading" style="background-color: #54c7ce; color: white; font-weight: bold">Improve/Degrade Distribution</div>
-						<canvas class="qor_chart" id="SqtmyChart" width="350"></canvas>
+            <div id ="gain-loss-display" class="row gain-loss-display sqt-chart">
+                <div class="col-md-12 metrics" id="metrics">
+                    <div class="panel" style="border-color: #54c7ce;">
+                        <!-- Default panel contents -->
+                        <div class="panel-heading" style="background-color: #54c7ce; color: white; font-weight: bold">Improve/Degrade Distribution</div>
+                        <canvas class="qor_chart" id="SqtmyChart" width="350"></canvas>
 
-					</div>
-				</div>
-				<script type="text/javascript">
+                    </div>
+                </div>
+                <script type="text/javascript">
                     //cmd stats
                     var ctxt = $("#SqtmyChart").get(0).getContext("2d");
                     // This will get the first returned node in the jQuery collection.
@@ -3095,9 +3452,28 @@
                         type: 'bar',
                         data: datat,
                         options: {
-                            // showAllTooltips: true,
+                            showAllTooltips: true,
                             legend: {
                                 display: false,
+                            },
+                            tooltips: {
+                                callbacks: {
+                                    label: function(tooltipItem, data) {
+                                        if (window.display_designs.length > 0) {
+                                            return window.display_designs;
+                                        } else {
+                                            var allData = data.datasets[tooltipItem.datasetIndex].data;
+                                            var tooltipLabel = data.labels[tooltipItem.index];
+                                            var tooltipData = allData[tooltipItem.index];
+                                            var total = 0;
+                                            for (var i in allData) {
+                                                total += allData[i];
+                                            }
+                                            var tooltipPercentage = Math.round((tooltipData / total) * 100);
+                                            return tooltipData + ' (' + tooltipPercentage + '%)';
+                                        }
+                                    },
+                                }                         
                             },
                             scales: {
                                 xAxes: [{
@@ -3140,21 +3516,21 @@
                                 field: 'design_name',
                                 title: 'Design Name',
                                 sortable: true
-                            }, {
-                                field: 'step_name',
-                                title: 'Step Name',
-                                sortable: true
-                            }, {
-                                field: 'step_val',
-                                title: 'Step Value',
-                                sortable: true
-                            }, {
+                            },{
                                 field: 'base_name',
                                 title: 'Base Step',
                                 sortable: true
                             }, {
                                 field: 'base_val',
                                 title: 'Base Value',
+                                sortable: true
+                            },  {
+                                field: 'step_name',
+                                title: 'Step Name',
+                                sortable: true
+                            }, {
+                                field: 'step_val',
+                                title: 'Step Value',
                                 sortable: true
                             }, {
                                 field: 'pct',
@@ -3169,59 +3545,59 @@
                             data: filter_data
                         })
                     });
-				</script>
-			</div>
+                </script>
+            </div>
 
-			<div class="row gain-loss-display sqt-chart">
-				<div class="col-md-12 metrics" id="metrics">
-					<div class="panel" style="border-color: #54c7ce;">
-						<!-- Default panel contents -->
-						<div class="panel-heading" style="background-color: #54c7ce; color: white; font-weight: bold">Step QoR Improve/Degrade Details</div>
-						<div style="padding-left: 5px; padding-right: 5px">
-							<table id="sqt_bs_table"  data-toolbar="#toolbar"
-								   data-show-refresh="true"
-								   data-show-pagination-switch="true"
-								   data-pagination="true"
-								   data-show-toggle="true" style="font-size: 14px">
+            <div class="row gain-loss-display sqt-chart">
+                <div class="col-md-12 metrics" id="metrics">
+                    <div class="panel" style="border-color: #54c7ce;">
+                        <!-- Default panel contents -->
+                        <div class="panel-heading" style="background-color: #54c7ce; color: white; font-weight: bold">Step QoR Improve/Degrade Details</div>
+                        <div style="padding-left: 5px; padding-right: 5px">
+                            <table id="sqt_bs_table"  data-toolbar="#toolbar"
+                                   data-show-refresh="true"
+                                   data-show-pagination-switch="true"
+                                   data-pagination="true"
+                                   data-show-toggle="true" style="font-size: 14px">
 
-							</table>
-						</div>
-					</div>
+                            </table>
+                        </div>
+                    </div>
 
-				</div>
-			</div>
+                </div>
+            </div>
 
-			<div class="row gain-loss-display sqa-chart">
-				<div class="col-md-12 metrics" id="metrics">
-					<div class="panel" style="border-color: #54c7ce;">
-						<!-- Default panel contents -->
-						<div class="panel-heading" style="background-color: #54c7ce; color: white; font-weight: bold">Stage QoR Compare</div>
-						<div style="padding-left: 5px; padding-right: 5px">
-							<table id="sqa-table" style="font-size: 14px">
+            <div class="row gain-loss-display sqa-chart">
+                <div class="col-md-12 metrics" id="metrics">
+                    <div class="panel" style="border-color: #54c7ce;">
+                        <!-- Default panel contents -->
+                        <div class="panel-heading" style="background-color: #54c7ce; color: white; font-weight: bold">Stage QoR Compare</div>
+                        <div style="padding-left: 5px; padding-right: 5px">
+                            <table id="sqa-table" style="font-size: 14px">
 
-							</table>
-						</div>
-					</div>
+                            </table>
+                        </div>
+                    </div>
 
-				</div>
-			</div>
-		</div>
-		<!-- col-9 -->
+                </div>
+            </div>
+        </div>
+        <!-- col-9 -->
 
-	</div>
-	<div class="row sqb-summary gain-loss-display" style="margin-left: -100px;margin-right: -100px">
-	</div>
+    </div>
+    <div class="row sqb-summary gain-loss-display" style="margin-left: -100px;margin-right: -100px">
+    </div>
     <div class="row sqc-summary gain-loss-display" style="margin-left: -100px;margin-right: -100px">
     </div>
-	<div class="row sqt-summary gain-loss-display" style="margin-left: -100px;margin-right: -100px">
-	</div>
+    <div class="row sqt-summary gain-loss-display" style="margin-left: -100px;margin-right: -100px">
+    </div>
 </div>
 
 <nav class="navbar navbar-inverse navbar-fixed-bottom">
-	<div class="navbar-inner navbar-content-center" style="text-align:center;">
-		<p class="text-muted credit" style="margin:5px 0 0 0;color:white">Chrome/Firefox browsers with 1600x1200+ are suggested</p>
-		<p class="text-muted credit" style="margin:0px;color:white">Contact <a href="mailto:phyan@synopsys.com">Leo Yan</a> if needed</p>
-	</div>
+    <div class="navbar-inner navbar-content-center" style="text-align:center;">
+        <p class="text-muted credit" style="margin:5px 0 0 0;color:white">Chrome/Firefox browsers with 1600x1200+ are suggested</p>
+        <p class="text-muted credit" style="margin:0px;color:white">Contact <a href="mailto:phyan@synopsys.com">Leo Yan</a> if needed</p>
+    </div>
 </nav>
 
 </body>

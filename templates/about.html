@@ -1,0 +1,289 @@
+
+<html>
+	<head>
+	    <meta charset="utf-8">
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	    <meta name="viewport" content="width=device-width, initial-scale=1">
+	    <script src="{{ url_for('static', filename='jquery/1.11.1/jquery.min.js') }}"></script>
+		<script src="{{ url_for('static', filename='libs/jqueryui/jquery.ui-1.9.0.min.js') }}"></script>		
+	<!-- 引入 Bootstrap -->
+	<!--
+		<link href="/u/phyan/workspace/python/qor_analyzer/libs/bootstrap/2.3.2/css/bootstrap.min.css" rel="stylesheet">	
+		-->
+		<script type="text/javascript" src="{{ url_for('static', filename='bootstrap/js/bootstrap.js') }}"></script>
+		<script type="text/javascript" src="{{ url_for('static', filename='bootstrap/js/Chart_v1.js') }}"></script>
+		<style type="text/css" src="{{ url_for('static', filename='bootstrap/css/bootstrap.css') }}"></style>
+		<meta name="description" content="">
+	    <meta name="author" content="">
+
+	    <title>QoR Analyzer Web ^_^</title>
+
+	    <!-- Bootstrap core CSS -->
+	    <link href="{{ url_for('static', filename='bootstrap/3.3.5/css/bootstrap.min.css') }}" rel="stylesheet">
+	    <!-- Bootstrap theme -->
+	    <link href="{{ url_for('static', filename='bootstrap/css/bootstrap-theme.min.css') }}" rel="stylesheet">
+	    <!-- Custom styles for this template -->
+	    <link href="{{ url_for('static', filename='bootstrap/css/theme.css') }}" rel="stylesheet">
+	</head>
+
+	<!--<body role="document" style="background-color: #efefef;">-->
+	<body role="document" style="background: url('{{ url_for('static', filename='bootstrap/images/qor_analyzer.jpg') }}'); background-size:100% 100%;">
+		<style>
+		.container{color:white;}
+		.row{color:white;}
+		.nav>li>a{color:white;}
+		img {
+			width: auto;
+			padding-bottom: 10px; 
+		}
+		.bs-callout {
+   			padding: 20px;
+    		margin: 20px 0;
+    		border: 1px solid #eee;
+    		border-left-width: 5px;
+    		border-radius: 3px;
+		}
+		.about-nav>li>a:hover{
+			color:#563d7c;border-left: 2px solid #563d7c;text-decoration: none;
+		}
+		.about-nav>li {font-size:14px; padding: 0px 10px 0px 10px; color:white;}
+		.about-nav>li>a {font-size:14px; padding: 8px 8px; color:white;}
+		</style>
+		<script type="text/javascript">
+			$('body').scrollspy({ target: '#sc' })
+		</script>
+        <nav class="navbar navbar-inverse navbar-fixed-top">
+
+            <div class="container">
+                <div class="navbar-header">
+                  <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                  </button>
+                  <a class="navbar-brand" href="#" style="color:#fff;">QoR Analyzer Web</a>
+                </div>
+                <div id="navbar" class="navbar-collapse collapse">
+                  <ul class="nav navbar-nav">
+                    <li ><a href="{{ url_for('index') }}"><small><span class="glyphicon glyphicon-home"></span></small>&nbsp;&nbsp;Home</a></li>
+                    <!-- <li><a href="{{ url_for('qor_analysis_tricks') }}">Analysis</a></li> -->
+                    <li class="active"><a href="{{ url_for('about') }}"><small><span class="glyphicon glyphicon-info-sign"></span></small>&nbsp;&nbsp;About</a></li>
+                  </ul>
+
+                </div><!--/.nav-collapse -->
+            </div>
+        </nav> 
+
+		<div class="container bs-docs-container" role="main">
+			<!-- Main jumbotron for a primary marketing message or call to action -->
+            <!--
+			<div class="row" style="width:120%;">
+				<div class="col-md-9" role="main">
+					<div class="alert alert-success" role="alert">
+				    	<strong>Welcome! {{user}}</strong>
+				  	</div>
+				</div>
+
+				
+			</div>  
+            -->                 
+		</div>
+		<div class="bs-docs-header" id="content" style="margin-bottom: 20px;margin-left: -120px;">
+      		<div class="container" >
+        		<h1>Qor Analyzer User Guide</h1>
+
+        		<p>Qor Analyzer provide specific/detail QoR <code>profiler/analysis</code> via different dimensions.</p>
+				<p>Provide easy to understand <code>statistics/charts</code> which helps to prove <code><strong style="color:green;">Good</strong>/<strong style="color:red;">Bad</strong></code> QoR result.</p>
+                <p><code>Narrow down</code> QoR outlier quickly.</p>
+				<p><code>Visualize</code> hidden/potential QoR issue.</p>
+      		</div>
+    	</div>
+		<div class="container bs-docs-container" style="padding-bottom: 50px;">
+			<div class="row" style="margin-left: -100px;margin-right: -400px;">
+				<div  data-spy="scroll" data-target="#sc" class="col-md-9" role="main">
+					<div class="bs-docs-section">
+						<div class="bs-callout bs-callout-danger" id="callout-overview-not-both">
+    						<h2>Main function of QoR Analyzer</h2>
+                            <h4>1. <code><strong>Profile</strong></code> QoR info with specific pattern onto visible, comparable charts with dynamic data display.</h4>
+                            <h4>2. <code><strong>Analyze</strong></code> QoR info from different dimensions and return consolidated statistics.</h4>
+                            <!--
+    						<p>the <code>comparison QoR</code> between two steps, show data changes clearly.
+							   <code>Filter inside QoR outlier</code> by percentage</p>
+							<h4>Infrastructure functions of qor analyzer</h4>
+    						<p><code>Highlight</code> of design, <code>summary</code> of metrics,<code>data filter</code></p>
+                            -->
+  						</div>
+					</div>
+					<div class="bs-docs-section">
+                    <!-- 1 -->
+						<div class="bs-callout bs-callout-danger" id="profile">
+                            <h3>1. <code>Profile</code> Functionality</h3>
+                            <h4>With given <code>Log path</code> or <code>Flow dir</code>, plot patterns extracted from log(s) to Charts. </h4>
+                        </div>
+                        <!-- 1.1 -->
+                        <div class="bs-callout bs-callout-danger" id="profile-step">
+    						<h4>1.1 Entry steps</h4>
+    						<p>Select <code><strong>log</strong></code> or <code><strong>flow</strong></code> mode in home page.</p> 
+    						<p>1.1.1 Provide valid input for <code>log</code> mode:</p>
+                            <p>Absolute path of a log file like: <code>/remote/us01home40/phyan/star/9001137153/base/base.log</code></p>
+                            <p>Multiple inputs supported</p>
+                            <img src="{{ url_for('static', filename='bootstrap/pictureSave/input1-1.png') }}">
+                            <img src="{{ url_for('static', filename='bootstrap/pictureSave/input1-2.png') }}">                            
+                            <p>1.1.2 Provide valid input for <code>flow</code> mode:</p>
+                            <p>Absolute path of a <code>PRS</code> flow dir like: <code>/remote/platform_pv1/platform_prs/PRS_2017.09-SP1/2017-08-14/DCRT2ICCII_ESPG_NOPLACE</code></p>
+                            <img src="{{ url_for('static', filename='bootstrap/pictureSave/flow-input-1-1.png') }}"> 
+                            <img src="{{ url_for('static', filename='bootstrap/pictureSave/flow-input-1-2.png') }}"> 
+    					</div>
+                        <!-- 1.2 -->
+						<div class="bs-callout bs-callout-danger" id="profile-page">
+                            <h4>1.2 Profile page</h4>
+                            <p id="profile-log">1.2.1 <code><strong>log</strong></code> mode</p> 
+                            <p><code>part 1</code> pattern tabs, multiple default QoR patterns could be extracted from log</p>
+                            <p><code>part 2</code> QoR convergence chart, each is a clickable point</p>
+                            <p><code>part 3</code> Share link, others could see the same page with via link</p>
+                            <p><code>part 4</code> QoR compare table, compare all QoR metrics of last 2 selected steps/points</p>
+                            <p><code>part 5</code> Inner-link, jump to selected chart directly</p>
+                            <p><code>part 6</code> Chart check-box, could hide/display selected chart. (eg. If you want to move WNS/AREA charts closely to see difference.)</p>
+                            <img src="{{ url_for('static', filename='bootstrap/pictureSave/profile-log-1-1.png') }}">
+
+                            <p id="profile-flow">1.2.2 <code><strong>flow</strong></code> mode</p> 
+                            <p>Besides sections in log mode, there're additional selection under flow mode</p>
+                            <p>User needs to:</p>
+                            <p>1. Select a stage</p>
+                            <p>2. Select a design or a metrics</p>
+                            <p><code>part 7</code> Select a stage, 5 PRS stages supported: full_flow/nwpopt/nwcopt/nwropt/nwfopt</p>
+                            <img src="{{ url_for('static', filename='bootstrap/pictureSave/profile-flow-stage-1.png') }}">
+                            <!-- <img src="{{ url_for('static', filename='bootstrap/pictureSave/profile-flow-stage-2.png') }}"> -->
+                            <p><code>part 8</code> Select a single design to plot QoR info under specified stage</p>
+                            <img src="{{ url_for('static', filename='bootstrap/pictureSave/profile-flow-design-1.png') }}">
+                            <img src="{{ url_for('static', filename='bootstrap/pictureSave/profile-flow-design-2-1.png') }}">
+                            <p><code>part 9</code> Select a metrics of a pattern for all designs under specified stage</p>
+                            <img src="{{ url_for('static', filename='bootstrap/pictureSave/profile-flow-metrics-1.png') }}">
+                            <img src="{{ url_for('static', filename='bootstrap/pictureSave/profile-flow-metrics-2-1.png') }}">
+
+                            <p id="user-pattern">1.2.3 <code><strong>User pattern</strong></code> support</p> 
+                            <p>User can provide <code>regularized script</code> to QoR Analyzer if default patterns cannot extract QoR info user focused on</p>
+                            <img src="{{ url_for('static', filename='bootstrap/pictureSave/user-pattern-2.png') }}">
+                            <p>What to provide:</p>
+                            <p><code>Abolute script path (csh, perl)</code> which could be executed directly and need to <code>accept 1 logfile as input</code></p>
+                            <p>Regularization:</p>
+                            <p>QoR Analyzer will use output which user script prints as input and do infomation collection and translate into QoR matrix</p>
+                            <p>Required printout format is:</p>
+                            <p>1. print all columns names splited by <code>space</code> in <code>1st</code> line (eg. <code>columnA columnB columnC columnD</code>)</p>
+                            <p>2. then later lines should provide columns data with a step name. (eg. <code>step1 0.3 0.5 0.6 1.2</code>) (if no step name, QoR Analyzer will use default step naming rule)
+                            <p>So whole printout would be like below snapshot</p>
+                            <img src="{{ url_for('static', filename='bootstrap/pictureSave/user-pattern-3.png') }}">
+                            <p>Finally QoR Analyzer will plot the statistics provided by user script onto front-end charts together with default patterns</p>
+                            <img src="{{ url_for('static', filename='bootstrap/pictureSave/user-pattern-1.png') }}">
+
+
+                        </div>
+                        <!-- 2 -->
+                        <div class="bs-callout bs-callout-danger" id="analysis">
+                            <h3>2. <code>Analysis</code> Functionality</h3>
+                            <h4>Analyze QoR statistics under given analysis scenario</h4>
+                        </div>
+                        <!-- 2.1 -->
+                        <div class="bs-callout bs-callout-danger" id="analysis-sqb">
+                            <h4>2.1 Single step QoR benefir analysis (<code>SQB</code>)</h4>
+                            <p>2.1.1 Usage scenario introduction</p>
+                            <p>QoR Analyzer could provide OOTB QoR data analysis, for data inside flow, not comparing final QoR result from report only.</p>
+                            <p>Analysis atom could be a single step (AREC/SIZE2/LGL, etc) during the flow, compare QoR between atom steps.</p>
+                            <p>Live usage scenario 1: user wants to see QoR change after DTDPLGL step</p>
+                            <p>Live usage scenario 2: new feature "Rebuffering" will introduce new step "REBUFFER", user wants to see the QoR benefit/impact after the step</p>
+                            <p>2.1.2 Analysis method</p>
+                            <p>Compare the QoR result between selected step and its previous step for all designs under specified flow, display Improve/Degrade distribution per metrics</p>
+                            <p>There will be multiple compare sample collections in one single design. (eg. 'DRC' step will happen after 'AREC', 'LGL' or 'POWER', so analyze DRC step will collect DRCvsAREC, DRCvsLGL, DRCvsPOWER 3 compare samples)</p>
+                            <p>2.1.3 How to use/where to trigger SQB?</p>
+                            <p>1. Click the step of specified flow you want to analyze</p>
+                            <p>2. Choose 'SQB' analysis entrance and click 'start'</p>
+                            <img src="{{ url_for('static', filename='bootstrap/pictureSave/analysis-sqb-1.png') }}">
+                            <p>2.1.4 Analysis result</p>
+                            <p>Analysis result will return 2 parts:</p>
+                            <p><code>Improve/Degrade</code> distribution bar chart</p>
+                            <img src="{{ url_for('static', filename='bootstrap/pictureSave/analysis-sqb-2.png') }}">
+                            <p>Detail QoR change <code>statistics table</code></p>
+                            <img src="{{ url_for('static', filename='bootstrap/pictureSave/analysis-sqb-3.png') }}">
+                            <p>User can <code>switch metrics</code> to see QoR change in different metrics or see entire QoR change on all metrics under <code>Summary</code> page</p>
+                            <img src="{{ url_for('static', filename='bootstrap/pictureSave/analysis-sqb-4.png') }}">
+                            <img src="{{ url_for('static', filename='bootstrap/pictureSave/analysis-sqb-5.png') }}">
+                            <p>User can also <code>highlight designs</code> which he/she want to focus</p>
+                            <img src="{{ url_for('static', filename='bootstrap/pictureSave/analysis-sqb-6.png') }}">
+                            <img src="{{ url_for('static', filename='bootstrap/pictureSave/analysis-sqb-7.png') }}">
+                        </div>
+
+                        <!-- 2.2 -->
+						<div class="bs-callout bs-callout-danger" id="analysis-sqc">
+                            <h4>2.2 Compare QoR between steps (<code>SQC</code>)</h4>
+                            <p>2.2.1 Usage scenario introduction</p>
+                            <p>SQC is similar as SQB, but user needs to specified 2 steps and QoR Analyzer will compare QoR between user specified steps and exhibit the statistics.</p>
+                            <p>Besides, SQC could compare same step between different flows. (Currently only support steps in PREROUTE_STG and FULL_FLOW_PPA pattern)
+                            <p>2.2.2 How to use/where to trigger SQC?</p>
+                            <p>Compare 2 steps in same flow: click 2 step points of specified flow you want to analyze</p>
+                            <img src="{{ url_for('static', filename='bootstrap/pictureSave/analysis-sqc-2.png') }}">
+                            <p>Or compare 1 step between 2 flows: click 1 step under PREROUTE_STG/FULL_FLOW_PPA pattern tab</p>
+                            <img src="{{ url_for('static', filename='bootstrap/pictureSave/analysis-sqc-1.png') }}">
+                            <p>Choose 'SQC' analysis entrance and click 'start'</p>
+                            <p>2.2.3 Analysis result</p>
+                            <p>Same as SQB but only selected steps compare collection will be recorded in statistics matrix</p>
+                        </div>
+                        <!-- 2.3 -->
+                        <div class="bs-callout bs-callout-danger" id="analysis-sqt">
+                            <h4>2.3 Filter trajectory via threshold (<code>SQT</code>)</h4>
+                            <p>2.3.1 Usage scenario introduction</p>
+                            <p>As per flow point of view, we cannot scan all designs plot to see whether there's QoR trajectory occurred or not</p>
+                            <p>Here we provide automatice trajectory/outlier search to user to filter out steps collections where QoR change is over threshold percentage (like >20%)</p>
+                            <p>2.3.2 Analysis method</p>
+                            <p>Traverse steps sequentially and compare step QoR with its previous step. (eg. step A->B->C->D, will compare BvsA, CvsB, DvsC) If there's QoR change on any of the metrics is over threshold, the steps collection will be recorded into matrix </p>
+                            <p>2.3.3 How to use/where to trigger SQC?</p>
+                            <p>Click any points of specified flow, choose 'SQT' and enter the threshold (default 10%) you want to filter, then click 'start'</p>
+                            <img src="{{ url_for('static', filename='bootstrap/pictureSave/analysis-sqt-1.png') }}">
+                            <p>Choose 'SQC' analysis entrance and click 'start'</p>
+                            <p>2.3.4 Analysis result</p>
+                            <p>Same as SQB but only steps collection with QoR change over threshold will be recorded into statistics matrix</p>
+                        </div>                        
+						
+					</div> 
+					                          
+				</div>
+
+				<div id="sc" class="col-md-3" role="complementary">
+					<nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" style="margin-top: -100px;">
+						<ul class="nav about-nav bs-docs-sidenav">
+							<li><a href="#content">Introduction</a></li>
+							<li><a href="#profile">Profiler</a>
+                                <ul class="nav about-nav">
+                                    <li><a href="#profile-step">Entry steps</a></li>
+                                    <li><a href="#profile-page">Profile page</a>
+                                    <ul class="nav about-nav">
+                                        <li><a href="#profile-log">Log mode</a></li>
+                                        <li><a href="#profile-flow">Flow mode</a></li>
+                                        <li><a href="#user-pattern">User pattern</a></li>
+                                    </ul>
+                                    </li>
+                                </ul>
+                            </li>
+							<li>
+								<a href="#analysis">Analyzer</a>
+								<ul class="nav about-nav">
+									<li><a href="#analysis-sqb">Single step QoR benefit analysis (SQB)</a></li>
+									<li><a href="#analysis-sqc">Compare QoR between steps (SQC)</a></li>
+									<li><a href="#analysis-sqt">Filter trajectory via threshold (SQT)</a></li>
+								</ul>
+							</li>
+						</ul>
+					</nav>
+				</div>
+			</div>
+		</div>
+
+		<nav class="navbar navbar-inverse navbar-fixed-bottom">
+		    <div class="navbar-inner navbar-content-center" style="text-align:center;">
+		        <p class="text-muted credit" style="margin:5px 0 0 0;color:white">Chrome/Firefox browsers with 1600x1200+ are suggested</p>
+		        <p class="text-muted credit" style="margin:0px;color:white">Contact <a href="mailto:phyan@synopsys.com">Leo Yan</a> if needed</p>
+		    </div>
+		</nav>
+
+	</body>
+</html>

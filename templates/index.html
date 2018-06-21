@@ -43,7 +43,10 @@
 				window.compress_mode = "{{compress|safe}}";
 				window.mode = "{{mode|safe}}";
 				window.input_num = "{{input_num|safe}}";
-
+				if (window.input_num == "None") {
+					window.input_num = 0;
+					$("#param-num").val(window.input_num);
+				}
 				if (window.mode != "None") {
 					activeMode("Null", 0); // restore mode
 					if (window.input_num != "None") {	
@@ -81,57 +84,140 @@
 
 			function addInput(mode, input_list){
 				if (mode == 0) {
-					window.input_num = $("#param-1").val();
+					window.input_num += 1;
+					// $("#param-1").val(parseInt($("#param-1").val())+1);
+					// window.input_num = $("#param-1").val();
 					$("#param-num").val(window.input_num);
-					//console.log($("#param-num").val());
-					$("#form").empty();
-					for (i=1;i<=window.input_num;i++) {
-					    var input = document.createElement('input'); 
-						input.setAttribute('type','text'); 
-						input.setAttribute('class','form-control');
-						input.setAttribute('placeholder','input'+i);
+					var input = document.createElement('input'); 
+					// if(window.input_num==1){
+					// 	input.setAttribute('style','margin-left:25px;width:600px;margin-bottom:5px;display:block;');
+					// }
+					// else{
+						var minus = "<div style='width:650px' id='deletelist"+window.input_num+"' class='delete'><button type='button' id='buttonlist"+window.input_num+"' class='btn btn-primary btn-xs' style='width:20px;height:20px;border-radius:20px;margin: 8px 5px 0px 0px;float:left;' onclick='deleteInput(this)' style='float:left;height:33px;'><span class='glyphicon glyphicon-minus-sign' aria-hidden='true' style='font-size:15px;top:1px;margin-left:-3px;'></span></button></div>";
 						input.setAttribute('style','width:600px;margin-bottom:5px;display:block;');
-						input.setAttribute('name', 'input'+i);
-						input.setAttribute('id', 'input'+i);
-						document.getElementById('form').appendChild(input);
-					}
+					// }
+						
+					input.setAttribute('type','text'); 
+					input.setAttribute('class','form-control');
+					input.setAttribute('placeholder','input'+window.input_num);
+					input.setAttribute('name', 'input'+window.input_num);
+					input.setAttribute('id', 'input'+window.input_num);
+					$("#form").append(minus).append(input);
+
 				} else {
 					$("#param-num").val(window.input_num);
 					$("#form").empty();
 					//console.log(window.input_num);
 					$.each(input_list, function(i, input_val) {
 						j=i+1;
-					    var input = document.createElement('input'); 
-						input.setAttribute('type','text'); 
+						var input = document.createElement('input'); 
+						// if(j==1){
+						// 	input.setAttribute('style','margin-left:25px;width:600px;margin-bottom:5px;display:block;');
+						// }
+						// else{
+							input.setAttribute('style','width:600px;margin-bottom:5px;display:block;');
+							var minus = "<div style='width:650px' id='deletelist"+j+"' class='delete'><button type='button' id='buttonlist"+j+"' class='btn btn-primary btn-xs' style='width:20px;height:20px;border-radius:20px;margin: 8px 5px 0px 0px;float:left;' onclick='deleteInput(this)' style='float:left;height:33px;'><span class='glyphicon glyphicon-minus-sign' aria-hidden='true' style='font-size:15px;top:1px;margin-left:-3.5px;'></span></button></div>"
+						// }
+						
+						input.setAttribute('type','text');
 						input.setAttribute('class','form-control');
 						input.setAttribute('placeholder','input'+j);
-						input.setAttribute('style','width:600px;margin-bottom:5px;display:block;');
 						input.setAttribute('name', 'input'+j);
 						input.setAttribute('id', 'input'+j);
 						input.setAttribute('value', input_val);
-						document.getElementById('form').appendChild(input);
+						$("#form").append(minus).append(input);
 					})
 				}
+				if($("input[id^='input']").length==1){
+						$("#buttonlist1").css("display","none");
+						$("#input1").css("margin-left","25px");
+					}
+				else{
+					$("#buttonlist1").css("display","block");
+					$("#input1").css("margin-left","0px");
+				}
+			}
+
+			function deleteInput(e){
+				var index = $(e).eq(0).attr('id').replace(/[^0-9]/ig,"");
+			
+				if($("input[id^='input']").length!=1){
+					$("#input"+index).remove();
+				$("#deletelist"+index).remove();
+				window.input_num-=1;
+				$("#param-num").val(window.input_num);
+				var i=1;
+				$.each($("input[id^='input']"),function(e,value){
+					// if(e>0){	
+						if(i<=input_num){
+							var mark = $(value).eq(0).attr('id').replace(/[^0-9]/ig,"");
+							$("#input"+mark).attr("id","input"+i);
+							$("#input"+i).attr("name","input"+i);
+							$("#input"+i).attr("placeholder","input"+i);
+							$("#deletelist"+mark).attr("id","deletelist"+i);
+							$("#buttonlist"+mark).attr("id","buttonlist"+i);
+							i++;
+						}
+					// }
+				})
+				if($("input[id^='input']").length==1){
+					$("#buttonlist1").css("display","none");
+					$("#input1").css("margin-left","25px");
+
+				}
+				$("#param-1").val(window.input_num);	
+				}
+									
+			}
+
+			function deleteScript(e){
+				console.log(e);
+				var index = $(e).eq(0).attr('id').replace(/[^0-9]/ig,"");
+				$("#script"+index).remove();
+				$("#dellist"+index).remove();
+				window.script_num-=1;
+				$("#script-num").val(window.script_num);
+				var i=1;
+				$.each($("input[id^='script']"),function(e,value){
+				if(e>1){
+					if(i<=script_num){
+						var mark = $(value).eq(0).attr('id').replace(/[^0-9]/ig,"");
+						$("#script"+mark).attr("id","script"+i);
+						$("#script"+i).attr("name","script"+i);
+						$("#script"+i).attr("placeholder","script"+i);
+						$("#dellist"+mark).attr("id","dellist"+i);
+						$("#butlist"+mark).attr("id","butlist"+i);
+						i++;
+					}
+				}
+				})
+					
 			}
 
 			function addPatternScript(mode, script_list) {
 				if (mode == 0) {
 					window.script_num += 1;
 					$("#script-num").val(window.script_num);
+				
+					var minus = "<div style='width:630px' id='dellist"+window.script_num+"' class='delete'><button type='button' id='butlist"+window.script_num+"' class='btn btn-primary btn-xs' style='width:20px;height:20px;border-radius:20px;margin:8px 5px 0px 0px;float:left;' onclick='deleteScript(this)' style='float:left;height:33px;'><span class='glyphicon glyphicon-minus-sign' aria-hidden='true' style='font-size:15px;top:1px;margin-left:-3.5px;'></span></button></div>"
+
 					var input = document.createElement('input'); 
 					input.setAttribute('type','text'); 
 					input.setAttribute('class','form-control');
 					input.setAttribute('placeholder','script'+window.script_num);
-					input.setAttribute('style','width:600px;margin-bottom:5px;display:table-row;border-radius:4px;');
+					input.setAttribute('style','width:600px;margin-bottom:5px;display:block;border-radius:4px;');
 					input.setAttribute('name', 'script'+window.script_num);
 					input.setAttribute('id', 'script'+window.script_num);
-					document.getElementById('script-form').appendChild(input);
+					$("#script-form").append(minus).append(input);
+
 				} else {
 					$("#script-num").val(window.script_num);
 					$("#script-form").empty();
 					console.log(script_list);
 					$.each(script_list, function(i, script_val) {
 						j=i+1;
+						var minus = "<div style='width:630px' id='dellist"+j+"' class='delete'><button type='button' id='butlist"+j+"' class='btn btn-primary btn-xs' style='width:20px;height:20px;border-radius:20px;margin: 8px 5px 0px 0px;float:left;' onclick='deleteScript(this)' style='float:left;height:33px;'><span class='glyphicon glyphicon-minus-sign' aria-hidden='true' style='font-size:15px;top:1px;margin-left:-3.5px;'></span></button></div>"
+
 					    var input = document.createElement('input'); 
 						input.setAttribute('type','text'); 
 						input.setAttribute('class','form-control');
@@ -140,7 +226,7 @@
 						input.setAttribute('name', 'script'+j);
 						input.setAttribute('id', 'script'+j);
 						input.setAttribute('value', script_val);
-						document.getElementById('script-form').appendChild(input);
+						$("#script-form").append(minus).append(input);
 					})
 				}
 			}
@@ -151,23 +237,33 @@
 				} 
 				$("#mode").text(window.mode);
 				$("#selected-mode").val(window.mode);
+				// $("#param-1").val(1);
+				if($("#mode").text()=='flow'||$("#mode").text()=='log'){
+					if(window.input_num==0){
+						addInput(0, 'Null');
+					}
+				}
 				if (window.mode == "checkpoint") {
-					$("#form").empty();
+					$(".form-group").css("display", "none");
+					// $("#form").empty();
 					$(".param-3").css("display", "none");
 					$(".param-2").css("display", "table-cell");
 					$(".param-1").css("display", "none");
+					$(".param-4").css("display", "none");
 				} else if (window.mode == "trend") {
 					$("#form").empty();
 					$(".param-1").css("display", "none");
 					$(".param-2").css("display", "none");
 					$(".param-3").css("display", "table-cell");				
 				} else {
-					$("#form").empty();
+					// $("#form").empty();
+					$(".form-group").css("display", "block");
 					$(".param-1").css("display", "table-cell");
 					$("#script-form").css("display", "table-row");
 					$(".param-1>label").css("display", "table-caption");
 					$(".param-2").css("display", "none");
 					$(".param-3").css("display", "none");
+					$(".param-4").css("display", "block");
 				}
 				//console.log($("#compress-mode").val());
 			}
@@ -234,9 +330,9 @@
 		        </div>
 		        <div id="navbar" class="navbar-collapse collapse">
 		          <ul class="nav navbar-nav">
-		            <li class="active"><a href="{{ url_for('index') }}">Home</a></li>
-		            <li><a href="{{ url_for('qor_analysis_tricks') }}">Analysis</a></li>
-					<li><a href="#">About</a></li>
+		            <li class="active"><a href="{{ url_for('index') }}"><small><span class="glyphicon glyphicon-home"></span></small>&nbsp;&nbsp;Home</a></li>
+		            <!-- <li><a href="{{ url_for('qor_analysis_tricks') }}">Analysis</a></li> -->
+					<li><a href="{{ url_for('about') }}"><small><span class="glyphicon glyphicon-info-sign"></span></small>&nbsp;&nbsp;About</a></li>
 				  </ul>
 
 		        </div><!--/.nav-collapse -->
@@ -250,12 +346,14 @@
 					<div class="alert alert-success" role="alert">
 				    	<strong>Welcome! {{user}}</strong>
 				  	</div>
+				  	<!--
 				  	<div class="alert alert-info alert-dismissible" role="alert">
 						<button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
 						New Features are ready now:</br>
 						2017-04-12: <strong>Multi-pattern</strong> Support log with "PREROUTE", "ROPT", "GROPT" pattern.</br>
 						2017-04-12: <strong>Ropt, Fopt extension</strong> Support "nwropt"/"nwfopt" log extraction.</br>
 					</div>
+					-->
 				  	<!-- Split button -->
 					<div class="row" style="margin-left:0px;">
 						<div class="btn-group" style="margin-bottom: 18px;">
@@ -267,29 +365,32 @@
 						  <ul class="dropdown-menu">
 						    <li><a href="#" onclick="activeMode(this, 1);">log</a></li>
 						    <li><a href="#" onclick="activeMode(this, 1);">flow</a></li>
+						    
 						    {% if active_duo %}
 						    <li><a href="#" onclick="activeMode(this, 1);">checkpoint</a></li>
 						    {% endif %}
+						    
 						    <!--<li><a href="#" onclick="activeMode(this);">trend</a></li>-->
 						  </ul>
 						</div>
-						<div class="input-group" style="width:500px;margin-bottom:10px;">
-						  <span class="input-group-addon param-1" style="display:none;border-radius:4px 0 0 4px;border-right: 0">Input No.</span>
+						<div class="input-group param-1" style="width:100px;margin-bottom:10px;display:none">
+						  <button type="button" class="btn btn-primary btn-xs" style="width:20px;height:20px;border-radius:20px;margin-bottom: 1px;" onclick="addInput(0, 'Null');">
+										  <span class="glyphicon glyphicon-plus-sign" style="font-size:15px;top:1px;margin-left:-3.5px;"></span>
+						  </button>
+						  <span style="font-size:14px;color:white;">  Input</span>
+						</div>
+
+					<!-- 	 <div style="width:500px;display:none;margin-bottom:10px;">
 						  <input style="width:300px;display:none;" id="param-1" type="text" class="form-control param-1" placeholder="Number of inputs (max 10)" onkeyup="addInput(0, 'Null');">
 
-						</div>
+						</div> -->
+						
 
-						<div class="input-group" style="width:200px;margin-bottom:2px;margin-left:20px;color: white;">
-						 <label class="radio param-1" style="display:none;font-weight: normal">
-						  <input type="radio" name="optionsRadios" value="0">
-						  No compress
-						</label>
-						<label class="radio param-1" style="display:none;font-weight: normal">
-						  <input type="radio" name="optionsRadios" value="1" checked>
-						  Compress
-						</label>
+						<!-- <div style="display:none;width:650px" id="deletelist1" class="param-1">
+						
+							<input type="text" class="form-control" placeholder="input1" style="width:600px;display:block;" name="input1" id="input1">
+						</div> -->
 
-						</div>
 						
 					</div> 
 					<div class="row">
@@ -305,8 +406,10 @@
 									<input style="width:300px;margin-bottom:2px;display:none;" class="form-control" type="text" id='script-num' name="script-num">
 									<input style="width:300px;margin-bottom:2px;display:none;" class="form-control" type="text" id='param-dir' name="param-dir">
 									<input style="width:300px;margin-bottom:2px;display:none;" class="form-control" type="text" id='script-dir' name="script-dir">
-									<span class="input-group-addon param-2" style="display:none;border-radius:4px 0 0 4px;border-right: 0;margin-bottom:2px;">Input Dir</span>
+									<div class="input-group">
+									<span class="input-group-addon param-2" style="display:none;border-radius:4px 0 0 4px;border-right: 0;">Input Dir</span>
 									<input style="width:600px;display:none;" class="form-control param-2" type="text" id="param-2" name="param-2" placeholder="Checkpoint run dictory">
+									</div>
 									<!--
 									<span class="input-group-addon param-3" style="display:none;border-radius:4px 0 0 4px;border-right: 0;margin-bottom:2px;">Base Dir</span>
 									<input style="width:600px;display:none;margin-bottom:2px;" class="form-control param-3" type="text" id="param-3-1" name="param-3-2" placeholder="Base flow dictory">
@@ -314,9 +417,21 @@
 									<span class="input-group-addon param-3" style="display:none;border-radius:4px 0 0 4px;border-right: 0;margin-bottom:2px;">Compare Dir</span>
 									<input style="width:600px;display:none;margin-bottom:2px;" class="form-control param-3" type="text" id="param-3-2" name="param-3-2" placeholder="Compare flow dictory">
 									-->		
-									<div class='param-1' style='display:none;padding-bottom: 5px;'>
-										<button type="button" class="btn btn-warning btn-xs" style="width:15px;height:15px;border-radius:15px;margin-bottom: 1px;" onclick="addPatternScript(0, 'Null');">
-										  <span class="glyphicon glyphicon-plus" style="font-size:10px;top:-1px;margin-left:-4px;"></span>
+								<div class="input-group" style="width:200px;margin-bottom:10px;color: white;">
+						 			<label class="radio param-1" style="display:none;font-weight: normal">
+						  			<input type="radio" name="optionsRadios" value="0">
+						  			No compress
+									</label>
+									<label class="radio param-1" style="display:none;font-weight: normal">
+						  			<input type="radio" name="optionsRadios" value="1" checked>
+						  			Compress
+									</label>
+
+						       </div>
+
+									<div class='param-4' style='display:none;padding-bottom: 5px;'>
+										<button type="button" class="btn btn-primary btn-xs" style="width:20px;height:20px;border-radius:20px;margin-bottom: 1px;" onclick="addPatternScript(0, 'Null');">
+										  <span class="glyphicon glyphicon-plus-sign" style="font-size:15px;top:1px;margin-left:-3.5px;"></span>
 										</button>
 										
 										<span style="font-size:14px;color:white;">  User pattern</span>
